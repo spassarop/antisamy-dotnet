@@ -22,12 +22,13 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using NUnit.Framework;
 using System;
+using NUnit.Framework;
+using org.owasp.validator.html;
 
-namespace org.owasp.validator.html.test
+namespace AntiSamyTests
 {
-    //[TestFixture]
+    [TestFixture]
     public class AntiSamyTest
     {
         AntiSamy antisamy = new AntiSamy();
@@ -35,25 +36,21 @@ namespace org.owasp.validator.html.test
         string filename = "resources/antisamy.xml";
 
         [SetUp]
-        public void SetUp()
-        {
-            policy = Policy.getInstance(filename);
-        }
+        public void SetUp() => policy = Policy.getInstance(filename);
 
         [TearDown]
         public void TearDown()
         {
-
         }
+
         /*
          * Test basic XSS cases. 
          */
         [Test]
-        public void testScriptAttacks()
+        public void TestScriptAttacks()
         {
             try
             {
-
                 Assert.IsTrue(antisamy.scan("test<script>alert(document.cookie)</script>", policy).getCleanHTML().IndexOf("script") == -1);
                 Assert.IsTrue(antisamy.scan("<<<><<script src=http://fake-evil.ru/test.js>", policy).getCleanHTML().IndexOf("<script") == -1);
                 Assert.IsTrue(antisamy.scan("<script<script src=http://fake-evil.ru/test.js>>", policy).getCleanHTML().IndexOf("<script") == -1);
@@ -65,27 +62,20 @@ namespace org.owasp.validator.html.test
             }
             catch (Exception e)
             {
-                Assert.Fail("Caught exception in testScriptAttack(): " + e.Message);
+                Assert.Fail($"Caught exception in TestScriptAttack(): {e.Message}");
             }
-
         }
-        [Test]
-        public void testImgAttacks()
-        {
 
+        [Test]
+        public void TestImgAttacks()
+        {
             try
             {
-                Console.WriteLine("here");
                 Assert.IsTrue(antisamy.scan("<img src='http://www.myspace.com/img.gif'>", policy).getCleanHTML().IndexOf("<img") != -1);
                 Assert.IsTrue(antisamy.scan("<img src=javascript:alert(document.cookie)>", policy).getCleanHTML().IndexOf("<img") == -1);
                 Assert.IsTrue(antisamy.scan("<IMG SRC=&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;&#97;&#108;&#101;&#114;&#116;&#40;&#39;&#88;&#83;&#83;&#39;&#41;>", policy).getCleanHTML().IndexOf("<img") == -1);       
-                
-                Console.WriteLine(antisamy.scan("<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>").getCleanHTML());
-                Console.WriteLine(antisamy.scan("<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>").getCleanHTML().IndexOf("&amp;"));
                 Assert.IsTrue(antisamy.scan("<IMG SRC=&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>", policy).getCleanHTML().IndexOf("&amp;") != -1);
-                Console.WriteLine(antisamy.scan("&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041>").getCleanHTML());
                 Assert.IsTrue(antisamy.scan("<IMG SRC=&#x6A&#x61&#x76&#x61&#x73&#x63&#x72&#x69&#x70&#x74&#x3A&#x61&#x6C&#x65&#x72&#x74&#x28&#x27&#x58&#x53&#x53&#x27&#x29>", policy).getCleanHTML().IndexOf("&amp;") != -1);
-                
                 Assert.IsTrue(antisamy.scan("<IMG SRC=\"jav&#x0D;ascript:alert('XSS');\">", policy).getCleanHTML().IndexOf("alert") == -1);
                 Assert.IsTrue(antisamy.scan("<IMG SRC=\"javascript:alert('XSS')\"", policy).getCleanHTML().IndexOf("javascript") == -1);
                 Assert.IsTrue(antisamy.scan("<IMG LOWSRC=\"javascript:alert('XSS')\">", policy).getCleanHTML().IndexOf("javascript") == -1);
@@ -93,33 +83,22 @@ namespace org.owasp.validator.html.test
             }
             catch (Exception e)
             {
-                Assert.Fail("Caught exception in testImgSrcAttacks(): " + e.Message);
+                Assert.Fail($"Caught exception in TestImgAttacks(): {e.Message}");
             }
         }
 
         [Test]
-        public void testHrefAttacks()
+        public void TestHrefAttacks()
         {
-
-
             try
             {
-
                 Assert.IsTrue(antisamy.scan("<LINK REL=\"stylesheet\" HREF=\"javascript:alert('XSS');\">", policy).getCleanHTML().IndexOf("href") == -1);
                 Assert.IsTrue(antisamy.scan("<LINK REL=\"stylesheet\" HREF=\"http://ha.ckers.org/xss.css\">", policy).getCleanHTML().IndexOf("href") == -1);
-                
-                Console.WriteLine("<STYLE>@import'http://ha.ckers.org/xss.css';</STYLE>");
                 Assert.IsTrue(antisamy.scan("<STYLE>@import'http://ha.ckers.org/xss.css';</STYLE>", policy).getCleanHTML().IndexOf("ha.ckers.org") == -1);
-                Console.WriteLine("<STYLE>BODY{-moz-binding:url(\"http://ha.ckers.org/xssmoz.xml#xss\")}</STYLE>");
                 Assert.IsTrue(antisamy.scan("<STYLE>BODY{-moz-binding:url(\"http://ha.ckers.org/xssmoz.xml#xss\")}</STYLE>", policy).getCleanHTML().IndexOf("ha.ckers.org") == -1);
-                Console.WriteLine("<STYLE>BODY{-moz-binding:url(\"http://ha.ckers.org/xssmoz.xml#xss\")}</STYLE>");
                 Assert.IsTrue(antisamy.scan("<STYLE>BODY{-moz-binding:url(\"http://ha.ckers.org/xssmoz.xml#xss\")}</STYLE>", policy).getCleanHTML().IndexOf("xss.htc") == -1);
-                Console.WriteLine("<STYLE>li {list-style-image: url(\"javascript:alert('XSS')\");}</STYLE><UL><LI>XSS");
                 Assert.IsTrue(antisamy.scan("<STYLE>li {list-style-image: url(\"javascript:alert('XSS')\");}</STYLE><UL><LI>XSS", policy).getCleanHTML().IndexOf("javascript") == -1);
-                
                 Assert.IsTrue(antisamy.scan("<IMG SRC='vbscript:msgbox(\"XSS\")'>", policy).getCleanHTML().IndexOf("vbscript") == -1);
-                
-                
                 Assert.IsTrue(antisamy.scan("<META HTTP-EQUIV=\"refresh\" CONTENT=\"0; URL=http://;URL=javascript:alert('XSS');\">", policy).getCleanHTML().IndexOf("<meta") == -1);
                 Assert.IsTrue(antisamy.scan("<META HTTP-EQUIV=\"refresh\" CONTENT=\"0;url=javascript:alert('XSS');\">", policy).getCleanHTML().IndexOf("<meta") == -1);
                 Assert.IsTrue(antisamy.scan("<META HTTP-EQUIV=\"refresh\" CONTENT=\"0;url=data:text/html;base64,PHNjcmlwdD5hbGVydCgnWFNTJyk8L3NjcmlwdD4K\">", policy).getCleanHTML().IndexOf("<meta") == -1);
@@ -130,10 +109,7 @@ namespace org.owasp.validator.html.test
                 Assert.IsTrue(antisamy.scan("<DIV STYLE=\"background-image: url(javascript:alert('XSS'))\">", policy).getCleanHTML().IndexOf("javascript") == -1);
                 Assert.IsTrue(antisamy.scan("<DIV STYLE=\"width: expression(alert('XSS'));\">", policy).getCleanHTML().IndexOf("alert") == -1);
                 Assert.IsTrue(antisamy.scan("<IMG STYLE=\"xss:expr/*XSS*/ession(alert('XSS'))\">", policy).getCleanHTML().IndexOf("alert") == -1);
-                
-                Console.WriteLine("<STYLE>@im\\port'\\ja\\vasc\\ript:alert(\"XSS\")';</STYLE>");
                 Assert.IsTrue(antisamy.scan("<STYLE>@im\\port'\\ja\\vasc\\ript:alert(\"XSS\")';</STYLE>", policy).getCleanHTML().IndexOf("ript:alert") == -1);
-                
                 Assert.IsTrue(antisamy.scan("<BASE HREF=\"javascript:alert('XSS');//\">", policy).getCleanHTML().IndexOf("javascript") == -1);
                 Assert.IsTrue(antisamy.scan("<BaSe hReF=\"http://arbitrary.com/\">", policy).getCleanHTML().IndexOf("<base") == -1);
                 Assert.IsTrue(antisamy.scan("<OBJECT TYPE=\"text/x-scriptlet\" DATA=\"http://ha.ckers.org/scriptlet.html\"></OBJECT>", policy).getCleanHTML().IndexOf("<object") == -1);
@@ -150,11 +126,10 @@ namespace org.owasp.validator.html.test
                 Assert.IsTrue(antisamy.scan("<a href='aim: &c:\\windows\\system32\\calc.exe' ini='C:\\Documents and Settings\\All Users\\Start Menu\\Programs\\Startup\\pwnd.bat'>", policy).getCleanHTML().IndexOf("aim.exe") == -1);
                 Assert.IsTrue(antisamy.scan("<!--\n<A href=\n- --><a href=javascript:alert:document.domain>test-->", policy).getCleanHTML().IndexOf("javascript") == -1);
                 Assert.IsTrue(antisamy.scan("<a></a style=\"\"xx:expr/**/ession(document.appendChild(document.createElement('script')).src='http://h4k.in/i.js')\">", policy).getCleanHTML().IndexOf("document") == -1);
-
             }
             catch (Exception e)
             {
-                Assert.Fail("Caught exception in testHrefSrcAttacks(): " + e.Message);
+                Assert.Fail($"Caught exception in TestHrefAttacks(): {e.Message}");
             }
         }
 
@@ -162,23 +137,18 @@ namespace org.owasp.validator.html.test
          * Test CSS protections. 
          */
         [Test]
-        public void testCssAttacks()
+        public void TestCssAttacks()
         {
             try
             {
-                Console.WriteLine("<div style=\"position:absolute\">");
                 Assert.IsTrue(antisamy.scan("<div style=\"position:absolute\">", policy).getCleanHTML().IndexOf("position") == -1);
-                Console.WriteLine("<style>b { position:absolute }</style>");
                 Assert.IsTrue(antisamy.scan("<style>b { position:absolute }</style>", policy).getCleanHTML().IndexOf("position") == -1);
-                Console.WriteLine("<div style=\"z-index:25\">");
                 Assert.IsTrue(antisamy.scan("<div style=\"z-index:25\">", policy).getCleanHTML().IndexOf("position") == -1);
-                Console.WriteLine("<style>z-index:25</style>");
                 Assert.IsTrue(antisamy.scan("<style>z-index:25</style>", policy).getCleanHTML().IndexOf("position") == -1);
-                
             }
             catch (Exception e)
             {
-                Assert.Fail("Caught exception in testCssAttacks(): " + e.Message);
+                Assert.Fail($"Caught exception in TestCssAttacks(): {e.Message}");
             }
         }
     }
