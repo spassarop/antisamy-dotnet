@@ -47,5 +47,10 @@ namespace org.owasp.validator.html
             : base(s)
         {
         }
+
+        public ScanException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }

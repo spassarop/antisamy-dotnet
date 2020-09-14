@@ -43,7 +43,7 @@ namespace org.owasp.validator.html
     {
 
         private static Policy _instance = null;
-        private const string DEFAULT_POLICY_URI = @"../../resources/antisamy.xml";
+        private const string DEFAULT_POLICY_URI = "resources/antisamy.xml";
         private const string DEFAULT_ONINVALID = "removeAttribute";
 
         public const int DEFAULT_MAX_INPUT_SIZE = 100000;

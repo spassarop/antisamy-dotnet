@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2008, Jerry Hoff
+* Copyright (c) 2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -29,6 +29,7 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace org.owasp.validator.html.model
 {
@@ -45,9 +46,9 @@ namespace org.owasp.validator.html.model
         private string name;
         private string onInvalid;
         private string description;
-        private ArrayList allowedValues = new ArrayList();
-        private ArrayList allowedRegExp = new ArrayList();
-        private ArrayList shorthandRefs = new ArrayList();
+        private List<string> allowedValues = new List<string>();
+        private List<string> allowedRegExp = new List<string>();
+        private List<string> shorthandRefs = new List<string>();
 
         public Property(string name)
         {
@@ -77,17 +78,17 @@ namespace org.owasp.validator.html.model
         {
             this.shorthandRefs.Add(shorthandValue);
         }
-        public ArrayList AllowedRegExp
+        public List<string> AllowedRegExp
         {
             get { return allowedRegExp; }
             set { allowedRegExp = value; }
         }
-        public ArrayList AllowedValues
+        public List<string> AllowedValues
         {
             get { return allowedValues; }
             set { allowedValues = value; }
         }
-        public ArrayList ShorthandRefs
+        public List<string> ShorthandRefs
         {
             get { return shorthandRefs; }
             set { shorthandRefs = value; }

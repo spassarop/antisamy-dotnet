@@ -23,7 +23,6 @@ Slashdot allowed tags taken from "Reply" page:
 		<directive name="embedStyleSheets" value="false"/>
 	</directives>
 	
-	
 	<common-regexps>
 		
 		<!-- 
@@ -34,9 +33,9 @@ Slashdot allowed tags taken from "Reply" page:
 		space characters.
 		-->
 		
-		<regexp name="htmlTitle" value="[\p{L}\p{N}\s-_',:\[\]!\./\\\(\)]*"/> <!-- force non-empty with a '+' at the end instead of '*' -->
-		<regexp name="onsiteURL" value="([\p{L}\p{N}\\/\.\?=\#&amp;;\-_~]+|\#(\w)+)"/>
-		<regexp name="offsiteURL" value="(\s)*((ht|f)tp(s?)://|mailto:)[\p{L}\p{N}]+[~\p{L}\p{N}\p{Zs}\-_\.@#$%&amp;;:,\?=/\+!]*(\s)*"/>
+		<regexp name="htmlTitle" value="[\p{L}\p{N}\s\-_',:\[\]!\./\\\(\)&amp;]*"/> <!-- force non-empty with a '+' at the end instead of '*' -->
+		<regexp name="onsiteURL" value="^(?![\p{L}\p{N}\\\.\#@\$%\+&amp;;\-_~,\?=/!]*(&amp;colon))[\p{L}\p{N}\\\.\#@\$%\+&amp;;\-_~,\?=/!]*"/>
+		<regexp name="offsiteURL" value="(\s)*((ht|f)tp(s?)://|mailto:)[\p{L}\p{N}]+[~\p{L}\p{N}\p{Zs}\-_\.@\#\$%&amp;;:,\?=/\+!\(\)]*(\s)*"/>
 	
 	</common-regexps>
 	
@@ -101,7 +100,11 @@ Slashdot allowed tags taken from "Reply" page:
 		<attribute name="lang"/>
 	</global-tag-attributes>
 
-
+	<tags-to-encode>
+		<tag>g</tag>
+		<tag>grin</tag>
+	</tags-to-encode>
+	
 	<tag-rules>
 
 		<!-- Tags related to JavaScript -->
@@ -131,6 +134,7 @@ Slashdot allowed tags taken from "Reply" page:
 		<tag name="em" action="validate"/>
 		<tag name="blockquote" action="validate"/>
 		<tag name="tt" action="validate"/>
+		<tag name="strong" action="validate"/>
 		
 		<tag name="br" action="truncate"/>
 
@@ -172,5 +176,28 @@ Slashdot allowed tags taken from "Reply" page:
 
 	<css-rules>
 	</css-rules>
+<allowed-empty-tags>
+        <literal-list>
+            <literal value="br"/>
+            <literal value="hr"/>
+            <literal value="a"/>
+            <literal value="img"/>
+            <literal value="link"/>
+            <literal value="iframe"/>
+            <literal value="script"/>
+            <literal value="object"/>
+            <literal value="applet"/>
+            <literal value="frame"/>
+            <literal value="base"/>
+            <literal value="param"/>
+            <literal value="meta"/>
+            <literal value="input"/>
+            <literal value="textarea"/>
+            <literal value="embed"/>
+            <literal value="basefont"/>
+            <literal value="col"/>
+            <literal value="div"/>
+        </literal-list>
+    </allowed-empty-tags>
 
 </anti-samy-rules>

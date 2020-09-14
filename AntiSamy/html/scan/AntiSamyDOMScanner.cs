@@ -122,7 +122,7 @@ namespace org.owasp.validator.html.scan
             DateTime start = DateTime.Now;
 
             //fixes some weirdness in HTML agility
-            if (!HtmlNode.ElementsFlags.Contains("iframe"))
+            if (!HtmlNode.ElementsFlags.ContainsKey("iframe"))
                 HtmlNode.ElementsFlags.Add("iframe", HtmlElementFlag.Empty);
             HtmlNode.ElementsFlags.Remove("form");
 
