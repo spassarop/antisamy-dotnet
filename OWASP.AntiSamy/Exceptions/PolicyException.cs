@@ -26,24 +26,19 @@ using System;
 
 namespace OWASP.AntiSamy.Exceptions
 {
-
     /// <summary> This exception gets thrown when there is a problem validating or parsing
     /// the policy file. Any validation errors not caught by the XML validation
-    /// will be thrown with this exception.
-    /// </summary>
-
+    /// will be thrown with this exception.</summary>
     [Serializable]
     public class PolicyException : Exception
     {
-        private const long serialVersionUID = 1L;
-
-        public PolicyException(System.Exception e)
+        public PolicyException(Exception e)
             : base(e.Message)
         {
         }
 
-        public PolicyException(String _value)
-            : base(_value)
+        public PolicyException(string message)
+            : base(message)
         {
         }
     }

@@ -31,14 +31,11 @@
  *
  */
 
-using System;
-
 namespace OWASP.AntiSamy.Exceptions
 {
     public class UnknownSelectorException : ScanException
     {
-
-        private string selectorName;
+        private readonly string selectorName;
 
         public UnknownSelectorException(string selectorName)
             : base("Unknown selector " + selectorName)
@@ -46,13 +43,6 @@ namespace OWASP.AntiSamy.Exceptions
             this.selectorName = selectorName;
         }
 
-        /**
-         * @return the selectorName
-         */
-
-        public String getSelectorName()
-        {
-            return selectorName;
-        }
+        public string GetSelectorName() => selectorName;
     }
 }

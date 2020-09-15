@@ -56,6 +56,7 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary> Load the policy from an XML file.</summary>
         /// <param name="file">Load a policy from the File object.</param>
+        /// <exception cref="PolicyException"></exception>
         private Policy(FileInfo file)
             : this(file.FullName)
         {
@@ -63,6 +64,7 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary> Load the policy from an XML file.</summary>
         /// <param name="filename">Load a policy from the filename specified.</param>
+        /// <exception cref="PolicyException"></exception>
         private Policy(string filename)
         {
             try
@@ -88,26 +90,31 @@ namespace OWASP.AntiSamy.Html
                 XmlNode cssListNode = doc.GetElementsByTagName("css-rules")[0];
                 cssRules = ParseCSSRules(cssListNode);
             }
+            catch (PolicyException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine("Problem Parsing Policy File: ");
-                Console.WriteLine(ex.Message);
+                throw new PolicyException($"Problem parsing policy file: {ex.Message}");
             }
         }
 
         /// <summary> This retrieves a Policy based on a default location ("Resources/antisamy.xml")</summary>
-        /// <returns> A populated Policy object based on the XML policy file located in the default location.
-        /// </returns>
+        /// <returns> A populated Policy object based on the XML policy file located in the default location.</returns>
+        /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance() => new Policy(DEFAULT_POLICY_URI);
 
         /// <summary> This retrieves a Policy based on the file name passed in</summary>
         /// <param name="filename">The path to the XML policy file.</param>
         /// <returns> A populated Policy object based on the XML policy file located in the location passed in.</returns>
+        /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance(string filename) => new Policy(filename);
 
         /// <summary> This retrieves a Policy based on the File object passed in</summary>
         /// <param name="file">A File object which contains the XML policy information.</param>
         /// <returns> A populated Policy object based on the XML policy file pointed to by the File parameter.</returns>
+        /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance(FileInfo file) => new Policy(new FileInfo(file.FullName));
 
         /*/// <summary> A simple method for returning on of the <common-regexp> entries by
@@ -283,12 +290,14 @@ namespace OWASP.AntiSamy.Html
                     commonAttributes.Add(name, attribute);
                 }
             }
+
             return commonAttributes;
         }
 
         /// <summary> Private method for parsing the <tag-rules> from the XML file.</summary>
         /// <param name="root">The root element for <tag-rules></param>
         /// <returns> A Dictionary<string, Tag> containing the rules.</returns>
+        /// <exception cref="PolicyException"></exception>
         private Dictionary<string, Tag> ParseTagRules(XmlNode tagAttributeListNode)
         {
             var tags = new Dictionary<string, Tag>();
@@ -376,6 +385,7 @@ namespace OWASP.AntiSamy.Html
                                     }
                                 }
                             }
+
                             XmlNode literalListNode = attributeNode.SelectNodes("literal-list")[0];
                             if (literalListNode != null)
                             {
@@ -406,6 +416,7 @@ namespace OWASP.AntiSamy.Html
         /// <summary> Go through the <css-rules> section of the policy file.</summary>
         /// <param name="cssNodeList">Top level of <css-rules></param>
         /// <returns> An List of Property objects.</returns>
+        /// <exception cref="PolicyException"></exception>
         private Dictionary<string, Property> ParseCSSRules(XmlNode cssNodeList)
         {
             var properties = new Dictionary<string, Property>();

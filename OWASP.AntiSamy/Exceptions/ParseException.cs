@@ -29,24 +29,19 @@ namespace OWASP.AntiSamy.Exceptions
 
     /// <summary> 
     /// This exception gets thrown when there is an unexpected error parsing
-    /// the tainted HTML. The code is sturdy, but the unlikely <code>IOException</code> or
+    /// the tainted HTML. The code is sturdy, but the unlikely <c>IOException</c> or
     /// SAX exceptions are always theoretically possible.
     /// </summary>
-
     [Serializable]
     public class ParseException : Exception
     {
-
-        /// <summary> </summary>
-        private const long serialVersionUID = 1L;
-
         public ParseException(Exception e)
             : base(e.Message)
         {
         }
 
-        public ParseException(String s)
-            : base(s)
+        public ParseException(string message)
+            : base(message)
         {
         }
 
