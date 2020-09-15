@@ -193,7 +193,7 @@ namespace OWASP.AntiSamy.Html.Scan
                     var styleScanner = new CssScanner(policy);
                     try
                     {
-                        CleanResults cleanStyleSheet = styleScanner.scanStyleSheet(node.FirstChild.InnerHtml, maxinputsize);
+                        CleanResults cleanStyleSheet = styleScanner.ScanStyleSheet(node.FirstChild.InnerHtml, maxinputsize);
                         errorMessages.AddRange(cleanStyleSheet.GetErrorMessages());
 
                         /*
@@ -237,7 +237,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
                         try
                         {
-                            CleanResults cleanInlineStyle = styleScanner.scanInlineStyle(value, tagName, maxinputsize);
+                            CleanResults cleanInlineStyle = styleScanner.ScanInlineStyle(value, tagName, maxinputsize);
                             htmlAttribute.Value = cleanInlineStyle.GetCleanHTML();
                             errorMessages.AddRange(cleanInlineStyle.GetErrorMessages());
                         }

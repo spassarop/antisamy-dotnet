@@ -43,91 +43,73 @@ using OWASP.AntiSamy.Html.Model;
 
 namespace OWASP.AntiSamy.Css
 {
-
-    /// <summary> Encapsulates the parsing and validation of a CSS stylesheet or inline
-    /// declaration. To make use of this class, instantiate the scanner with the
-    /// desired policy and call either <code>scanInlineSheet()</code> or
-    /// <code>scanStyleSheet</code> as appropriate.
-    /// 
+    /// <summary> Encapsulates the parsing and validation of a CSS style sheet or inline declaration. 
+    /// To make use of this class, instantiate the scanner with the desired policy and call either 
+    /// <see cref="ScanInlineStyle(string, string, int)"/> or <see cref="ScanStyleSheet(string, int)"/> as appropriate.
     /// </summary>
-    /// <seealso cref="scanInlineStyle(String, String)">
-    /// </seealso>
-    /// <seealso cref="scanStyleSheet(String)">
-    /// 
-    /// </seealso>
-
     public class CssScanner
     {
         private const string DUMMY_SELECTOR_BEGIN = ".dummySelector {";
         private const string DUMMY_SELECTOR_END = " }";
-        private static int DEFAULT_TIMEOUT = 1000;
 
-        /// <summary> The parser to be used in any scanning</summary>
-        private CssParser parser = new CssParser(new CssParserOptions
+        private readonly Regex SCHEME_REGEX = new Regex(@"^\s*([^\/#]*?)(?:\:|&#0*58|&#x0*3a)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private readonly Regex CSS_URL_REGEX = new Regex(@"[Uu][Rr\u0280][Ll\u029F]\s*\(\s*(['""]?)\s*([^'"")\s]+)\s*(['""]?)\s*", RegexOptions.Compiled);
+        private readonly Regex CSS_UNICODE_ESCAPES_REGEX = new Regex(@"\\([0-9a-fA-F]{1,6})\s?|\\([^\r\n\f0-9a-fA-F'""{};:()#*])", RegexOptions.Compiled);
+        private readonly Regex CSS_COMMENTS_REGEX = new Regex(@"/\*.*?\*/", RegexOptions.Compiled);
+        private readonly Regex DANGEROUS_CSS_EXPRESSION_REGEX = new Regex(
+            @"[eE\uFF25\uFF45][xX\uFF38\uFF58][pP\uFF30\uFF50][rR\u0280\uFF32\uFF52][eE\uFF25\uFF45][sS\uFF33\uFF53]{2}[iI\u026A\uFF29\uFF49][oO\uFF2F\uFF4F][nN\u0274\uFF2E\uFF4E]", RegexOptions.Compiled);
+
+        /// <summary>The parser to be used in any scanning.</summary>
+        private readonly CssParser parser = new CssParser(new CssParserOptions
         {
             IsIncludingUnknownDeclarations = true,
             IsIncludingUnknownRules = true,
             IsToleratingInvalidSelectors = true
         });
 
-        /// <summary> The policy file to be used in any scanning</summary>
-        private Policy policy;
+        /// <summary>The policy file to be used in any scanning.</summary>
+        private readonly Policy policy;
 
-        /// <summary> Constructs a scanner based on the given policy.
-        /// 
-        /// </summary>
-        /// <param name="policy">the policy to follow when scanning
-        /// </param>
+        /// <summary> Constructs a scanner based on the given policy.</summary>
+        /// <param name="policy">The policy to follow when scanning.</param>
         public CssScanner(Policy policy)
         {
             this.policy = policy;
         }
 
-        /// <summary> Scans the contents of a full stylesheet (ex. a file based stylesheet or
-        /// the complete stylesheet contents as declared within &lt;style&gt; tags)
-        /// 
-        /// </summary>
-        /// <param name="taintedCss">a <code>String</code> containing the contents of the CSS
-        /// stylesheet to validate
-        /// </param>
-        /// <returns> a <code>CleanResuts</code> object containing the results of the
-        /// scan
-        /// </returns>
-        /// <throws>  ScanException </throws>
-        /// <summary>             if an error occurs during scanning
-        /// </summary>
-        public virtual CleanResults scanStyleSheet(string taintedCss, int sizeLimit)
+        /// <summary> Scans the contents of a full style sheet (ex. a file based style sheet or
+        /// the complete style sheet contents as declared within &lt;style&gt; tags).</summary>
+        /// <param name="taintedCss">A string containing the contents of the CSS style sheet to validate</param>
+        /// <returns>A <see cref="CleanResults"/> object containing the results of the scan.</returns>
+        /// <exception cref="ScanException"/>
+        /// <exception cref="ParseException"/>
+        public CleanResults ScanStyleSheet(string taintedCss, int sizeLimit)
         {
             // TODO: Do something about sizeLimit
-            return doScan(taintedCss, isInlineCss: false);
+            return DoScan(taintedCss, isInlineCss: false);
         }
 
-        /// <summary> Scans the contents of an inline style declaration (ex. in the style
-        /// attribute of an HTML tag) and validates the style sheet according to this
-        /// <code>CssScanner</code>'s policy file.
-        /// 
-        /// </summary>
-        /// <param name="taintedCss">a <code>String</code> containing the contents of the CSS
-        /// stylesheet to validate
-        /// </param>
-        /// <param name="tagName">the name of the tag for which this inline style was declared
-        /// </param>
-        /// <returns> a <code>CleanResuts</code> object containing the results of the
-        /// scan
-        /// </returns>
-        /// <throws>  ScanException </throws>
-        /// <summary>             if an error occurs during scanning
-        /// </summary>
-
-        public virtual CleanResults scanInlineStyle(string taintedCss, string tagName, int sizeLimit)
+        /// <summary> Scans the contents of an inline style declaration (ex. in the style attribute of an HTML tag) 
+        /// and validates the style sheet according to this <see cref="CssScanner"/>'s policy file.</summary>
+        /// <param name="taintedCss">A string containing the contents of the CSS styles heet to validate.</param>
+        /// <param name="tagName">The name of the tag for which this inline style was declared.</param>
+        /// <returns>A <see cref="CleanResults"/> object containing the results of the scan.</returns>
+        /// <exception cref="ScanException"/>
+        /// <exception cref="ParseException"/>
+        public CleanResults ScanInlineStyle(string taintedCss, string tagName, int sizeLimit)
         {
             // TODO: Do something about tagName (probably delete it later)
-            return doScan(taintedCss, isInlineCss: true);
+            return DoScan(taintedCss, isInlineCss: true);
         }
 
-        private CleanResults doScan(string taintedCss, bool isInlineCss)
+        /// <summary> Does the actual scan.</summary>
+        /// <param name="taintedCss">A string containing the contents of the CSS style sheet to validate.</param>
+        /// <param name="isInlineCss">A boolean specifying if the style to parse is inline.</param>
+        /// <exception cref="ScanException"/>
+        /// <exception cref="ParseException"/>
+        private CleanResults DoScan(string taintedCss, bool isInlineCss)
         {
-            DateTime startOfScan = new DateTime();
+            var startOfScan = new DateTime();
             var errorMessages = new List<string>();
             string cleanStylesheet;
 
@@ -143,8 +125,8 @@ namespace OWASP.AntiSamy.Css
                     throw new ParseException(ex.Message, ex);
                 }
 
-                string result = scanStyleSheet(styleSheet, errorMessages);
-                cleanStylesheet = isInlineCss ? cleanDummyWrapper(result) : result;
+                string result = ScanStyleSheet(styleSheet, errorMessages);
+                cleanStylesheet = isInlineCss ? CleanDummyWrapper(result) : result;
             }
             catch (ParseException)
             {
@@ -152,35 +134,45 @@ namespace OWASP.AntiSamy.Css
             }
             catch (Exception exception)
             {
-                throw new ScanException("An error occured while scanning css", exception);
+                throw new ScanException("An error occured while scanning CSS", exception);
             }
 
             return new CleanResults(startOfScan, new DateTime(), cleanStylesheet, null, errorMessages);
         }
 
-        private string cleanDummyWrapper(string result)
+        /// <summary> Removes the "dummy" wrapper around the inline CSS.</summary>
+        /// <param name="wrappedStyle">The style string to be unwrapped.</param>
+        private string CleanDummyWrapper(string wrappedStyle)
         {
-            if (result.StartsWith(DUMMY_SELECTOR_BEGIN))
+            if (wrappedStyle.StartsWith(DUMMY_SELECTOR_BEGIN))
             {
-                result = result.Replace(DUMMY_SELECTOR_BEGIN, string.Empty);
+                wrappedStyle = wrappedStyle.Replace(DUMMY_SELECTOR_BEGIN, string.Empty);
 
-                if (result.EndsWith("}"))
+                if (wrappedStyle.EndsWith("}"))
                 {
-                    result = result.Remove(result.Length - 1);
+                    wrappedStyle = wrappedStyle.Remove(wrappedStyle.Length - 1);
                 }
             }
-            return string.IsNullOrWhiteSpace(result) ? string.Empty : result;
+            return string.IsNullOrWhiteSpace(wrappedStyle) ? string.Empty : wrappedStyle;
         }
 
-        private string scanStyleSheet(ICssStyleSheet styleSheet, List<string> errorMessages)
+        /// <summary>Scans a CSS style sheet and returns a clean output removing invalid rules or properties.</summary>
+        /// <param name="styleSheet">The CSS style sheet to scan.</param>
+        /// <param name="errorMessages">Cumulative error messages list.</param>
+        /// <returns>A clean CSS style sheet as string.</returns>
+        private string ScanStyleSheet(ICssStyleSheet styleSheet, List<string> errorMessages)
         {
             for (var i = 0; i < styleSheet.Rules.Length;)
             {
                 ICssRule rule = styleSheet.Rules[i];
-                if (!scanStyleRule(rule, errorMessages))
+                if (!ScanStyleRule(rule, errorMessages))
+                {
                     styleSheet.RemoveAt(i);
+                }
                 else
+                {
                     i++;
+                }
             }
 
             var stringWriter = new StringWriter();
@@ -188,92 +180,96 @@ namespace OWASP.AntiSamy.Css
             return stringWriter.GetStringBuilder().ToString();
         }
 
-        private bool scanStyleRule(ICssRule rule, List<string> errorMessages)
+        /// <summary>Scans a CSS rule and tells if it is valid. Even if it is valid, internally it 
+        /// may have some of its properties removed if they dangerous parts are detected.</summary>
+        /// <param name="rule">The CSS rule to scan.</param>
+        /// <param name="errorMessages">Cumulative error messages list.</param>
+        /// <returns><c>true</c> if the rule is valid, <c>false</c> if it must be removed.</returns>
+        private bool ScanStyleRule(ICssRule rule, List<string> errorMessages)
         {
             if (rule is ICssStyleRule styleRule)
             {
-                scanStyleDeclaration(styleRule.Style, errorMessages);
+                ScanStyleDeclaration(styleRule.Style, errorMessages);
             }
             else if (rule is ICssGroupingRule groupingRule)
             {
                 foreach (ICssRule childRule in groupingRule.Rules)
                 {
-                    scanStyleRule(childRule, errorMessages);
+                    ScanStyleRule(childRule, errorMessages);
                 }
             }
             else if (rule is ICssPageRule pageRule)
             {
-                scanStyleDeclaration(pageRule.Style, errorMessages);
+                ScanStyleDeclaration(pageRule.Style, errorMessages);
             }
             else if (rule is ICssKeyframesRule keyFramesRule)
             {
                 foreach (ICssKeyframeRule childRule in keyFramesRule.Rules.OfType<ICssKeyframeRule>().ToList())
                 {
-                    scanStyleRule(childRule, errorMessages);
+                    ScanStyleRule(childRule, errorMessages);
                 }
             }
             else if (rule is ICssKeyframeRule keyFrameRule)
             {
-                scanStyleDeclaration(keyFrameRule.Style, errorMessages);
+                ScanStyleDeclaration(keyFrameRule.Style, errorMessages);
             }
             else if (rule is ICssImportRule importRule)
             {
-                //Dont allow import rules for now
-                return false;
+                return false; // Don't allow import rules for now
             }
 
             return true;
         }
 
-        private void scanStyleDeclaration(ICssStyleDeclaration styles, List<string> errorMessages)
+        /// <summary>Scans a CSS style declaration and removes disallowed properties if needed.</summary>
+        /// <param name="styleDeclaration">The style declaration to clean.</param>
+        /// <param name="errorMessages">Cumulative error messages list.</param>
+        private void ScanStyleDeclaration(ICssStyleDeclaration styleDeclaration, List<string> errorMessages)
         {
             var removingProperties = new List<Tuple<ICssProperty, string>>();
 
-            var cssUrlTest = new Regex(@"[Uu][Rr\u0280][Ll\u029F]\s*\(\s*(['""]?)\s*([^'"")\s]+)\s*(['""]?)\s*", RegexOptions.Compiled);
-            var dangerousCssExpressionTest = new Regex(@"[eE\uFF25\uFF45][xX\uFF38\uFF58][pP\uFF30\uFF50][rR\u0280\uFF32\uFF52][eE\uFF25\uFF45][sS\uFF33\uFF53]{2}[iI\u026A\uFF29\uFF49][oO\uFF2F\uFF4F][nN\u0274\uFF2E\uFF4E]", RegexOptions.Compiled);
-
-            foreach (ICssProperty cssProperty in styles)
+            foreach (ICssProperty cssProperty in styleDeclaration)
             {
-                string key = decodeCss(cssProperty.Name);
-                string value = decodeCss(cssProperty.Value);
-
+                string key = DecodeCss(cssProperty.Name);
+                string value = DecodeCss(cssProperty.Value);
                 Property allowedCssProperty = policy.GetPropertyByName(key);
 
                 if (allowedCssProperty == null)
                 {
-                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"Css property \"{key}\" is not allowed"));
+                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"CSS property \"{key}\" is not allowed"));
                     continue;
                 }
 
-                if (dangerousCssExpressionTest.IsMatch(value))
+                if (DANGEROUS_CSS_EXPRESSION_REGEX.IsMatch(value))
                 {
-                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{value}\" is invalid css expression"));
+                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{value}\" is invalid CSS expression"));
                     continue;
                 }
 
-                validateValue(allowedCssProperty, cssProperty, value, removingProperties);
+                ValidateValue(allowedCssProperty, cssProperty, value, removingProperties);
+                MatchCollection urls = CSS_URL_REGEX.Matches(value);
 
-                MatchCollection urls = cssUrlTest.Matches(value);
-
-                if (urls.Count > 0)
+                if (urls.Count > 0 && !urls.Cast<Match>().All(u => SCHEME_REGEX.IsMatch(u.Value)))
                 {
-                    var schemeRegex = new Regex(@"^\s*([^\/#]*?)(?:\:|&#0*58|&#x0*3a)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-                    if (!urls.Cast<Match>().All(u => schemeRegex.IsMatch(u.Value)))
-                    {
-                        removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, "Illegal url detected."));
-                    }
+                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, "Illegal URL detected."));
                 }
             }
 
             foreach (Tuple<ICssProperty, string> style in removingProperties)
             {
-                styles.RemoveProperty(style.Item1.Name);
+                styleDeclaration.RemoveProperty(style.Item1.Name);
                 errorMessages.Add(style.Item2);
             }
         }
 
-        private void validateValue(Property allowedCssProperty, ICssProperty cssProperty, string value, List<Tuple<ICssProperty, string>> removeStyles)
+        /// <summary>Validates if the provided <c>value</c> is allowed in the CSS property.
+        /// It checks against allowed literal values and regular expressions, if the <c>value</c>
+        /// is not allowed, the <c>cssProperty</c> is added to the <c>removeStyles</c> list.</summary>
+        /// <param name="allowedCssProperty">The policy CSS property.</param>
+        /// <param name="cssProperty">The CSS property which might be removed.</param>
+        /// <param name="value">The literal value to check.</param>
+        /// <param name="removeStyles">The collection of CSS properties to be removed.</param>
+        private void ValidateValue(Property allowedCssProperty, ICssProperty cssProperty, string value, List<Tuple<ICssProperty, string>> removeStyles)
         {
             if (allowedCssProperty.AllowedValues.Any() && !allowedCssProperty.AllowedValues.Any(lit => lit.Equals(value, StringComparison.OrdinalIgnoreCase)))
             {
@@ -290,32 +286,30 @@ namespace OWASP.AntiSamy.Css
             foreach (string shortHandRef in allowedCssProperty.ShorthandRefs)
             {
                 Property shorthand = policy.GetPropertyByName(shortHandRef);
-
                 if (shorthand != null)
                 {
-                    validateValue(shorthand, cssProperty, value, removeStyles);
+                    ValidateValue(shorthand, cssProperty, value, removeStyles);
                 }
             }
         }
 
-        private static string decodeCss(string css)
+        /// <summary>Decodes unicode characters and removes comments from a CSS string based on 
+        /// <see cref="CSS_UNICODE_ESCAPES_REGEX"/> and <see cref="CSS_COMMENTS_REGEX"/> regular expressions.</summary>
+        /// <param name="css">The CSS string to decode.</param>
+        /// <returns>The CSS decoded and without comments.</returns>
+        private string DecodeCss(string css)
         {
-            var cssComments = new Regex(@"/\*.*?\*/", RegexOptions.Compiled);
-            var cssUnicodeEscapes = new Regex(@"\\([0-9a-fA-F]{1,6})\s?|\\([^\r\n\f0-9a-fA-F'""{};:()#*])", RegexOptions.Compiled);
-
-            string r = cssUnicodeEscapes.Replace(css, m =>
+            string intermediateResult = CSS_UNICODE_ESCAPES_REGEX.Replace(css, match =>
             {
-                if (m.Groups[1].Success)
+                if (match.Groups[1].Success)
                 {
-                    return ((char)int.Parse(m.Groups[1].Value, NumberStyles.HexNumber)).ToString();
+                    return ((char)int.Parse(match.Groups[1].Value, NumberStyles.HexNumber)).ToString();
                 }
-                string t = m.Groups[2].Value;
-                return t == "\\" ? @"\\" : t;
+                string text = match.Groups[2].Value;
+                return text == "\\" ? @"\\" : text;
             });
 
-            r = cssComments.Replace(r, m => "");
-
-            return r;
+            return CSS_COMMENTS_REGEX.Replace(intermediateResult, match => string.Empty);
         }
 
         //        /// <summary> Test method to demonstrate CSS scanning.
