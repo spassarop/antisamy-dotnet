@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2020, Jerry Hoff
+* Copyright (c) 2008-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -26,12 +26,10 @@
 * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-using System;
-using System.Text.RegularExpressions;
-using System.Collections;
+
 using System.Collections.Generic;
 
-namespace org.owasp.validator.html.model
+namespace OWASP.AntiSamy.Html.Model
 {
 
     /// <summary> A model for CSS properties and the "rules" they must follow (either literals

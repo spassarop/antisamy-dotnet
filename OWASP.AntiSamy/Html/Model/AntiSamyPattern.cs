@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2008, Jerry Hoff
+* Copyright (c) 2008-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -22,17 +22,14 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
-using System.Text.RegularExpressions;
-
-namespace org.owasp.validator.html.model
+namespace OWASP.AntiSamy.Html.Model
 {
 
     /// <summary> 
     /// An extension of the Pattern to give it a "lookup name" that we can use from a
     /// centralized store.
     /// </summary>
-    
+
     public class AntiSamyPattern
     {
         private string name;

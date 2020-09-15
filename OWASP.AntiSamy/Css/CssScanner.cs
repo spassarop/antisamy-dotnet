@@ -28,26 +28,20 @@
 */
 
 using System;
-using System.IO;
 using System.Collections;
-//using Parser = org.w3c.flute.parser.Parser;
-using CleanResults = org.owasp.validator.html.CleanResults;
-using Policy = org.owasp.validator.html.Policy;
-using ScanException = org.owasp.validator.html.ScanException;
-//using InputSource = org.w3c.css.sac.InputSource;
-
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using AngleSharp.Css;
 using AngleSharp.Css.Dom;
 using AngleSharp.Css.Parser;
-using org.owasp.validator.html;
-using AngleSharp;
-using AngleSharp.Css;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Linq;
-using org.owasp.validator.html.model;
-using System.Globalization;
+using OWASP.AntiSamy.Exceptions;
+using OWASP.AntiSamy.Html;
+using OWASP.AntiSamy.Html.Model;
 
-namespace org.owasp.validator.css
+namespace OWASP.AntiSamy.Css
 {
 
     /// <summary> Encapsulates the parsing and validation of a CSS stylesheet or inline

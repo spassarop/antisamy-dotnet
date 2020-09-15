@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2008, Jerry Hoff
+* Copyright (c) 2008-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -21,21 +21,20 @@
 * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 using System;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Schema;
-using System.Xml.Serialization;
 using System.Collections;
 using System.IO;
-using org.owasp.validator.html.model;
-using Attribute = org.owasp.validator.html.model.Attribute;
-using Tag = org.owasp.validator.html.model.Tag;
+using System.Xml;
+using OWASP.AntiSamy.Exceptions;
+using OWASP.AntiSamy.Html.Model;
+using Attribute = OWASP.AntiSamy.Html.Model.Attribute;
+using Tag = OWASP.AntiSamy.Html.Model.Tag;
 
-namespace org.owasp.validator.html
+namespace OWASP.AntiSamy.Html
 {
 
-    /// <summary> Policy.java
+    /// <summary> Policy.cs
     /// This file holds the model for our policy engine.
     /// </summary>
 
@@ -43,7 +42,7 @@ namespace org.owasp.validator.html
     {
 
         private static Policy _instance = null;
-        private const string DEFAULT_POLICY_URI = "resources/antisamy.xml";
+        private const string DEFAULT_POLICY_URI = "Resources/OWASP.AntiSamy.xml";
         private const string DEFAULT_ONINVALID = "removeAttribute";
 
         public const int DEFAULT_MAX_INPUT_SIZE = 100000;
@@ -80,7 +79,7 @@ namespace org.owasp.validator.html
             return (Property)cssRules[propertyName];
         }
 
-        /// <summary> This retrieves a Policy based on a default location ("resources/antisamy.xml")</summary>
+        /// <summary> This retrieves a Policy based on a default location ("resources/OWASP.AntiSamy.xml")</summary>
         /// <returns> A populated Policy object based on the XML policy file located in the default location.
         /// </returns>
         /// <throws>  PolicyException If the file is not found or there is a problem parsing the file. </throws>
@@ -262,7 +261,7 @@ namespace org.owasp.validator.html
                     /*DEFAULT_ONINVALID seems to have been removed from common attributes.  Do we need this code?*/
                     String onInvalid = (node.Attributes["onInvalid"] == null ? null : node.Attributes["onInvalid"].Value);
                     String name = (node.Attributes["name"] == null ? null : node.Attributes["name"].Value);
-                    org.owasp.validator.html.model.Attribute attribute = new org.owasp.validator.html.model.Attribute(name);
+                    Attribute attribute = new Attribute(name);
                     attribute.Description = (node.Attributes["description"] == null ? null : node.Attributes["description"].Value);
                     if (onInvalid != null && onInvalid.Length > 0)
                     {
@@ -357,7 +356,7 @@ namespace org.owasp.validator.html
                                 if (description != null && description.Length > 0)
                                     attribute.Description = description;
 
-                                tag.addAttribute((org.owasp.validator.html.model.Attribute)attribute.Clone());
+                                tag.addAttribute((Attribute)attribute.Clone());
                             }
                             else
                             {
@@ -444,7 +443,7 @@ namespace org.owasp.validator.html
                 String name = (ele.Attributes["name"] == null ? null : ele.Attributes["name"].Value);
                 String description = (ele.Attributes["description"] == null ? null : ele.Attributes["description"].Value);
 
-                org.owasp.validator.html.model.Property property = new org.owasp.validator.html.model.Property(name);
+                Property property = new Property(name);
                 property.Description = description;
 
                 String oninvalid = (ele.Attributes["onInvalid"] == null ? null : ele.Attributes["onInvalid"].Value);

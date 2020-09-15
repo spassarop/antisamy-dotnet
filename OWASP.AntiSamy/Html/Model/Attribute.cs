@@ -1,5 +1,5 @@
- /*
-* Copyright (c) 2008, Jerry Hoff
+/*
+* Copyright (c) 2008-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -21,11 +21,11 @@
 * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 using System;
 using System.Collections;
-using System.Text.RegularExpressions;
 
-namespace org.owasp.validator.html.model
+namespace OWASP.AntiSamy.Html.Model
 {
     /// <summary> A model for HTML attributes and the "rules" they must follow (either literals or regular expressions) in
     /// order to be considered valid.

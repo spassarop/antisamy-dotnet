@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009, Jerry Hoff
+* Copyright (c) 2009-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -23,27 +23,21 @@
 */
 
 using System;
-using System.Text.RegularExpressions;
-using System.IO;
-using System.Xml;
-using System.Text;
-using System.Web;
 using System.Collections;
-
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Xml;
+using OWASP.AntiSamy.Css;
+using OWASP.AntiSamy.Exceptions;
+using OWASP.AntiSamy.Html.Model;
+using OWASP.AntiSamy.Html.Util;
 using HtmlAgilityPack;
+using Attribute = OWASP.AntiSamy.Html.Model.Attribute;
 
-using org.owasp.validator.html.model;
-using org.owasp.validator.css;
-using org.owasp.validator.html.util;
-
-using Attribute = org.owasp.validator.html.model.Attribute;
-
-
-
-namespace org.owasp.validator.html.scan
+namespace OWASP.AntiSamy.Html.Scan
 {
     /// <summary> This is where the magic lives. All the scanning/filtration logic resides here, but it should not be called
-    /// directly. All scanning should be done through a <code>AntiSamy.scan()</code> method.
+    /// directly. All scanning should be done through a <code>OWASP.AntiSamy.scan()</code> method.
     /// </summary>
 
     public class AntiSamyDOMScanner

@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2020, Jerry Hoff
+* Copyright (c) 2009-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -23,8 +23,8 @@
 */
 
 using System;
+using OWASP.AntiSamy.Html;
 using NUnit.Framework;
-using org.owasp.validator.html;
 
 namespace AntiSamyTests
 {
@@ -33,7 +33,7 @@ namespace AntiSamyTests
     {
         AntiSamy antisamy = new AntiSamy();
         Policy policy = null;
-        string filename = "resources/antisamy.xml";
+        string filename = "Resources/antisamy.xml";
 
         [SetUp]
         public void SetUp() => policy = Policy.getInstance(filename);

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2009
+ * Copyright (c) 2009-2020
  * 
  * All rights reserved.
  * 
@@ -31,14 +31,10 @@
  *
  */
 
-
 using System;
-using System.Text.RegularExpressions;
-using org.owasp.validator.html;
 
-namespace org.owasp.validator.css
+namespace OWASP.AntiSamy.Exceptions
 {
-
     public class UnknownSelectorException : ScanException
     {
 

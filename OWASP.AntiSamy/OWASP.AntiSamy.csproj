@@ -12,25 +12,25 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="resources\antisamy-anythinggoes.xml">
+    <None Update="Resources\antisamy-anythinggoes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\antisamy-ebay.xml">
+    <None Update="Resources\antisamy-ebay.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\antisamy-myspace.xml">
+    <None Update="Resources\antisamy-myspace.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\antisamy-slashdot.xml">
+    <None Update="Resources\antisamy-slashdot.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\antisamy-test.xml">
+    <None Update="Resources\antisamy-test.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\antisamy.xml">
+    <None Update="Resources\antisamy.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\antisamy.xsd">
+    <None Update="Resources\antisamy.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

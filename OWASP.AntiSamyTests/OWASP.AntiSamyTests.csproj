@@ -7,22 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="..\AntiSamy\resources\antisamy-anythinggoes.xml" Link="resources\antisamy-anythinggoes.xml">
+    <Content Include="..\OWASP.AntiSamy\Resources\antisamy-anythinggoes.xml" Link="Resources\antisamy-anythinggoes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\AntiSamy\resources\antisamy-ebay.xml" Link="resources\antisamy-ebay.xml">
+    <Content Include="..\OWASP.AntiSamy\Resources\antisamy-ebay.xml" Link="Resources\antisamy-ebay.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\AntiSamy\resources\antisamy-myspace.xml" Link="resources\antisamy-myspace.xml">
+    <Content Include="..\OWASP.AntiSamy\Resources\antisamy-myspace.xml" Link="Resources\antisamy-myspace.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\AntiSamy\resources\antisamy-slashdot.xml" Link="resources\antisamy-slashdot.xml">
+    <Content Include="..\OWASP.AntiSamy\Resources\antisamy-slashdot.xml" Link="Resources\antisamy-slashdot.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\AntiSamy\resources\antisamy-test.xml" Link="resources\antisamy-test.xml">
+    <Content Include="..\OWASP.AntiSamy\Resources\antisamy-test.xml" Link="Resources\antisamy-test.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\AntiSamy\resources\antisamy.xml" Link="resources\antisamy.xml">
+    <Content Include="..\OWASP.AntiSamy\Resources\antisamy.xml" Link="Resources\antisamy.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -34,15 +34,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AntiSamy\AntiSamy.csproj" />
+    <ProjectReference Include="..\OWASP.AntiSamy\OWASP.AntiSamy.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="resources\" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\AntiSamy\resources\antisamy.xsd" Link="resources\antisamy.xsd">
+    <None Include="..\OWASP.AntiSamy\Resources\antisamy.xsd" Link="Resources\antisamy.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

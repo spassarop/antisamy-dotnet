@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2008, Jerry Hoff
+* Copyright (c) 2008-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -21,36 +21,60 @@
 * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 using System;
-namespace org.owasp.validator.html
+using System.Text;
+
+namespace OWASP.AntiSamy.Html.Util
 {
-
-    /// <summary> 
-    /// This exception gets thrown when there is an unexpected error parsing
-    /// the tainted HTML. The code is sturdy, but the unlikely <code>IOException</code> or
-    /// SAX exceptions are always theoretically possible.
-    /// </summary>
-
-    [Serializable]
-    public class ParseException : Exception
+    public class HTMLEntityEncoder
     {
 
-        /// <summary> </summary>
-        private const long serialVersionUID = 1L;
-
-        public ParseException(Exception e)
-            : base(e.Message)
+        /// <summary> A helper method for HTML entity-encoding a String value.</summary>
+        /// <param name="value">A String containing HTML control characters.
+        /// </param>
+        /// <returns> An HTML-encoded String.
+        /// </returns>
+        public static String htmlEntityEncode(String _value)
         {
-        }
 
-        public ParseException(String s)
-            : base(s)
-        {
-        }
+            StringBuilder buff = new StringBuilder();
 
-        public ParseException(string message, Exception innerException)
-            : base(message, innerException)
-        {
+            if (_value == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < _value.Length; i++)
+            {
+                char ch = _value[i];
+
+                if (ch == '&')
+                {
+                    buff.Append("&amp;");
+                }
+                else if (ch == '<')
+                {
+                    buff.Append("&lt;");
+                }
+                else if (ch == '>')
+                {
+                    buff.Append("&gt;");
+                }
+                else if (System.Char.IsWhiteSpace(ch))
+                {
+                    buff.Append(ch);
+                }
+                else if (System.Char.IsLetterOrDigit(ch))
+                {
+                    buff.Append(ch);
+                }
+                else if ((int)ch >= 20 && (int)ch <= 126)
+                {
+                    buff.Append("&#" + (int)ch + ";");
+                }
+            }
+            return buff.ToString();
         }
     }
 }

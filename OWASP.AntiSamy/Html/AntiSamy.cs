@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2008, Jerry Hoff
+* Copyright (c) 2008-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -21,19 +21,18 @@
 * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 using System;
-using System.Xml;
-using System.Xml.Serialization;
 using System.IO;
 using System.Net;
 using System.Text;
-using org.owasp.validator.html.scan;
+using OWASP.AntiSamy.Html.Scan;
 
-namespace org.owasp.validator.html
+namespace OWASP.AntiSamy.Html
 {
     /// <summary> 
     /// This is the only class from which the outside world should be calling. The <code>scan()</code> method holds
-    /// the meat and potatoes of AntiSamy. The file contains a number of ways for <code>scan()</code>'ing depending
+    /// the meat and potatoes of OWASP.AntiSamy. The file contains a number of ways for <code>scan()</code>'ing depending
     /// on the accessibility of the policy file.
     /// </summary>
 
@@ -43,7 +42,7 @@ namespace org.owasp.validator.html
         private string outputEncoding = AntiSamyDOMScanner.DEFAULT_ENCODING_ALGORITHM;
 
         /// <summary> The meat and potatoes. The <code>scan()</code> family of methods are the only methods the outside world should
-        /// be calling to invoke AntiSamy.
+        /// be calling to invoke OWASP.AntiSamy.
         /// 
         /// </summary>
         /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.
@@ -62,7 +61,7 @@ namespace org.owasp.validator.html
             Policy policy = null;
 
             /*
-            * Get or reload the policy document (antisamy.xml). We'll need to pass that to the
+            * Get or reload the policy document (OWASP.AntiSamy.xml). We'll need to pass that to the
             * scanner so it knows what to look for.
             */
 
@@ -90,7 +89,7 @@ namespace org.owasp.validator.html
             Policy policy = null;
 
             /*
-            * Get or reload the policy document (antisamy.xml). We'll need to pass that to the
+            * Get or reload the policy document (OWASP.AntiSamy.xml). We'll need to pass that to the
             * scanner so it knows what to look for.
             */
 
@@ -118,7 +117,7 @@ namespace org.owasp.validator.html
             return antiSamy.scan(taintedHTML, inputEncoding, outputEncoding);
         }
 
-        ///// <summary> Main method for testing AntiSamy.</summary>
+        ///// <summary> Main method for testing OWASP.AntiSamy.</summary>
         ///// <param name="args">Command line arguments. Only 1 argument is processed, and it should be a URL or filename to run through AntiSamy using the default policy location.
         ///// </param>
 

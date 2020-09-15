@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2008, Jerry Hoff
+* Copyright (c) 2008-2020, Jerry Hoff
 * 
 * All rights reserved.
 * 
@@ -21,35 +21,29 @@
 * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 using System;
-namespace org.owasp.validator.html
+
+namespace OWASP.AntiSamy.Exceptions
 {
 
-    /// <summary> 
-    /// This exception gets thrown when there is an unexpected error parsing
-    /// the tainted HTML. The code is sturdy, but the unlikely <code>IOException</code> or
-    /// SAX exceptions are always theoretically possible.
+    /// <summary> This exception gets thrown when there is a problem validating or parsing
+    /// the policy file. Any validation errors not caught by the XML validation
+    /// will be thrown with this exception.
     /// </summary>
 
     [Serializable]
-    public class ScanException : Exception
+    public class PolicyException : Exception
     {
-
-        /// <summary> </summary>
         private const long serialVersionUID = 1L;
 
-        public ScanException(Exception e)
+        public PolicyException(System.Exception e)
             : base(e.Message)
         {
         }
 
-        public ScanException(String s)
-            : base(s)
-        {
-        }
-
-        public ScanException(string message, Exception innerException)
-            : base(message, innerException)
+        public PolicyException(String _value)
+            : base(_value)
         {
         }
     }
