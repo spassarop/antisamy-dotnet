@@ -22,32 +22,28 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
 using System.Text;
 
 namespace OWASP.AntiSamy.Html.Util
 {
     public class HTMLEntityEncoder
     {
-
-        /// <summary> A helper method for HTML entity-encoding a String value.</summary>
-        /// <param name="value">A String containing HTML control characters.
-        /// </param>
-        /// <returns> An HTML-encoded String.
-        /// </returns>
-        public static String htmlEntityEncode(String _value)
+        /// <summary> A helper method for HTML entity-encoding a string value.</summary>
+        /// <param name="value">A String containing HTML control characters.</param>
+        /// <returns> An HTML-encoded String.</returns>
+        public static string HtmlEntityEncode(string value)
         {
 
-            StringBuilder buff = new StringBuilder();
+            var buff = new StringBuilder();
 
-            if (_value == null)
+            if (value == null)
             {
                 return null;
             }
 
-            for (int i = 0; i < _value.Length; i++)
+            for (int i = 0; i < value.Length; i++)
             {
-                char ch = _value[i];
+                char ch = value[i];
 
                 if (ch == '&')
                 {
@@ -61,19 +57,20 @@ namespace OWASP.AntiSamy.Html.Util
                 {
                     buff.Append("&gt;");
                 }
-                else if (System.Char.IsWhiteSpace(ch))
+                else if (char.IsWhiteSpace(ch))
                 {
                     buff.Append(ch);
                 }
-                else if (System.Char.IsLetterOrDigit(ch))
+                else if (char.IsLetterOrDigit(ch))
                 {
                     buff.Append(ch);
                 }
-                else if ((int)ch >= 20 && (int)ch <= 126)
+                else if (ch >= 20 && ch <= 126)
                 {
-                    buff.Append("&#" + (int)ch + ";");
+                    buff.Append($"&#" + (int)ch + ";");
                 }
             }
+
             return buff.ToString();
         }
     }

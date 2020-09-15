@@ -31,50 +31,37 @@ using OWASP.AntiSamy.Html.Scan;
 namespace OWASP.AntiSamy.Html
 {
     /// <summary> 
-    /// This is the only class from which the outside world should be calling. The <code>scan()</code> method holds
-    /// the meat and potatoes of OWASP.AntiSamy. The file contains a number of ways for <code>scan()</code>'ing depending
+    /// This is the only class from which the outside world should be calling. The <c>Scan()</c> method holds
+    /// the meat and potatoes of OWASP.AntiSamy. The file contains a number of ways for <c>Scan()</c>'ing depending
     /// on the accessibility of the policy file.
     /// </summary>
-
     public class AntiSamy
     {
-        private string inputEncoding = AntiSamyDOMScanner.DEFAULT_ENCODING_ALGORITHM;
-        private string outputEncoding = AntiSamyDOMScanner.DEFAULT_ENCODING_ALGORITHM;
+        public string InputEncoding { get; set; } = AntiSamyDOMScanner.DEFAULT_ENCODING_ALGORITHM;
+        public string OutputEncoding { get; set; } = AntiSamyDOMScanner.DEFAULT_ENCODING_ALGORITHM;
 
-        /// <summary> The meat and potatoes. The <code>scan()</code> family of methods are the only methods the outside world should
-        /// be calling to invoke OWASP.AntiSamy.
-        /// 
+        /// <summary> The meat and potatoes. The <c>Scan()</c> family of methods are the only methods the outside world should
+        /// be calling to invoke AntiSamy.
         /// </summary>
-        /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.
-        /// </param>
-        /// <param name="inputEncoding">The encoding of the input.
-        /// </param>
-        /// <param name="outputEncoding">The encoding that the output should be in.
-        /// </param>
-        /// <returns> A <code>CleanResults</code> object which contains information about the scan (including the results).
-        /// </returns>
-        /// <throws>  <code>ScanException</code> When there is a problem encountered while scanning the HTML. </throws>
-        /// <throws>  <code>PolicyException</code> When there is a problem reading the policy file. </throws>
-
-        public virtual CleanResults scan(string taintedHTML)
+        /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
+        /// <param name="inputEncoding">The encoding of the input.</param>
+        /// <param name="outputEncoding">The encoding that the output should be in.</param>
+        /// <returns> A <c>CleanResults</c> object which contains information about the scan (including the results).</returns>
+        /// <exception cref="Exceptions.ScanException"><c>ScanException</c> When there is a problem encountered while scanning the HTML.</exception> 
+        /// <exception cref="Exceptions.PolicyException">When there is a problem reading the policy file.</exception>
+        public virtual CleanResults Scan(string taintedHTML)
         {
-            Policy policy = null;
-
             /*
-            * Get or reload the policy document (OWASP.AntiSamy.xml). We'll need to pass that to the
+            * Get or reload the policy document (antisamy.xml). We'll need to pass that to the
             * scanner so it knows what to look for.
             */
-
-            policy = Policy.getInstance();
-
-            AntiSamyDOMScanner antiSamy = new AntiSamyDOMScanner(policy);
+            var antiSamy = new AntiSamyDOMScanner(Policy.GetInstance());
 
             /*
             * Go get 'em!
             */
-            return antiSamy.scan(taintedHTML, inputEncoding, outputEncoding);
+            return antiSamy.Scan(taintedHTML, InputEncoding, OutputEncoding);
         }
-
 
         // <summary> This method wraps <code>scan()</code> using the Policy object passed in.</summary>
         /*		public CleanResults scan(string taintedHTML, Policy policy)
@@ -83,63 +70,62 @@ namespace OWASP.AntiSamy.Html
                 }
         */
 
-        /// <summary> This method wraps <code>scan()</code> using the Policy object passed in.</summary>
-        public virtual CleanResults scan(string taintedHTML, string filename)
+        /// <summary> This method wraps <c>Scan()</c> using the Policy object passed in.</summary>
+        /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
+        /// <param name="filename">Name of the file which contains the policy.</param>
+        /// <returns> A <c>CleanResults</c> object which contains information about the scan (including the results).</returns>
+        /// <exception cref="Exceptions.ScanException"><c>ScanException</c> When there is a problem encountered while scanning the HTML.</exception> 
+        /// <exception cref="Exceptions.PolicyException">When there is a problem reading the policy file.</exception>
+        public virtual CleanResults Scan(string taintedHTML, string filename)
         {
-            Policy policy = null;
-
             /*
-            * Get or reload the policy document (OWASP.AntiSamy.xml). We'll need to pass that to the
+            * Get or reload the policy document (antisamy.xml). We'll need to pass that to the
             * scanner so it knows what to look for.
             */
-
-            policy = Policy.getInstance(filename);
-
-            AntiSamyDOMScanner antiSamy = new AntiSamyDOMScanner(policy);
+            AntiSamyDOMScanner antiSamy = new AntiSamyDOMScanner(Policy.GetInstance(filename));
 
             /*
             * Go get 'em!
             */
-
-            return antiSamy.scan(taintedHTML, inputEncoding, outputEncoding);
+            return antiSamy.Scan(taintedHTML, InputEncoding, OutputEncoding);
         }
 
-        /// <summary> This method wraps <code>scan()</code> using the policy File object passed in.</summary>
-        public virtual CleanResults scan(string taintedHTML, Policy policy)
+        /// <summary> This method wraps <c>Scan()</c> using the Policy object passed in.</summary>
+        /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
+        /// <param name="policy">Policy to use on the scan.</param>
+        /// <returns> A <c>CleanResults</c> object which contains information about the scan (including the results).</returns>
+        /// <exception cref="Exceptions.ScanException"><c>ScanException</c> When there is a problem encountered while scanning the HTML.</exception> 
+        public virtual CleanResults Scan(string taintedHTML, Policy policy)
         {
-
-            AntiSamyDOMScanner antiSamy = new AntiSamyDOMScanner(policy);
+            var antiSamy = new AntiSamyDOMScanner(policy);
 
             /*
             * Go get 'em!
             */
-
-            return antiSamy.scan(taintedHTML, inputEncoding, outputEncoding);
+            return antiSamy.Scan(taintedHTML, InputEncoding, OutputEncoding);
         }
 
-        ///// <summary> Main method for testing OWASP.AntiSamy.</summary>
-        ///// <param name="args">Command line arguments. Only 1 argument is processed, and it should be a URL or filename to run through AntiSamy using the default policy location.
-        ///// </param>
-
+        /// <summary> Main method for testing AntiSamy.</summary>
+        /// <param name="args">Command line arguments. Only 1 argument is processed, and it should be a URL or filename to run through AntiSamy using
+        /// the default policy location.</param>
         [STAThread]
         static void Main(string[] args)
         {
             if (args.Length == 0)
             {
-                System.Console.Error.WriteLine("Please specify a URL or file name to filter - thanks!");
-                System.Console.ReadLine();
+                Console.Error.WriteLine("Please specify a URL or file name to filter - thanks!");
+                Console.ReadLine();
                 return;
             }
 
             try
             {
-                string filename;
-                filename = args[0];
+                string filename = args[0];
+                string buff = string.Empty;
 
-                string buff = "";
                 if (!File.Exists(filename))
                 {
-                    WebClient client = new WebClient();
+                    var client = new WebClient();
                     byte[] bytes;
                     try
                     {
@@ -162,7 +148,6 @@ namespace OWASP.AntiSamy.Html
                         fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.None);
                         streamReader = new StreamReader(fileStream);
                         buff = streamReader.ReadToEnd();
-
                     }
                     catch (Exception ex)
                     {
@@ -171,25 +156,23 @@ namespace OWASP.AntiSamy.Html
                     }
                     finally
                     {
-                        if (fileStream != null) fileStream.Close();
-                        if (streamReader != null) streamReader.Close();
+                        if (fileStream != null) { fileStream.Close(); }
+                        if (streamReader != null) { streamReader.Close(); }
                     }
                 }
 
-                AntiSamy _as = new AntiSamy();
-                CleanResults test = _as.scan(buff);
+                var antiSamy = new AntiSamy();
+                CleanResults test = antiSamy.Scan(buff);
 
-                Console.WriteLine("[1] Finished scan [" + test.getCleanHTML().Length + " bytes] in " + test.getScanTime() + " seconds\n");
-                Console.WriteLine("[2] Clean HTML fragment:\n" + test.getCleanHTML());
-                Console.WriteLine("[3] Error Messages (" + test.getNumberOfErrors() + "):");
+                Console.WriteLine($"[1] Finished scan [{test.GetCleanHTML().Length} bytes] in {test.GetScanTime()} seconds\n");
+                Console.WriteLine($"[2] Clean HTML fragment:\n{test.GetCleanHTML()}");
+                Console.WriteLine($"[3] Error Messages ({test.GetNumberOfErrors()}):");
 
-
-                for (int i = 0; i < test.getErrorMessages().Count; i++)
+                for (int i = 0; i < test.GetErrorMessages().Count; i++)
                 {
-                    string s = test.getErrorMessages()[i].ToString();
+                    string s = test.GetErrorMessages()[i].ToString();
                     Console.WriteLine(s);
                 }
-
             }
             catch (Exception e)
             {
@@ -197,17 +180,6 @@ namespace OWASP.AntiSamy.Html
                 Console.WriteLine(e.StackTrace);
             }
             Console.ReadLine();
-        }
-
-        public string InputEncoding
-        {
-            get { return inputEncoding; }
-            set { inputEncoding = value; }
-        }
-        public string OutputEncoding
-        {
-            get { return outputEncoding; }
-            set { outputEncoding = value; }
         }
     }
 }

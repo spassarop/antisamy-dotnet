@@ -23,32 +23,32 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Xml;
-using System.Collections;
 
 namespace OWASP.AntiSamy.Html
 {
-
-    /// <summary> This class contains the results of a scan.
+    /// <summary> 
+    /// This class contains the results of a scan.
     /// 
-    /// The list of error messages (<code>errorMessages</code>) will let the user know
+    /// The list of error messages (<c>errorMessages</c>) will let the user know
     /// what, if any HTML errors existed, and what, if any, security or
     /// validation-related errors existed, and what was done about them.
     /// </summary>
-
+    /// 
     public class CleanResults
     {
-        private ArrayList errorMessages = new ArrayList();
+        private readonly List<string> errorMessages = new List<string>();
+        private readonly DateTime startOfScan;
+        private readonly DateTime endOfScan;
+        private readonly XmlDocumentFragment cleanXMLDocumentFragment;
         private string cleanHTML;
-        private DateTime startOfScan;
-        private DateTime endOfScan;
-        private XmlDocumentFragment cleanXMLDocumentFragment;
 
         public CleanResults()
         {
         }
 
-        public CleanResults(DateTime startOfScan, DateTime endOfScan, string cleanHTML, XmlDocumentFragment XMLDocumentFragment, ArrayList errorMessages)
+        public CleanResults(DateTime startOfScan, DateTime endOfScan, string cleanHTML, XmlDocumentFragment XMLDocumentFragment, List<string> errorMessages)
         {
             this.startOfScan = startOfScan;
             this.endOfScan = endOfScan;
@@ -56,82 +56,38 @@ namespace OWASP.AntiSamy.Html
             this.cleanHTML = cleanHTML;
             this.errorMessages = errorMessages;
         }
-        public CleanResults(DateTime date)
-        {
-            this.startOfScan = date;
-        }
 
-        public XmlDocumentFragment getCleanXMLDocumentFragment()
-        {
-            return cleanXMLDocumentFragment;
-        }
+        public CleanResults(DateTime date) => startOfScan = date;
 
-        public void setCleanHTML(String cleanHTML)
-        {
-            this.cleanHTML = cleanHTML;
-        }
+        public XmlDocumentFragment GetCleanXMLDocumentFragment() => cleanXMLDocumentFragment;
 
-     /**
-	 * Return the filtered HTML as a String.
-	 * @return A String object which contains the serialized, safe HTML.
-	 */
-        public String getCleanHTML()
-        {
-            return cleanHTML;
-        }
+        public void SetCleanHTML(string cleanHTML) => this.cleanHTML = cleanHTML;
 
-        /**
-         * Return a list of error messages.
-         * @return An ArrayList object which contain the error messages after a scan.
-         */
-        public ArrayList getErrorMessages()
-        {
-            return errorMessages;
-        }
+        /// <summary> Return the filtered HTML as a string.</summary>
+        /// <returns> A string object which contains the serialized, safe HTML.</returns>
+        public string GetCleanHTML() => cleanHTML;
 
-        /**
-         * Return the time when scan finished.
-         * @return A Date object indicating the moment the scan finished.
-         */
-        public DateTime getEndOfScan()
-        {
+        /// <summary> Return a list of error messages.</summary>
+        /// <returns> A List object which contains the error messages after a scan.</returns>
+        public List<string> GetErrorMessages() => errorMessages;
 
-            return endOfScan;
-        }
+        /// <summary> Return the time when scan finished.</summary>
+        /// <returns> A DateTime object indicating the moment the scan finished.</returns>
+        public DateTime GetEndOfScan() => endOfScan;
 
-        /**
-         * Return the time when scan started.
-         * @return A Date object indicating the moment the scan started.
-         */
-        public DateTime getStartOfScan()
-        {
-            return startOfScan;
-        }
+        /// <summary> Return the time when scan started.</summary>
+        /// <returns> A DateTime object indicating the moment the scan started.</returns>
+        public DateTime GetStartOfScan() => startOfScan;
 
-        /**
-         * Return the time elapsed during the scan.
-         * @return A double primitive indicating the amount of time elapsed between the beginning and end of the scan in seconds.
-         */
-        public double getScanTime()
-        {
-            return (endOfScan.Millisecond - startOfScan.Millisecond) / 1000D;
-        }
+        /// <summary> Return the time elapsed during the scan.</summary>
+        /// <returns> A double primitive indicating the amount of time elapsed between the beginning and end of the scan in seconds.</returns>
+        public double GetScanTime() => (endOfScan.Millisecond - startOfScan.Millisecond) / 1000D;
 
-        /**
-         * Add an error message to the aggregate list of error messages during filtering.
-         * @param msg An error message to append to the list of aggregate error messages during filtering.
-         */
-        public void addErrorMessage(String msg)
-        {
-            errorMessages.Add(msg);
-        }
+        /// <summary> Add an error message to the aggregate list of error messages during filtering.</summary>
+        /// <param name="msg">An error message to append to the list of aggregate error messages during filtering.</param>
+        public void AddErrorMessage(string msg) => errorMessages.Add(msg);
 
-        /**
-         * Return the number of errors encountered during filtering.
-         */
-        public int getNumberOfErrors()
-        {
-            return errorMessages.Count;
-        }
+        /// <summary> Return the number of errors encountered during filtering.</summary>
+        public int GetNumberOfErrors() => errorMessages.Count;
     }
 }

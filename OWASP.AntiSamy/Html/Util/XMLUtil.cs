@@ -22,28 +22,21 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System.Text;
 using System.Xml;
+
 namespace OWASP.AntiSamy.Html.Util
 {
-
     public class XMLUtil
     {
 
-        /// <summary> Helper function for quickly retrieving an attribute from a given
-        /// element. 
-        /// </summary>
-        /// <param name="ele">The document element from which to pull the attribute value.
-        /// </param>
-        /// <param name="attrName">The name of the attribute.
-        /// </param>
-        /// <returns> The value of the attribute contained within the element
-        /// </returns>
-        public static string getAttributeValue(XmlElement ele, string attrName)
-        {
-            return decode(ele.GetAttribute(attrName));
-        }
+        /// <summary> Helper function for quickly retrieving an attribute from a given element.</summary>
+        /// <param name="element">The document element from which to pull the attribute value.</param>
+        /// <param name="attributeName">The name of the attribute.</param>
+        /// <returns> The value of the attribute contained within the element.</returns>
+        public static string GetAttributeValue(XmlElement element, string attributeName) => Decode(element.GetAttribute(attributeName));
 
-        /// <summary> Helper function for quickly retrieving an integer value of a given
+        /*/// <summary> Helper function for quickly retrieving an integer value of a given
         /// XML element.
         /// </summary>
         /// <param name="ele">The document element from which to pull the integer value.
@@ -52,7 +45,7 @@ namespace OWASP.AntiSamy.Html.Util
         /// </param>
         /// <returns> The integer value of the given node in the element passed in.
         /// </returns>
-        /*
+        
         public static int getIntValue(XmlElement ele, string tagName, int defaultValue)
         {
 			
@@ -69,120 +62,79 @@ namespace OWASP.AntiSamy.Html.Util
         }
         */
 
-        /// <summary> Helper function for quickly retrieving a String value of a given
-        /// XML element.
-        /// </summary>
-        /// <param name="ele">The document element from which to pull the String value.
-        /// </param>
-        /// <param name="tagName">The name of the node.
-        /// </param>
-        /// <returns> The String value of the given node in the element passed in.
-        /// </returns>
-        public static string getTextValue(XmlElement ele, string tagName)
+        /// <summary> Helper function for quickly retrieving a string value of a given XML element.</summary>
+        /// <param name="element">The document element from which to pull the String value.</param>
+        /// <param name="tagName">The name of the node.</param>
+        /// <returns> The string value of the given node in the element passed in.</returns>
+        public static string GetTextValue(XmlElement element, string tagName)
         {
-            string textVal = null;
-            XmlNodeList nl = ele.GetElementsByTagName(tagName);
-            if (nl != null && nl.Count > 0)
+            string textValue = null;
+            XmlNodeList nodeList = element.GetElementsByTagName(tagName);
+            if (nodeList != null && nodeList.Count > 0)
             {
-                XmlElement el = (XmlElement)nl.Item(0);
-                if (el.FirstChild != null)
-                {
-                    textVal = el.FirstChild.Value;
-                }
-                else
-                {
-                    textVal = "";
-                }
+                var xmlElement = (XmlElement)nodeList.Item(0);
+                textValue = xmlElement.FirstChild != null ? xmlElement.FirstChild.Value : string.Empty;
             }
-            return decode(textVal);
+
+            return Decode(textValue);
         }
 
-
-        /// <summary> Helper function for quickly retrieving an boolean value of a given
-        /// XML element.
-        /// </summary>
-        /// <param name="ele">The document element from which to pull the boolean value.
-        /// </param>
-        /// <param name="tagName">The name of the node.
-        /// </param>
-        /// <returns> The boolean value of the given node in the element passed in.
-        /// </returns>
-        public static bool getBooleanValue(XmlElement ele, string tagName)
+        /// <summary> Helper function for quickly retrieving an boolean value of a given XML element.</summary>
+        /// <param name="element">The document element from which to pull the boolean value.</param>
+        /// <param name="tagName">The name of the node.</param>
+        /// <returns> The boolean value of the given node in the element passed in.</returns>
+        public static bool GetBooleanValue(XmlElement element, string tagName)
         {
+            bool boolValue = false;
+            XmlNodeList nodeList = element.GetElementsByTagName(tagName);
 
-            bool boolVal = false;
-            XmlNodeList nl = ele.GetElementsByTagName(tagName);
-
-            if (nl != null && nl.Count > 0)
+            if (nodeList != null && nodeList.Count > 0)
             {
-                XmlElement el = (XmlElement)nl.Item(0);
-                boolVal = el.FirstChild.Value.Equals("true");
+                var xmlElement = (XmlElement)nodeList.Item(0);
+                boolValue = xmlElement.FirstChild.Value.Equals("true");
             }
 
-            return boolVal;
+            return boolValue;
         }
 
         /// <summary> Helper function for quickly retrieving an boolean value of a given
-        /// XML element, with a default initialization value passed in a parameter.
-        /// </summary>
-        /// <param name="ele">The document element from which to pull the boolean value.
-        /// </param>
-        /// <param name="tagName">The name of the node.
-        /// </param>
-        /// <param name="defaultValue">The default value of the node if it's value can't be processed.
-        /// </param>
-        /// <returns> The boolean value of the given node in the element passed in.
-        /// </returns>
-        public static bool getBooleanValue(XmlElement ele, string tagName, bool defaultValue)
+        /// XML element, with a default initialization value passed in a parameter.</summary>
+        /// <param name="element">The document element from which to pull the boolean value.</param>
+        /// <param name="tagName">The name of the node.</param>
+        /// <param name="defaultValue">The default value of the node if it's value can't be processed.</param>
+        /// <returns> The boolean value of the given node in the element passed in.</returns>
+        public static bool GetBooleanValue(XmlElement element, string tagName, bool defaultValue)
         {
-            bool boolVal = defaultValue;
-            XmlNodeList nl = ele.GetElementsByTagName(tagName);
+            bool boolValue = defaultValue;
+            XmlNodeList nodeList = element.GetElementsByTagName(tagName);
 
-            if (nl != null && nl.Count > 0)
+            if (nodeList != null && nodeList.Count > 0)
             {
-                XmlElement el = (XmlElement)nl.Item(0);
-                if (el.FirstChild.Value != null)
-                {
-                    boolVal = "true".Equals(el.FirstChild.Value);
-                }
-                else
-                {
-                    boolVal = defaultValue;
-                }
+                var xmlElement = (XmlElement)nodeList.Item(0);
+                boolValue = xmlElement.FirstChild.Value != null ? "true".Equals(xmlElement.FirstChild.Value) : defaultValue;
             }
-            return boolVal;
+
+            return boolValue;
         }
 
+        /// <summary> Helper function for decoding XML entities.</summary>
+        /// <param name="str">The XML-encoded string to decode.</param>
+        /// <returns> An XML-decoded string.</returns>
+        public static string Decode(string str) => str == null ?
+                null : new StringBuilder(str).Replace("&gt;", ">")
+                                             .Replace("&lt;", "<")
+                                             .Replace("&quot;", "\"")
+                                             .Replace("&amp;", "&")
+                                             .ToString();
 
-        /// <summary> Helper function for decode XML entities.</summary>
-        /// <param name="str">The XML-encoded String to decode.
-        /// </param>
-        /// <returns> An XML-decoded String.
-        /// </returns>
-        public static string decode(string str)
-        {
-            if (str == null)
-            {
-                return null;
-            }
-            str = str.Replace("&gt;", ">");
-            str = str.Replace("&lt;", "<");
-            str = str.Replace("&quot;", "\"");
-            str = str.Replace("&amp;", "&");
-            return str;
-        }
-
-        public static string encode(string str)
-        {
-            if (str == null)
-            {
-                return null;
-            }
-            str = str.Replace(">", "&gt;");
-            str = str.Replace("<", "&lt;");
-            str = str.Replace("\"", "&quot;");
-            str = str.Replace("&", "&amp;");
-            return str;
-        }
+        /// <summary> Helper function for encoding XML entities.</summary>
+        /// <param name="str">The XML-encoded string to encode.</param>
+        /// <returns> An XML-encoded string.</returns>
+        public static string Encode(string str) => str == null ?
+                null : new StringBuilder(str).Replace(">", "&gt;")
+                                             .Replace("<", "&lt;")
+                                             .Replace("\"", "&quot;")
+                                             .Replace("&", "&amp;")
+                                             .ToString();
     }
 }

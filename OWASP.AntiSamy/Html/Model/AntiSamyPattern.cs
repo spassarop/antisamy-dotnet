@@ -24,31 +24,16 @@
 
 namespace OWASP.AntiSamy.Html.Model
 {
-
-    /// <summary> 
-    /// An extension of the Pattern to give it a "lookup name" that we can use from a
-    /// centralized store.
-    /// </summary>
-
+    /// <summary>An extension of the Pattern to give it a "lookup name" that we can use from a centralized store.</summary>
     public class AntiSamyPattern
     {
-        private string name;
-        private string pattern;
+        public string Name { get; set; }
+        public string Pattern { get; set; }
 
         public AntiSamyPattern(string name, string pattern)
         {
-            this.name = name;
-            this.pattern = pattern;
-        }
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
-        public string Pattern
-        {
-            get { return pattern; }
-            set { pattern = value; }
+            Name = name;
+            Pattern = pattern;
         }
     }
 }

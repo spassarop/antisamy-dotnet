@@ -23,81 +23,38 @@
 */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace OWASP.AntiSamy.Html.Model
 {
-    /// <summary> A model for HTML attributes and the "rules" they must follow (either literals or regular expressions) in
-    /// order to be considered valid.
-    /// </summary>
-
+    /// <summary> A model for HTML attributes and the "rules" they must follow 
+    /// (either literals or regular expressions) in order to be considered valid.</summary>
     public class Attribute : ICloneable
     {
-        private string name;
-        private string description;
-        private string onInvalid;
-        private IList allowedValues = new ArrayList();
-        private IList allowedRegExp = new ArrayList();
+        public List<string> AllowedRegExp { get; set; } = new List<string>();
+        public List<string> AllowedValues { get; set; } = new List<string>();
+        public string Name { get; set; }
+        public string OnInvalid { get; set; }
+        public string Description { get; set; }
 
-        public IList AllowedRegExp
-        {
-            get { return allowedRegExp; }
-            set { allowedRegExp = value; }
-        }
+        public Attribute(string name) => Name = name;
 
-        public IList AllowedValues
-        {
-            get { return allowedValues; }
-            set { this.allowedValues = value; }
-        }
+        /// <summary>Adds an allowed value for the attribute.</summary>
+        /// <param name="safeValue">A legal literal value that an attribute can have, according to the Policy.</param>
+        public virtual void AddAllowedValue(string safeValue) => AllowedValues.Add(safeValue);
 
-        public string Name
-        {
-            get { return name; }
-            set { this.name = value; }
-        }
-        public string OnInvalid
-        {
-            get { return onInvalid; }
-            set { this.onInvalid = value; }
-        }
-        public string Description
-        {
-            get { return description; }
-            set { this.description = value; }
-        }
-        public Attribute(string name)
-        {
-            this.name = name;
-        }
-        /// <summary> </summary>
-        /// <param name="safeValue">A legal literal value that an attribute can have, according to the Policy
-        /// </param>
-        public virtual void addAllowedValue(string safeValue)
-        {
-            this.allowedValues.Add(safeValue);
-        }
+        /// <summary>Adds an allowed regular expression for the attribute.</summary>
+        /// <param name="safeRegExpValue">A legal regular expression value that an attribute could have, according to the Policy.</param>
+        public virtual void AddAllowedRegExp(string safeRegExpValue) => AllowedRegExp.Add(safeRegExpValue);
 
-        /// <summary> </summary>
-        /// <param name="safeRegExpValue">A legal regular expression value that an attribute could have, according to the Policy
-        /// </param>
-        public virtual void addAllowedRegExp(string safeRegExpValue)
+        /// <summary> We need to implement <c>clone()</c> to make the Policy file work with common attributes and the ability
+        /// to use a common-attribute with an alternative <c>onInvalid</c> action.</summary>
+        public object Clone() => new Attribute(Name)
         {
-            this.allowedRegExp.Add(safeRegExpValue);
-        }
-
-        /// <summary> We need to implement <code>clone()</code> to make the Policy file work with common attributes and the ability
-        /// to use a common-attribute with an alternative <code>onInvalid</code> action.
-        /// </summary>
-
-        public object Clone()
-        {
-            Attribute toReturn = new Attribute(name);
-            toReturn.Description = description;
-            toReturn.OnInvalid = onInvalid;
-            toReturn.AllowedValues = allowedValues;
-            toReturn.AllowedRegExp = allowedRegExp;
-            return toReturn;
-        }
+            Description = Description,
+            OnInvalid = OnInvalid,
+            AllowedValues = AllowedValues,
+            AllowedRegExp = AllowedRegExp
+        };
     }
 }

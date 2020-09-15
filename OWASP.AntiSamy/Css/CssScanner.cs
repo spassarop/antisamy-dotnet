@@ -128,7 +128,7 @@ namespace OWASP.AntiSamy.Css
         private CleanResults doScan(string taintedCss, bool isInlineCss)
         {
             DateTime startOfScan = new DateTime();
-            ArrayList errorMessages = new ArrayList();
+            var errorMessages = new List<string>();
             string cleanStylesheet;
 
             try
@@ -172,7 +172,7 @@ namespace OWASP.AntiSamy.Css
             return string.IsNullOrWhiteSpace(result) ? string.Empty : result;
         }
 
-        private string scanStyleSheet(ICssStyleSheet styleSheet, ArrayList errorMessages)
+        private string scanStyleSheet(ICssStyleSheet styleSheet, List<string> errorMessages)
         {
             for (var i = 0; i < styleSheet.Rules.Length;)
             {
@@ -188,7 +188,7 @@ namespace OWASP.AntiSamy.Css
             return stringWriter.GetStringBuilder().ToString();
         }
 
-        private bool scanStyleRule(ICssRule rule, ArrayList errorMessages)
+        private bool scanStyleRule(ICssRule rule, List<string> errorMessages)
         {
             if (rule is ICssStyleRule styleRule)
             {
@@ -225,7 +225,7 @@ namespace OWASP.AntiSamy.Css
             return true;
         }
 
-        private void scanStyleDeclaration(ICssStyleDeclaration styles, ArrayList errorMessages)
+        private void scanStyleDeclaration(ICssStyleDeclaration styles, List<string> errorMessages)
         {
             var removingProperties = new List<Tuple<ICssProperty, string>>();
 
@@ -237,7 +237,7 @@ namespace OWASP.AntiSamy.Css
                 string key = decodeCss(cssProperty.Name);
                 string value = decodeCss(cssProperty.Value);
 
-                Property allowedCssProperty = policy.getPropertyByName(key);
+                Property allowedCssProperty = policy.GetPropertyByName(key);
 
                 if (allowedCssProperty == null)
                 {
@@ -289,7 +289,7 @@ namespace OWASP.AntiSamy.Css
 
             foreach (string shortHandRef in allowedCssProperty.ShorthandRefs)
             {
-                Property shorthand = policy.getPropertyByName(shortHandRef);
+                Property shorthand = policy.GetPropertyByName(shortHandRef);
 
                 if (shorthand != null)
                 {

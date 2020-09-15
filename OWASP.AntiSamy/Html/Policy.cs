@@ -23,7 +23,7 @@
 */
 
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using OWASP.AntiSamy.Exceptions;
@@ -33,99 +33,36 @@ using Tag = OWASP.AntiSamy.Html.Model.Tag;
 
 namespace OWASP.AntiSamy.Html
 {
-
-    /// <summary> Policy.cs
-    /// This file holds the model for our policy engine.
+    /// <summary>
+    /// Holds the model for our policy engine.
     /// </summary>
-
     public class Policy
     {
-
-        private static Policy _instance = null;
+        public const int DEFAULT_MAX_INPUT_SIZE = 100000;
+        
         private const string DEFAULT_POLICY_URI = "Resources/OWASP.AntiSamy.xml";
         private const string DEFAULT_ONINVALID = "removeAttribute";
+        private const char REGEX_BEGIN = '^';
+        private const char REGEX_END = '$';
 
-        public const int DEFAULT_MAX_INPUT_SIZE = 100000;
+        private readonly Dictionary<string, string> commonRegularExpressions;
+        private readonly Dictionary<string, Attribute> commonAttributes;
+        private readonly Dictionary<string, Tag> tagRules;
+        private readonly Dictionary<string, Property> cssRules;
+        private readonly Dictionary<string, string> directives;
+        private readonly Dictionary<string, Attribute> globalAttributes;
 
-        private static char REGEXP_BEGIN = '^';
-        private static char REGEXP_END = '$';
-
-        private Hashtable commonRegularExpressions;
-        private Hashtable commonAttributes;
-        private Hashtable tagRules;
-        private Hashtable cssRules;
-        private Hashtable directives;
-        private Hashtable globalAttributes;
-
-        private ArrayList tagNames;
-
-        /// <summary> Retrieves a Tag from the Policy.</summary>
-        /// <param name="tagName">The name of the Tag to look up.
-        /// </param>
-        /// <returns> The Tag associated with the name specified, or null if none is found.
-        /// </returns>
-        public Tag getTagByName(string tagName)
-        {
-            return (Tag)tagRules[tagName];
-        }
-
-        /// <summary> Retrieves a CSS Property from the Policy.</summary>
-        /// <param name="propertyName">The name of the CSS Property to look up.
-        /// </param>
-        /// <returns> The CSS Property associated with the name specified, or null if none is found.
-        /// </returns>
-        public Property getPropertyByName(string propertyName)
-        {
-            return (Property)cssRules[propertyName];
-        }
-
-        /// <summary> This retrieves a Policy based on a default location ("resources/OWASP.AntiSamy.xml")</summary>
-        /// <returns> A populated Policy object based on the XML policy file located in the default location.
-        /// </returns>
-        /// <throws>  PolicyException If the file is not found or there is a problem parsing the file. </throws>
-        public static Policy getInstance()
-        {
-            _instance = new Policy(DEFAULT_POLICY_URI);
-            return _instance;
-        }
-
-        /// <summary> This retrieves a Policy based on the file name passed in</summary>
-        /// <param name="filename">The path to the XML policy file.
-        /// </param>
-        /// <returns> A populated Policy object based on the XML policy file located in the location passed in.
-        /// </returns>
-        /// <throws>  PolicyException If the file is not found or there is a problem parsing the file. </throws>
-        public static Policy getInstance(string filename)
-        {
-            _instance = new Policy(filename);
-            return _instance;
-        }
-
-        /// <summary> This retrieves a Policy based on the File object passed in</summary>
-        /// <param name="file">A File object which contains the XML policy information.
-        /// </param>
-        /// <returns> A populated Policy object based on the XML policy file pointed to by the File parameter.
-        /// </returns>
-        /// <throws>  PolicyException If the file is not found or there is a problem parsing the file. </throws>
-        public static Policy getInstance(FileInfo file)
-        {
-            _instance = new Policy(new FileInfo(file.FullName));
-            return _instance;
-        }
+        private List<string> tagNames;
 
         /// <summary> Load the policy from an XML file.</summary>
-        /// <param name="file">Load a policy from the File object.
-        /// </param>
-        /// <throws>  PolicyException </throws>
+        /// <param name="file">Load a policy from the File object.</param>
         private Policy(FileInfo file)
             : this(file.FullName)
         {
         }
 
         /// <summary> Load the policy from an XML file.</summary>
-        /// <param name="filename">Load a policy from the filename specified.
-        /// </param>
-        /// <throws>  PolicyException </throws>
+        /// <param name="filename">Load a policy from the filename specified.</param>
         private Policy(string filename)
         {
             try
@@ -134,22 +71,22 @@ namespace OWASP.AntiSamy.Html
                 doc.Load(filename);
 
                 XmlNode commonRegularExpressionListNode = doc.GetElementsByTagName("common-regexps")[0];
-                this.commonRegularExpressions = parseCommonRegExps(commonRegularExpressionListNode);
+                commonRegularExpressions = ParseCommonRegExps(commonRegularExpressionListNode);
 
                 XmlNode directiveListNode = doc.GetElementsByTagName("directives")[0];
-                this.directives = parseDirectives(directiveListNode);
+                directives = ParseDirectives(directiveListNode);
 
                 XmlNode commonAttributeListNode = doc.GetElementsByTagName("common-attributes")[0];
-                this.commonAttributes = parseCommonAttributes(commonAttributeListNode);
+                commonAttributes = ParseCommonAttributes(commonAttributeListNode);
 
                 XmlNode globalAttributesListNode = doc.GetElementsByTagName("global-tag-attributes")[0];
-                this.globalAttributes = parseGlobalAttributes(globalAttributesListNode);
+                globalAttributes = ParseGlobalAttributes(globalAttributesListNode);
 
                 XmlNode tagListNode = doc.GetElementsByTagName("tag-rules")[0];
-                this.tagRules = parseTagRules(tagListNode);
+                tagRules = ParseTagRules(tagListNode);
 
                 XmlNode cssListNode = doc.GetElementsByTagName("css-rules")[0];
-                this.cssRules = parseCSSRules(cssListNode);
+                cssRules = ParseCSSRules(cssListNode);
             }
             catch (Exception ex)
             {
@@ -158,243 +95,284 @@ namespace OWASP.AntiSamy.Html
             }
         }
 
+        /// <summary> This retrieves a Policy based on a default location ("Resources/antisamy.xml")</summary>
+        /// <returns> A populated Policy object based on the XML policy file located in the default location.
+        /// </returns>
+        public static Policy GetInstance() => new Policy(DEFAULT_POLICY_URI);
 
+        /// <summary> This retrieves a Policy based on the file name passed in</summary>
+        /// <param name="filename">The path to the XML policy file.</param>
+        /// <returns> A populated Policy object based on the XML policy file located in the location passed in.</returns>
+        public static Policy GetInstance(string filename) => new Policy(filename);
+
+        /// <summary> This retrieves a Policy based on the File object passed in</summary>
+        /// <param name="file">A File object which contains the XML policy information.</param>
+        /// <returns> A populated Policy object based on the XML policy file pointed to by the File parameter.</returns>
+        public static Policy GetInstance(FileInfo file) => new Policy(new FileInfo(file.FullName));
+
+        /*/// <summary> A simple method for returning on of the <common-regexp> entries by
+        /// name.
+        /// 
+        /// </summary>
+        /// <param name="name">The name of the common regexp we want to look up.
+        /// </param>
+        /// <returns> An AntiSamyPattern associated with the lookup name specified.
+        /// </returns>
+        public virtual AntiSamyPattern getRegularExpression(string name)
+        {
+            return (AntiSamyPattern)commonRegularExpressions[name];
+        }
+        */
+
+        public string GetRegularExpression(string name) => name == null ? null : commonRegularExpressions.GetValueOrDefault(name);
+
+        /// <summary> A simple method for returning on of the <global-attribute> entries by name.</summary>
+        /// <param name="name">The name of the global-attribute we want to look up.</param>
+        /// <returns> An Attribute associated with the global-attribute lookup name specified.</returns>
+        public Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrDefault(name);
+
+        /// <summary> Return a directive value based on a lookup name.</summary>
+        /// <returns> A string object containing the directive associated with the lookup name, or null if none is found.</returns>
+        public string GetDirective(string name) => directives.GetValueOrDefault(name);
+
+        /// <summary> Retrieves a Tag from the Policy.</summary>
+        /// <param name="tagName">The name of the Tag to look up.</param>
+        /// <returns> The Tag associated with the name specified, or null if none is found.</returns>
+        public Tag GetTagByName(string tagName) => tagRules.GetValueOrDefault(tagName);
+
+        /// <summary> Retrieves a CSS Property from the Policy.</summary>
+        /// <param name="propertyName">The name of the CSS Property to look up.</param>
+        /// <returns> The CSS Property associated with the name specified, or null if none is found.</returns>
+        public Property GetPropertyByName(string propertyName) => cssRules.GetValueOrDefault(propertyName);
+
+        /// <summary> A simple method for returning on of the <common-attribute> entries by name.</summary>
+        /// <param name="name">The name of the common-attribute we want to look up.</param>
+        /// <returns> An Attribute associated with the common-attribute lookup name specified.</returns>
+        private Attribute GetCommonAttributeByName(string attributeName) => commonAttributes.GetValueOrDefault(attributeName);
 
         /// <summary> Go through <directives> section of the policy file.</summary>
-        /// <param name="directiveListNode">Top level of <directives>
-        /// </param>
-        /// <returns> A HashMap of directives for validation behavior.
-        /// </returns>
-        private Hashtable parseDirectives(XmlNode directiveListNode)
+        /// <param name="directiveListNode">Top level of <directives></param>
+        /// <returns> A Dictionary of directives for validation behavior.</returns>
+        private Dictionary<string, string> ParseDirectives(XmlNode directiveListNode)
         {
             XmlNodeList directiveNodes = directiveListNode.SelectNodes("directive");
-            Hashtable directives = new Hashtable();
-            string _name = "", _value = "";
+            var directives = new Dictionary<string, string>();
+
             foreach (XmlNode node in directiveNodes)
             {
                 if (node.NodeType == XmlNodeType.Element)
                 {
-                    _name = node.Attributes[0].Value;
-                    _value = node.Attributes[1].Value;
-                    if (!directives.ContainsKey(_name))
-                        directives.Add(_name, _value);
+                    string name = node.Attributes[0].Value;
+                    if (!directives.ContainsKey(name))
+                    {
+                        string value = node.Attributes[1].Value;
+                        directives.Add(name, value);
+                    }
                 }
             }
+
             return directives;
         }
 
-
         /// <summary> Go through <global-tag-attributes> section of the policy file.</summary>
-        /// <param name="globalAttributeListNode">Top level of <global-tag-attributes>
-        /// </param>
-        /// <returns> A HashMap of global Attributes that need validation for every tag.
-        /// </returns>
-        /// <throws>  PolicyException  </throws>
-        private Hashtable parseGlobalAttributes(XmlNode globalAttributeListNode)
+        /// <param name="globalAttributeListNode">Top level of <global-tag-attributes></param>
+        /// <returns> A Dictionary of global Attributes that need validation for every tag.</returns>
+        private Dictionary<string, Attribute> ParseGlobalAttributes(XmlNode globalAttributeListNode)
         {
             XmlNodeList globalAttributeNodes = globalAttributeListNode.SelectNodes("attribute");
-            Hashtable globalAttributes = new Hashtable();
-            string _name = "";
-            //string _value = "";
+            var globalAttributes = new Dictionary<string, Attribute>();
+
             foreach (XmlNode node in globalAttributeNodes)
             {
                 if (node.NodeType == XmlNodeType.Element)
                 {
-                    _name = node.Attributes[0].Value;
-                    //_value = node.Attributes[1].Value;
-                    Attribute toAdd = getCommonAttributeByName(_name);
+                    string name = node.Attributes[0].Value;
+                    Attribute toAdd = GetCommonAttributeByName(name);
                     if (toAdd != null)
                     {
-                        globalAttributes.Add(_name, toAdd);
+                        globalAttributes.Add(name, toAdd);
                     }
                     else
                     {
-                        throw new PolicyException("Global attribute '" + _name + "' was not defined in <common-attributes>");
+                        throw new PolicyException($"Global attribute '{name}' was not defined in <common-attributes>");
                     }
-                    //if (!globalAttributes.ContainsKey(_name))
-                    //    globalAttributes.Add(_name, new AntiSamyPattern(_name, _value));
                 }
             }
+
             return globalAttributes;
         }
 
-
         /// <summary> Go through the <common-regexps> section of the policy file.</summary>
-        /// <param name="root">Top level of <common-regexps>
-        /// </param>
-        /// <returns> An ArrayList of AntiSamyPattern objects.
-        /// </returns>
-        private Hashtable parseCommonRegExps(XmlNode commonRegularExpressionListNode)
+        /// <param name="root">Top level of <common-regexps></param>
+        /// <returns> A List of AntiSamyPattern objects.</returns>
+        private Dictionary<string, string> ParseCommonRegExps(XmlNode commonRegularExpressionListNode)
         {
             XmlNodeList list = commonRegularExpressionListNode.SelectNodes("regexp");
-            Hashtable commonRegularExpressions = new Hashtable();
-            string _name = "", _value = "";
+            var commonRegularExpressions = new Dictionary<string, string>();
+
             foreach (XmlNode node in list)
             {
                 if (node.NodeType == XmlNodeType.Element)
                 {
-                    _name = node.Attributes[0].Value;
-                    _value = node.Attributes[1].Value;
-                    if (!commonRegularExpressions.ContainsKey(_name))
-                        commonRegularExpressions.Add(_name, _value);
-                    //commonRegularExpressions.Add(_name, new AntiSamyPattern(_name, _value));
+                    string name = node.Attributes[0].Value;
+                    if (!commonRegularExpressions.ContainsKey(name))
+                    {
+                        string value = node.Attributes[1].Value;
+                        commonRegularExpressions.Add(name, value);
+                    }
                 }
             }
+
             return commonRegularExpressions;
         }
 
-
         /// <summary> Go through the <common-attributes> section of the policy file.</summary>
-        /// <param name="root">Top level of <common-attributes>
-        /// </param>
-        /// <returns> An ArrayList of Attribute objects.
-        /// </returns>
-        private Hashtable parseCommonAttributes(XmlNode commonAttributeListNode)
+        /// <param name="root">Top level of <common-attributes></param>
+        /// <returns> A List of Attribute objects.</returns>
+        private Dictionary<string, Attribute> ParseCommonAttributes(XmlNode commonAttributeListNode)
         {
             XmlNodeList commonAttributeNodes = commonAttributeListNode.SelectNodes("attribute");
-            Hashtable commonAttributes = new Hashtable();
+            var commonAttributes = new Dictionary<string, Attribute>();
 
             foreach (XmlNode node in commonAttributeNodes)
             {
                 if (node.NodeType == XmlNodeType.Element)
                 {
                     /*DEFAULT_ONINVALID seems to have been removed from common attributes.  Do we need this code?*/
-                    String onInvalid = (node.Attributes["onInvalid"] == null ? null : node.Attributes["onInvalid"].Value);
-                    String name = (node.Attributes["name"] == null ? null : node.Attributes["name"].Value);
-                    Attribute attribute = new Attribute(name);
-                    attribute.Description = (node.Attributes["description"] == null ? null : node.Attributes["description"].Value);
-                    if (onInvalid != null && onInvalid.Length > 0)
+                    string onInvalid = node.Attributes["onInvalid"]?.Value;
+                    string name = node.Attributes["name"]?.Value;
+                    var attribute = new Attribute(name)
                     {
-                        attribute.OnInvalid = onInvalid;
-                    }
-                    else
-                    {
-                        attribute.OnInvalid = DEFAULT_ONINVALID;
-                    }
+                        Description = node.Attributes["description"]?.Value,
+                        OnInvalid = string.IsNullOrEmpty(onInvalid) ? DEFAULT_ONINVALID : onInvalid
+                    };
 
-                    XmlNodeList regExpListNode = node.SelectNodes("regexp-list");
-                    if (regExpListNode != null && regExpListNode.Count > 0)
+                    XmlNodeList regExListNode = node.SelectNodes("regexp-list");
+                    if (regExListNode != null && regExListNode.Count > 0)
                     {
-                        XmlNodeList regExpList = regExpListNode[0].SelectNodes("regexp");
-                        foreach (XmlNode regExpNode in regExpList)
+                        XmlNodeList regExList = regExListNode[0].SelectNodes("regexp");
+                        foreach (XmlNode regExNode in regExList)
                         {
-                            string regExpName = (regExpNode.Attributes["name"] == null ? null : regExpNode.Attributes["name"].Value);
-                            string value = (regExpNode.Attributes["value"] == null ? null : regExpNode.Attributes["value"].Value);
+                            string regExName = regExNode.Attributes["name"]?.Value;
+                            string value = regExNode.Attributes["value"]?.Value;
                             //TODO: java version uses "Pattern" class to hold regular expressions.  I'm storing them as strings below
                             //find out if I need an equiv to pattern 
-                            if (regExpName != null && regExpName.Length > 0)
-                            {
-                                attribute.addAllowedRegExp(getRegularExpression(regExpName).ToString());
-                            }
-                            else
-                            {
-                                attribute.addAllowedRegExp(REGEXP_BEGIN + value + REGEXP_END);
-                            }
+                            string allowedRegEx = string.IsNullOrEmpty(regExName) ? $"{REGEX_BEGIN}{value}{REGEX_END}" : GetRegularExpression(regExName).ToString();
                         }
                     }
+
                     XmlNode literalListNode = node.SelectNodes("literal-list")[0];
                     if (literalListNode != null)
                     {
                         XmlNodeList literalNodes = literalListNode.SelectNodes("literal");
                         foreach (XmlNode literalNode in literalNodes)
                         {
-                            string value = (literalNode.Attributes["value"] == null ? null : literalNode.Attributes["value"].Value);
-                            if (value != null && value.Length > 0)
+                            string value = literalNode.Attributes["value"]?.Value;
+
+                            if (!string.IsNullOrEmpty(value))
                             {
-                                attribute.addAllowedValue(value);
+                                attribute.AddAllowedValue(value);
                             }
                             else if (literalNode.Value != null)
                             {
-                                attribute.addAllowedValue(literalNode.Value);
+                                attribute.AddAllowedValue(literalNode.Value);
                             }
                         }
                     }
+
                     commonAttributes.Add(name, attribute);
                 }
             }
             return commonAttributes;
         }
 
-
         /// <summary> Private method for parsing the <tag-rules> from the XML file.</summary>
-        /// <param name="root">The root element for <tag-rules>
-        /// </param>
-        /// <returns> A List<Tag> containing the rules.
-        /// </returns>
-        /// <throws>  PolicyException  </throws>
-        private Hashtable parseTagRules(XmlNode tagAttributeListNode)
+        /// <param name="root">The root element for <tag-rules></param>
+        /// <returns> A Dictionary<string, Tag> containing the rules.</returns>
+        private Dictionary<string, Tag> ParseTagRules(XmlNode tagAttributeListNode)
         {
-            Hashtable tags = new Hashtable();
+            var tags = new Dictionary<string, Tag>();
             XmlNodeList tagList = tagAttributeListNode.SelectNodes("tag");
             foreach (XmlNode tagNode in tagList)
             {
                 if (tagNode.NodeType == XmlNodeType.Element)
                 {
-                    String name = (tagNode.Attributes["name"] == null ? null : tagNode.Attributes["name"].Value);
-                    String action = (tagNode.Attributes["action"] == null ? null : tagNode.Attributes["action"].Value);
+                    string name = tagNode.Attributes["name"]?.Value;
+                    string action = tagNode.Attributes["action"]?.Value;
 
-                    Tag tag = new Tag(name);
+                    var tag = new Tag(name) { 
+                        Action = action 
+                    };
+
                     if (tagNames == null)
-                        tagNames = new ArrayList();
+                    {
+                        tagNames = new List<string>();
+                    }
 
                     tagNames.Add(name);
-                    tag.Action = action;
-                    //XmlNodeList attributeList = tagNode.SelectNodes("attribute");
+
                     XmlNodeList attributeList = tagNode.SelectNodes("attribute");
                     foreach (XmlNode attributeNode in attributeList)
                     {
                         if (!attributeNode.HasChildNodes)
                         {
-                            Attribute attribute = getCommonAttributeByName(attributeNode.Attributes["name"].Value);
+                            Attribute attribute = GetCommonAttributeByName(attributeNode.Attributes["name"].Value);
 
                             if (attribute != null)
                             {
-                                String onInvalid = (attributeNode.Attributes["onInvalid"] == null ? null : attributeNode.Attributes["onInvalid"].Value);
-                                String description = (attributeNode.Attributes["description"] == null ? null : attributeNode.Attributes["description"].Value);
-                                if (onInvalid != null && onInvalid.Length > 0)
-                                    attribute.OnInvalid = onInvalid;
-                                if (description != null && description.Length > 0)
-                                    attribute.Description = description;
+                                string onInvalid = attributeNode.Attributes["onInvalid"]?.Value;
+                                string description = attributeNode.Attributes["description"]?.Value;
 
-                                tag.addAttribute((Attribute)attribute.Clone());
+                                if (!string.IsNullOrEmpty(onInvalid))
+                                {
+                                    attribute.OnInvalid = onInvalid;
+                                }
+                                if (!string.IsNullOrEmpty(description))
+                                {
+                                    attribute.Description = description;
+                                }
+
+                                tag.AddAttribute((Attribute)attribute.Clone());
                             }
                             else
                             {
                                 //TODO: make this work with .NET
                                 //throw new PolicyException("Attribute '"+XMLUtil.getAttributeValue(attributeNode,"name")+"' was referenced as a common attribute in definition of '"+tag.getName()+"', but does not exist in <common-attributes>");
-
                             }
                         }
                         else
                         {
                             /* Custom attribute for this tag */
-                            Attribute attribute = new Attribute(attributeNode.Attributes["name"].Value);
-                            attribute.OnInvalid = (attributeNode.Attributes["onInvalid"] != null ? attributeNode.Attributes["onInvalid"].Value : null);
-                            attribute.Description = (attributeNode.Attributes["description"] != null ? attributeNode.Attributes["description"].Value : null);
-                            XmlNode regExpListNode = attributeNode.SelectNodes("regexp-list")[0];
-                            if (regExpListNode != null)
+                            var attribute = new Attribute(attributeNode.Attributes["name"].Value)
                             {
-                                XmlNodeList regExpList = regExpListNode.SelectNodes("regexp");
-                                foreach (XmlNode regExpNode in regExpList)
+                                Description = attributeNode.Attributes["description"]?.Value,
+                                OnInvalid = attributeNode.Attributes["onInvalid"]?.Value
+                            };
+
+                            XmlNode regExListNode = attributeNode.SelectNodes("regexp-list")[0];
+                            if (regExListNode != null)
+                            {
+                                XmlNodeList regExList = regExListNode.SelectNodes("regexp");
+                                foreach (XmlNode regExNode in regExList)
                                 {
-                                    string regExpName = (regExpNode.Attributes["name"] == null ? null : regExpNode.Attributes["name"].Value);
-                                    string value = (regExpNode.Attributes["value"] == null ? null : regExpNode.Attributes["value"].Value);
-                                    if (regExpName != null && regExpName.Length > 0)
+                                    string regExName = regExNode.Attributes["name"]?.Value;
+                                    string value = regExNode.Attributes["value"]?.Value;
+                                    if (!string.IsNullOrEmpty(regExName))
                                     {
-                                        //AntiSamyPattern pattern = getRegularExpression(regExpName);
-                                        string pattern = getRegularExpression(regExpName);
+                                        string pattern = GetRegularExpression(regExName);
                                         if (pattern != null)
-                                            attribute.addAllowedRegExp(pattern);
-                                        //attribute.addAllowedRegExp(pattern.Pattern);
+                                        {
+                                            attribute.AddAllowedRegExp(pattern);
+                                        }
                                         else
                                         {
-                                            throw new PolicyException("Regular expression '" + regExpName + "' was referenced as a common regexp in definition of '" + tag.Name + "', but does not exist in <common-regexp>");
+                                            throw new PolicyException($"Regular expression '{regExName}' was referenced as a common regexp in definition of '{tag.Name}', but does not exist in <common-regexp>");
                                         }
                                     }
-                                    else if (value != null && value.Length > 0)
+                                    else if (!string.IsNullOrEmpty(value))
                                     {
                                         //TODO: see if I need to reimplement pattern.compile
-                                        attribute.addAllowedRegExp(REGEXP_BEGIN + value + REGEXP_END);
+                                        attribute.AddAllowedRegExp($"{REGEX_BEGIN}{value}{REGEX_END}");
                                     }
                                 }
                             }
@@ -404,173 +382,104 @@ namespace OWASP.AntiSamy.Html
                                 XmlNodeList literalNodes = literalListNode.SelectNodes("literal");
                                 foreach (XmlNode literalNode in literalNodes)
                                 {
-                                    string value = (literalNode.Attributes["value"] == null ? null : literalNode.Attributes["value"].Value);
-                                    if (value != null && value.Length > 0)
+                                    string value = literalNode.Attributes["value"]?.Value;
+                                    if (!string.IsNullOrEmpty(value))
                                     {
-                                        attribute.addAllowedValue(value);
+                                        attribute.AddAllowedValue(value);
                                     }
                                     else if (literalNode.Value != null)
                                     {
-                                        attribute.addAllowedValue(literalNode.Value);
+                                        attribute.AddAllowedValue(literalNode.Value);
                                     }
                                 }
                             }
-                            tag.addAttribute(attribute);
+                            tag.AddAttribute(attribute);
                         }
                     }
                     tags.Add(name, tag);
                 }
             }
+
             return tags;
         }
 
         /// <summary> Go through the <css-rules> section of the policy file.</summary>
-        /// <param name="root">Top level of <css-rules>
-        /// </param>
-        /// <returns> An ArrayList of Property objects.
-        /// </returns>
-        /// <throws>  PolicyException  </throws>
-        private Hashtable parseCSSRules(XmlNode cssNodeList)
+        /// <param name="cssNodeList">Top level of <css-rules></param>
+        /// <returns> An List of Property objects.</returns>
+        private Dictionary<string, Property> ParseCSSRules(XmlNode cssNodeList)
         {
-            Hashtable properties = new Hashtable();
+            var properties = new Dictionary<string, Property>();
             XmlNodeList propertyNodes = cssNodeList.SelectNodes("property");
 
             /*
 		    * Loop through the list of attributes and add them to the collection.
 		    */
-            foreach (XmlNode ele in propertyNodes)
+            foreach (XmlNode propertyNode in propertyNodes)
             {
-                String name = (ele.Attributes["name"] == null ? null : ele.Attributes["name"].Value);
-                String description = (ele.Attributes["description"] == null ? null : ele.Attributes["description"].Value);
+                string name = propertyNode.Attributes["name"]?.Value;
+                string description = propertyNode.Attributes["description"]?.Value;
+                string onInvalid = propertyNode.Attributes["onInvalid"]?.Value;
 
-                Property property = new Property(name);
-                property.Description = description;
-
-                String oninvalid = (ele.Attributes["onInvalid"] == null ? null : ele.Attributes["onInvalid"].Value);
-
-                if (oninvalid != null && oninvalid.Length > 0)
+                var property = new Property(name)
                 {
-                    property.OnInvalid = oninvalid;
-                }
-                else
+                    Description = description,
+                    OnInvalid = string.IsNullOrEmpty(onInvalid) ? DEFAULT_ONINVALID : onInvalid
+                };
+
+                XmlNode regExListNode = propertyNode.SelectNodes("regexp-list")[0];
+                if (regExListNode != null)
                 {
-                    property.OnInvalid = DEFAULT_ONINVALID;
-                }
-
-                XmlNode regExpListNode = ele.SelectNodes("regexp-list")[0];
-
-
-
-                if (regExpListNode != null)
-                {
-                    XmlNodeList regExpList = regExpListNode.SelectNodes("regexp");
-
-
                     /*
     				 * First go through the allowed regular expressions.
 	    			 */
-                    foreach (XmlNode regExpNode in regExpList)
+                    XmlNodeList regExList = regExListNode.SelectNodes("regexp");
+                    foreach (XmlNode regExNode in regExList)
                     {
-                        string regExpName = (regExpNode.Attributes["name"] == null ? null : regExpNode.Attributes["name"].Value);
-                        string value = (regExpNode.Attributes["value"] == null ? null : regExpNode.Attributes["value"].Value);
-                        //AntiSamyPattern pattern = getRegularExpression(regExpName);
-                        string pattern = getRegularExpression(regExpName);
+                        string regExName = regExNode.Attributes["name"]?.Value;
+                        string value = regExNode.Attributes["value"]?.Value;
+                        string pattern = GetRegularExpression(regExName);
                         if (pattern != null)
                         {
-                            //property.addAllowedRegExp(pattern.Pattern);
-                            property.addAllowedRegExp(pattern);
+                            property.AddAllowedRegExp(pattern);
                         }
                         else if (value != null)
                         {
-                            property.addAllowedRegExp(REGEXP_BEGIN + value + REGEXP_END);
+                            property.AddAllowedRegExp($"{REGEX_BEGIN}{value}{REGEX_END}");
                         }
                         else
                         {
-                            throw new PolicyException("Regular expression '" + regExpName + "' was referenced as a common regexp in definition of '" + property.Name + "', but does not exist in <common-regexp>");
+                            throw new PolicyException($"Regular expression '{regExName}' was referenced as a common regexp in definition of '{property.Name}', but does not exist in <common-regexp>");
                         }
                     }
                 }
                 
-                XmlNode literalListNode = ele.SelectNodes("literal-list")[0];
                 /*
                  * Then go through the allowed constants.
                  */
+                XmlNode literalListNode = propertyNode.SelectNodes("literal-list")[0];
                 if (literalListNode != null)
                 {
                     XmlNodeList literalList = literalListNode.SelectNodes("literal");
                     foreach (XmlNode literalNode in literalList)
                     {
-                        property.addAllowedValue(literalNode.Attributes["value"].Value);
+                        property.AddAllowedValue(literalNode.Attributes["value"].Value);
                     }
                 }
-                XmlNode shorthandListNode = ele.SelectNodes("shorthand-list")[0];
+
+                XmlNode shorthandListNode = propertyNode.SelectNodes("shorthand-list")[0];
                 if (shorthandListNode != null)
                 {
                     XmlNodeList shorthandList = shorthandListNode.SelectNodes("shorthand");
                     foreach (XmlNode shorthandNode in shorthandList)
                     {
-                        property.addShorthandRef(shorthandNode.Attributes["name"].Value);
+                        property.AddShorthandRef(shorthandNode.Attributes["name"].Value);
                     }
                 }
 
                 properties.Add(name, property);
             }
+
             return properties;
-        }
-
-
-        /// <summary> A simple method for returning on of the <common-regexp> entries by
-        /// name.
-        /// 
-        /// </summary>
-        /// <param name="name">The name of the common regexp we want to look up.
-        /// </param>
-        /// <returns> An AntiSamyPattern associated with the lookup name specified.
-        /// </returns>
-        /*
-        public virtual AntiSamyPattern getRegularExpression(string name)
-        {
-            return (AntiSamyPattern)commonRegularExpressions[name];
-        }
-        */
-        public virtual string getRegularExpression(string name)
-        {
-            if (name == null || commonRegularExpressions[name] == null) 
-                return null;
-            else
-                return commonRegularExpressions[name].ToString();
-            
-        }
-        /// <summary> A simple method for returning on of the <global-attribute> entries by
-        /// name.
-        /// </summary>
-        /// <param name="name">The name of the global-attribute we want to look up.
-        /// </param>
-        /// <returns> An Attribute associated with the global-attribute lookup name specified.
-        /// </returns>
-        public virtual Attribute getGlobalAttributeByName(string name)
-        {
-            return (Attribute)globalAttributes[name];
-        }
-
-        /// <summary> A simple method for returning on of the <common-attribute> entries by
-        /// name.
-        /// </summary>
-        /// <param name="name">The name of the common-attribute we want to look up.
-        /// </param>
-        /// <returns> An Attribute associated with the common-attribute lookup name specified.
-        /// </returns>
-        private Attribute getCommonAttributeByName(string attributeName)
-        {
-            return (Attribute)commonAttributes[attributeName];
-        }
-
-        /// <summary> Return a directive value based on a lookup name.</summary>
-        /// <returns> A String object containing the directive associated with the lookup name, or null if none is found.
-        /// </returns>
-        public virtual string getDirective(string name)
-        {
-            return (string)directives[name];
         }
     }
 }

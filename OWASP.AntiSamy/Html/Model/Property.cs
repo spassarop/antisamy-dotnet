@@ -33,78 +33,29 @@ namespace OWASP.AntiSamy.Html.Model
 {
 
     /// <summary> A model for CSS properties and the "rules" they must follow (either literals
-    /// or regular expressions) in order to be considered valid.
-    /// 
-    /// </summary>
-    /// <author>  Jason Li
-    /// 
-    /// </author>
+    /// or regular expressions) in order to be considered valid.</summary>
+    // Author: Jason Li
     public class Property
     {
-        private string name;
-        private string onInvalid;
-        private string description;
-        private List<string> allowedValues = new List<string>();
-        private List<string> allowedRegExp = new List<string>();
-        private List<string> shorthandRefs = new List<string>();
+        public List<string> AllowedRegExp { get; set; } = new List<string>();
+        public List<string> AllowedValues { get; set; } = new List<string>();
+        public List<string> ShorthandRefs { get; set; } = new List<string>();
+        public string Name { get; set; }
+        public string OnInvalid { get; set; }
+        public string Description { get; set; }
 
-        public Property(string name)
-        {
-            this.name = name;
-        }
+        public Property(string name) => this.Name = name;
 
         /// <summary> Add the specified value to the allowed list of valid values.</summary>
-        /// <param name="safeValue">The new valid value to add to the list.
-        /// </param>
-        public void addAllowedValue(string safeValue)
-        {
-            this.allowedValues.Add(safeValue);
-        }
+        /// <param name="safeValue">The new valid value to add to the list.</param>
+        public void AddAllowedValue(string safeValue) => AllowedValues.Add(safeValue);
 
         /// <summary> Add the specified value to the allowed list of valid regular expressions.</summary>
-        /// <param name="safeRegExpValue">The new valid regular expression to add to the list.
-        /// </param>
-        public virtual void addAllowedRegExp(string safeRegExpValue)
-        {
-            this.allowedRegExp.Add(safeRegExpValue);
-        }
+        /// <param name="safeRegExpValue">The new valid regular expression to add to the list.</param>
+        public void AddAllowedRegExp(string safeRegExpValue) => AllowedRegExp.Add(safeRegExpValue);
 
         /// <summary> Add the specified value to the allowed list of valid shorthand values.</summary>
-        /// <param name="shorthandValue">The new valid shorthand value to add to the list.
-        /// </param>
-        public void addShorthandRef(string shorthandValue)
-        {
-            this.shorthandRefs.Add(shorthandValue);
-        }
-        public List<string> AllowedRegExp
-        {
-            get { return allowedRegExp; }
-            set { allowedRegExp = value; }
-        }
-        public List<string> AllowedValues
-        {
-            get { return allowedValues; }
-            set { allowedValues = value; }
-        }
-        public List<string> ShorthandRefs
-        {
-            get { return shorthandRefs; }
-            set { shorthandRefs = value; }
-        }
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
-        public string OnInvalid
-        {
-            get { return onInvalid; }
-            set { onInvalid = value; }
-        }
-        public string Description
-        {
-            get { return description; }
-            set { description = value; }
-        }
+        /// <param name="shorthandValue">The new valid shorthand value to add to the list.</param>
+        public void AddShorthandRef(string shorthandValue) => ShorthandRefs.Add(shorthandValue);
     }
 }
