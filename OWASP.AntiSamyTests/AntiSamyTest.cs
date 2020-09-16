@@ -159,25 +159,18 @@ namespace AntiSamyTests
         [Test]
         public void TestEmptyTags()
         {
-            try
-            {
-                string html = antisamy.Scan("<br ><strong></strong><a>hello world</a><b /><i/><hr>", policy).GetCleanHTML();
+            string html = antisamy.Scan("<br ><strong></strong><a>hello world</a><b /><i/><hr>", policy).GetCleanHTML();
                 
-                var regex = new Regex(".*<strong(\\s*)/>.*");
-                Assert.IsFalse(regex.IsMatch(html));
+            var regex = new Regex(".*<strong(\\s*)/>.*");
+            Assert.IsFalse(regex.IsMatch(html));
 
-                regex = new Regex(".*<b(\\s*)/>.*");
-                Assert.IsFalse(regex.IsMatch(html));
+            regex = new Regex(".*<b(\\s*)/>.*");
+            Assert.IsFalse(regex.IsMatch(html));
 
-                regex = new Regex(".*<i(\\s*)/>.*");
-                Assert.IsFalse(regex.IsMatch(html));
+            regex = new Regex(".*<i(\\s*)/>.*");
+            Assert.IsFalse(regex.IsMatch(html));
 
-                Assert.IsTrue(html.Contains("<hr />") || html.Contains("<hr/>"));
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Caught exception in TestEmptyTags(): {e.Message}");
-            }
+            Assert.IsTrue(html.Contains("<hr />") || html.Contains("<hr/>"));
         }
 
         /*
@@ -186,14 +179,18 @@ namespace AntiSamyTests
         [Test]
         public void TestMisplacedTag()
         {
-            try
-            {
-                Assert.IsFalse(antisamy.Scan("<b><i>Some Text</b></i>", policy).GetCleanHTML().Contains("<i />"));
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Caught exception in TestEmptyTags(): {e.Message}");
-            }
+            Assert.IsFalse(antisamy.Scan("<b><i>Some Text</b></i>", policy).GetCleanHTML().Contains("<i />"));
+        }
+
+        /*
+         * Tests issues #25 from nahsra/antisamy.
+         */
+        [Test]
+        public void TestMarginRemovalFromInlineStyle()
+        {
+            Assert.AreEqual(
+                expected: "<div style=\"\">Test</div>", 
+                actual: antisamy.Scan("<div style=\"margin: -5em\">Test</div>", policy).GetCleanHTML());
         }
     }
 }
