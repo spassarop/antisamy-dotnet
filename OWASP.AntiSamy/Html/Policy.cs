@@ -101,22 +101,32 @@ namespace OWASP.AntiSamy.Html
             }
         }
 
-        /// <summary> This retrieves a Policy based on a default location ("Resources/antisamy.xml")</summary>
-        /// <returns> A populated Policy object based on the XML policy file located in the default location.</returns>
+        /// <summary> This retrieves a policy based on a default location ("Resources/antisamy.xml")</summary>
+        /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the default location.</returns>
         /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance() => new Policy(DEFAULT_POLICY_URI);
 
-        /// <summary> This retrieves a Policy based on the file name passed in</summary>
+        /// <summary> This retrieves a policy based on the file name passed in</summary>
         /// <param name="filename">The path to the XML policy file.</param>
-        /// <returns> A populated Policy object based on the XML policy file located in the location passed in.</returns>
+        /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the location passed in.</returns>
         /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance(string filename) => new Policy(filename);
 
-        /// <summary> This retrieves a Policy based on the File object passed in</summary>
-        /// <param name="file">A File object which contains the XML policy information.</param>
-        /// <returns> A populated Policy object based on the XML policy file pointed to by the File parameter.</returns>
+        /// <summary> This retrieves a policy based on the File object passed in</summary>
+        /// <param name="file">A <see cref="FileInfo"/> object which contains the XML policy information.</param>
+        /// <returns> A populated <see cref="Policy"/> object based on the XML policy file pointed to by the <c>file</c> parameter.</returns>
         /// <exception cref="PolicyException"></exception>
-        public static Policy GetInstance(FileInfo file) => new Policy(new FileInfo(file.FullName));
+        public static Policy GetInstance(FileInfo file)
+        {
+            try
+            {
+                return new Policy(new FileInfo(file.FullName));
+            }
+            catch (Exception ex)
+            {
+                throw new PolicyException($"Problem parsing policy file: {ex.Message}");
+            }
+        }
 
         /*/// <summary> A simple method for returning on of the <common-regexp> entries by
         /// name.
