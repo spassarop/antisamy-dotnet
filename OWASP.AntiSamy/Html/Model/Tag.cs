@@ -123,16 +123,16 @@ namespace OWASP.AntiSamy.Html.Model
         /// <param name="name">The name of the tag, such as "b" for &lt;b&gt; tags.</param>
         public Tag(string name) => Name = name;
 
-        /// <summary> Adds a fully-built Attribute to the list of Attributes allowed for this tag.</summary>
-        /// <param name="attribute">The Attribute to add to the list of allowed Attributes.</param>
+        /// <summary> Adds a fully-built <see cref="Attribute"/> to the list of attributes allowed for this tag.</summary>
+        /// <param name="attribute">The <see cref="Attribute"/> to add to the list of allowed attributes.</param>
         public void AddAttribute(Attribute attribute)
         {
             AllowedAttributes[attribute.Name] = attribute;
         }
 
-        /// <summary> Returns an <code>Attribute</code> associated with a lookup name.</summary>
+        /// <summary> Returns an <see cref="Attribute"/> associated with a lookup name.</summary>
         /// <param name="name">The name of the allowed attribute by name.</param>
-        /// <returns> The <c>Attribute</c> object associated with the name.</returns>
+        /// <returns> The <see cref="Attribute"/> object associated with the name.</returns>
         public Attribute GetAttributeByName(string name) => AllowedAttributes.GetValueOrDefault(name);
 
         private string EscapeRegularExpressionCharacters(string allowedValue)

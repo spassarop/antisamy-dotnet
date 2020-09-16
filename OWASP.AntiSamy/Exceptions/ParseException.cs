@@ -26,12 +26,6 @@ using System;
 
 namespace OWASP.AntiSamy.Exceptions
 {
-
-    /// <summary> 
-    /// This exception gets thrown when there is an unexpected error parsing
-    /// the tainted HTML. The code is sturdy, but the unlikely <c>IOException</c> or
-    /// SAX exceptions are always theoretically possible.
-    /// </summary>
     [Serializable]
     public class ParseException : Exception
     {

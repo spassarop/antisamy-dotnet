@@ -31,7 +31,6 @@ using System.Collections.Generic;
 
 namespace OWASP.AntiSamy.Html.Model
 {
-
     /// <summary> A model for CSS properties and the "rules" they must follow (either literals
     /// or regular expressions) in order to be considered valid.</summary>
     // Author: Jason Li

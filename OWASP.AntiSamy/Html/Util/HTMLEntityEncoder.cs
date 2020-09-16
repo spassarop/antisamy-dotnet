@@ -29,8 +29,8 @@ namespace OWASP.AntiSamy.Html.Util
     public class HTMLEntityEncoder
     {
         /// <summary> A helper method for HTML entity-encoding a string value.</summary>
-        /// <param name="value">A String containing HTML control characters.</param>
-        /// <returns> An HTML-encoded String.</returns>
+        /// <param name="value">A string containing HTML control characters.</param>
+        /// <returns> An HTML-encoded string.</returns>
         public static string HtmlEntityEncode(string value)
         {
 

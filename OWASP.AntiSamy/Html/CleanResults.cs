@@ -31,11 +31,10 @@ namespace OWASP.AntiSamy.Html
     /// <summary> 
     /// This class contains the results of a scan.
     /// 
-    /// The list of error messages (<c>errorMessages</c>) will let the user know
+    /// The list of error messages (<see cref="GetErrorMessages"/>) will let the user know
     /// what, if any HTML errors existed, and what, if any, security or
     /// validation-related errors existed, and what was done about them.
     /// </summary>
-    /// 
     public class CleanResults
     {
         private readonly List<string> errorMessages = new List<string>();
@@ -68,19 +67,19 @@ namespace OWASP.AntiSamy.Html
         public string GetCleanHTML() => cleanHTML;
 
         /// <summary> Return a list of error messages.</summary>
-        /// <returns> A List object which contains the error messages after a scan.</returns>
+        /// <returns> A <see cref="List{string}"/> object which contains the error messages after a scan.</returns>
         public List<string> GetErrorMessages() => errorMessages;
 
         /// <summary> Return the time when scan finished.</summary>
-        /// <returns> A DateTime object indicating the moment the scan finished.</returns>
+        /// <returns> A <see cref="DateTime"/> object indicating the moment the scan finished.</returns>
         public DateTime GetEndOfScan() => endOfScan;
 
         /// <summary> Return the time when scan started.</summary>
-        /// <returns> A DateTime object indicating the moment the scan started.</returns>
+        /// <returns> A <see cref="DateTime"/> object indicating the moment the scan started.</returns>
         public DateTime GetStartOfScan() => startOfScan;
 
         /// <summary> Return the time elapsed during the scan.</summary>
-        /// <returns> A double primitive indicating the amount of time elapsed between the beginning and end of the scan in seconds.</returns>
+        /// <returns> A <see langword="double"/> primitive indicating the amount of time elapsed between the beginning and end of the scan in seconds.</returns>
         public double GetScanTime() => (endOfScan.Millisecond - startOfScan.Millisecond) / 1000D;
 
         /// <summary> Add an error message to the aggregate list of error messages during filtering.</summary>

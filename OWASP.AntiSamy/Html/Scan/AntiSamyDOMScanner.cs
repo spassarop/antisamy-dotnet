@@ -37,28 +37,20 @@ using Attribute = OWASP.AntiSamy.Html.Model.Attribute;
 namespace OWASP.AntiSamy.Html.Scan
 {
     /// <summary> This is where the magic lives. All the scanning/filtration logic resides here, but it should not be called
-    /// directly. All scanning should be done through a <c>AntiSamy.Scan()</c> method.
-    /// </summary>
+    /// directly. All scanning should be done through a <see cref="AntiSamy"/><c>.Scan()</c> method.</summary>
     public class AntiSamyDOMScanner
     {
-        public const string DEFAULT_ENCODING_ALGORITHM = "UTF-8"; // TODO: Evaluate moving constants to separate file
         public const string EMPTY_CSS_COMMENT = "/* */";
-        public virtual CleanResults Results { get; set; }
-
-        private void InitBlock() => dom = document.CreateDocumentFragment();
-        
-        // Policy holds the parsed attributes from the XML config file
-        private readonly Policy policy;
 
         // Will hold the results of the scan
-        private CleanResults results = null;
-
+        public CleanResults Results { get; set; }
+        private void InitBlock() => dom = document.CreateDocumentFragment();
+        // Policy holds the parsed attributes from the XML config file
+        private readonly Policy policy;
         // All error messages live in here
         private readonly List<string> errorMessages = new List<string>();
-
         // Needed to parse input
         private readonly XmlDocument document = new XmlDocument();
-
         // Needed to represent the parsed version of the input
         private XmlDocumentFragment dom;
 
@@ -76,10 +68,11 @@ namespace OWASP.AntiSamy.Html.Scan
 
         /// <summary> Main parsing engine </summary>
         /// <param name="html">A string whose contents we want to scan.</param>
-        /// <returns> A <c>CleanResults</c> object with an <c>XMLDocumentFragment</c>
-        ///  object and its String representation, as well as some scan statistics.</returns>
+        /// <returns> A <see cref="CleanResults"/> object with an <see cref="XmlDocumentFragment"/>
+        ///  object and its string representation, as well as some scan statistics.</returns>
         /// <exception cref="ScanException">  ScanException </exception>
-        public virtual CleanResults Scan(string html, string inputEncoding, string outputEncoding)
+        // TODO: Use in/out encodings or remove them
+        public virtual CleanResults Scan(string html) 
         {
             if (html == null)
             {
@@ -102,7 +95,7 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             catch (FormatException fe)
             {
-                Console.WriteLine("Format Exception: " + fe.ToString());
+                Console.WriteLine($"Format Exception: {fe.Message}. Using DEFAULT_MAX_INPUT_SIZE ({Policy.DEFAULT_MAX_INPUT_SIZE}).");
             }
 
             // Ensure our input is less than the max

@@ -28,6 +28,7 @@ using System.IO;
 using System.Xml;
 using OWASP.AntiSamy.Exceptions;
 using OWASP.AntiSamy.Html.Model;
+using OWASP.AntiSamy.Html.Util;
 using Attribute = OWASP.AntiSamy.Html.Model.Attribute;
 using Tag = OWASP.AntiSamy.Html.Model.Tag;
 
@@ -306,11 +307,11 @@ namespace OWASP.AntiSamy.Html
             {
                 if (tagNode.NodeType == XmlNodeType.Element)
                 {
-                    string name = tagNode.Attributes["name"]?.Value;
-                    string action = tagNode.Attributes["action"]?.Value;
+                    string tagName = tagNode.Attributes["name"]?.Value;
+                    string tagAction = tagNode.Attributes["action"]?.Value;
 
-                    var tag = new Tag(name) { 
-                        Action = action 
+                    var tag = new Tag(tagName) { 
+                        Action = tagAction 
                     };
 
                     if (tagNames == null)
@@ -318,7 +319,7 @@ namespace OWASP.AntiSamy.Html
                         tagNames = new List<string>();
                     }
 
-                    tagNames.Add(name);
+                    tagNames.Add(tagName);
 
                     XmlNodeList attributeList = tagNode.SelectNodes("attribute");
                     foreach (XmlNode attributeNode in attributeList)
@@ -345,8 +346,7 @@ namespace OWASP.AntiSamy.Html
                             }
                             else
                             {
-                                //TODO: make this work with .NET
-                                //throw new PolicyException("Attribute '"+XMLUtil.getAttributeValue(attributeNode,"name")+"' was referenced as a common attribute in definition of '"+tag.getName()+"', but does not exist in <common-attributes>");
+                                throw new PolicyException($"Attribute '{XMLUtil.GetAttributeValue(attributeNode as XmlElement, "name")}' was referenced as a common attribute in definition of '{tagName}', but does not exist in <common-attributes>");
                             }
                         }
                         else
@@ -380,7 +380,7 @@ namespace OWASP.AntiSamy.Html
                                     }
                                     else if (!string.IsNullOrEmpty(value))
                                     {
-                                        //TODO: see if I need to reimplement pattern.compile
+                                        //TODO: See if I need to reimplement pattern.compile
                                         attribute.AddAllowedRegExp($"{REGEX_BEGIN}{value}{REGEX_END}");
                                     }
                                 }
@@ -406,7 +406,7 @@ namespace OWASP.AntiSamy.Html
                             tag.AddAttribute(attribute);
                         }
                     }
-                    tags.Add(name, tag);
+                    tags.Add(tagName, tag);
                 }
             }
 
@@ -414,8 +414,8 @@ namespace OWASP.AntiSamy.Html
         }
 
         /// <summary> Go through the <css-rules> section of the policy file.</summary>
-        /// <param name="cssNodeList">Top level of <css-rules></param>
-        /// <returns> An List of Property objects.</returns>
+        /// <param name="cssNodeList">Top level of <css-rules>.</param>
+        /// <returns> An List of <see cref="Property"/> objects.</returns>
         /// <exception cref="PolicyException"></exception>
         private Dictionary<string, Property> ParseCSSRules(XmlNode cssNodeList)
         {

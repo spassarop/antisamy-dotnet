@@ -32,82 +32,48 @@ namespace OWASP.AntiSamy.Html
 {
     /// <summary> 
     /// This is the only class from which the outside world should be calling. The <c>Scan()</c> method holds
-    /// the meat and potatoes of OWASP.AntiSamy. The file contains a number of ways for <c>Scan()</c>'ing depending
+    /// the meat and potatoes of AntiSamy. The file contains a number of ways for <c>Scan()</c>'ing depending
     /// on the accessibility of the policy file.
     /// </summary>
     public class AntiSamy
     {
-        public string InputEncoding { get; set; } = AntiSamyDOMScanner.DEFAULT_ENCODING_ALGORITHM;
-        public string OutputEncoding { get; set; } = AntiSamyDOMScanner.DEFAULT_ENCODING_ALGORITHM;
-
-        /// <summary> The meat and potatoes. The <c>Scan()</c> family of methods are the only methods the outside world should
-        /// be calling to invoke AntiSamy.
-        /// </summary>
+        /// <remarks> 
+        /// The meat and potatoes. The <c>Scan()</c> family of methods are the
+        /// only methods the outside world should be calling to invoke AntiSamy.
+        /// </remarks>
+        /// <summary>This method calls the actual scan using the default policy document (antisamy.xml).</summary>
         /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
         /// <param name="inputEncoding">The encoding of the input.</param>
         /// <param name="outputEncoding">The encoding that the output should be in.</param>
-        /// <returns> A <c>CleanResults</c> object which contains information about the scan (including the results).</returns>
-        /// <exception cref="Exceptions.ScanException"><c>ScanException</c> When there is a problem encountered while scanning the HTML.</exception> 
-        /// <exception cref="Exceptions.PolicyException">When there is a problem reading the policy file.</exception>
-        public virtual CleanResults Scan(string taintedHTML)
-        {
-            /*
-            * Get or reload the policy document (antisamy.xml). We'll need to pass that to the
-            * scanner so it knows what to look for.
-            */
-            var antiSamy = new AntiSamyDOMScanner(Policy.GetInstance());
+        /// <returns> A <see cref="CleanResults"/> object which contains information about the scan (including the results).</returns>
+        /// <exception cref="Exceptions.ScanException"/> 
+        /// <exception cref="Exceptions.PolicyException"/>
+        public CleanResults Scan(string taintedHTML) => Scan(taintedHTML, Policy.GetInstance());
 
-            /*
-            * Go get 'em!
-            */
-            return antiSamy.Scan(taintedHTML, InputEncoding, OutputEncoding);
-        }
-
-        // <summary> This method wraps <code>scan()</code> using the Policy object passed in.</summary>
-        /*		public CleanResults scan(string taintedHTML, Policy policy)
-                {
-                    return new AntiSamyDOMScanner(policy).scan(taintedHTML, inputEncoding, outputEncoding);
-                }
-        */
-
-        /// <summary> This method wraps <c>Scan()</c> using the Policy object passed in.</summary>
+        /// <summary> This method wraps <c>Scan()</c> using the <see cref="Policy"/> in the specified file.</summary>
         /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
         /// <param name="filename">Name of the file which contains the policy.</param>
-        /// <returns> A <c>CleanResults</c> object which contains information about the scan (including the results).</returns>
-        /// <exception cref="Exceptions.ScanException"><c>ScanException</c> When there is a problem encountered while scanning the HTML.</exception> 
-        /// <exception cref="Exceptions.PolicyException">When there is a problem reading the policy file.</exception>
-        public virtual CleanResults Scan(string taintedHTML, string filename)
-        {
-            /*
-            * Get or reload the policy document (antisamy.xml). We'll need to pass that to the
-            * scanner so it knows what to look for.
-            */
-            AntiSamyDOMScanner antiSamy = new AntiSamyDOMScanner(Policy.GetInstance(filename));
+        /// <returns> A <see cref="CleanResults"/> object which contains information about the scan (including the results).</returns>
+        /// <exception cref="Exceptions.ScanException"/> 
+        /// <exception cref="Exceptions.PolicyException"/>
+        public CleanResults Scan(string taintedHTML, string filename) => Scan(taintedHTML, Policy.GetInstance(filename));
 
-            /*
-            * Go get 'em!
-            */
-            return antiSamy.Scan(taintedHTML, InputEncoding, OutputEncoding);
-        }
-
-        /// <summary> This method wraps <c>Scan()</c> using the Policy object passed in.</summary>
+        /// <summary> This method wraps the actual <c>Scan()</c> using the <see cref="Policy"/> object passed in.</summary>
         /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
         /// <param name="policy">Policy to use on the scan.</param>
-        /// <returns> A <c>CleanResults</c> object which contains information about the scan (including the results).</returns>
-        /// <exception cref="Exceptions.ScanException"><c>ScanException</c> When there is a problem encountered while scanning the HTML.</exception> 
-        public virtual CleanResults Scan(string taintedHTML, Policy policy)
+        /// <returns> A <see cref="CleanResults"/> object which contains information about the scan (including the results).</returns>
+        /// <exception cref="Exceptions.ScanException"/> 
+        public CleanResults Scan(string taintedHTML, Policy policy)
         {
-            var antiSamy = new AntiSamyDOMScanner(policy);
-
             /*
             * Go get 'em!
             */
-            return antiSamy.Scan(taintedHTML, InputEncoding, OutputEncoding);
+            return new AntiSamyDOMScanner(policy).Scan(taintedHTML);
         }
 
         /// <summary> Main method for testing AntiSamy.</summary>
-        /// <param name="args">Command line arguments. Only 1 argument is processed, and it should be a URL or filename to run through AntiSamy using
-        /// the default policy location.</param>
+        /// <param name="args">Command line arguments. Only 1 argument is processed, 
+        /// and it should be a URL or filename to run through AntiSamy using the default policy location.</param>
         [STAThread]
         static void Main(string[] args)
         {

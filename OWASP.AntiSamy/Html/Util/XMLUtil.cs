@@ -29,7 +29,6 @@ namespace OWASP.AntiSamy.Html.Util
 {
     public class XMLUtil
     {
-
         /// <summary> Helper function for quickly retrieving an attribute from a given element.</summary>
         /// <param name="element">The document element from which to pull the attribute value.</param>
         /// <param name="attributeName">The name of the attribute.</param>
@@ -63,7 +62,7 @@ namespace OWASP.AntiSamy.Html.Util
         */
 
         /// <summary> Helper function for quickly retrieving a string value of a given XML element.</summary>
-        /// <param name="element">The document element from which to pull the String value.</param>
+        /// <param name="element">The document element from which to pull the string value.</param>
         /// <param name="tagName">The name of the node.</param>
         /// <returns> The string value of the given node in the element passed in.</returns>
         public static string GetTextValue(XmlElement element, string tagName)
