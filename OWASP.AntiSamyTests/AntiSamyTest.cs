@@ -179,5 +179,21 @@ namespace AntiSamyTests
                 Assert.Fail($"Caught exception in TestEmptyTags(): {e.Message}");
             }
         }
+
+        /*
+         * Tests issues #20 from nahsra/antisamy.
+         */
+        [Test]
+        public void TestMisplacedTag()
+        {
+            try
+            {
+                Assert.IsFalse(antisamy.Scan("<b><i>Some Text</b></i>", policy).GetCleanHTML().Contains("<i />"));
+            }
+            catch (Exception e)
+            {
+                Assert.Fail($"Caught exception in TestEmptyTags(): {e.Message}");
+            }
+        }
     }
 }
