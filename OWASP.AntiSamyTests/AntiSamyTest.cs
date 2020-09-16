@@ -25,6 +25,7 @@
 using System;
 using OWASP.AntiSamy.Html;
 using NUnit.Framework;
+using System.Text.RegularExpressions;
 
 namespace AntiSamyTests
 {
@@ -149,6 +150,33 @@ namespace AntiSamyTests
             catch (Exception e)
             {
                 Assert.Fail($"Caught exception in TestCssAttacks(): {e.Message}");
+            }
+        }
+
+        /*
+         * Tests issues #12 and #36 from nahsra/antisamy.
+         */
+        [Test]
+        public void TestEmptyTags()
+        {
+            try
+            {
+                string html = antisamy.Scan("<br ><strong></strong><a>hello world</a><b /><i/><hr>", policy).GetCleanHTML();
+                
+                var regex = new Regex(".*<strong(\\s*)/>.*");
+                Assert.IsFalse(regex.IsMatch(html));
+
+                regex = new Regex(".*<b(\\s*)/>.*");
+                Assert.IsFalse(regex.IsMatch(html));
+
+                regex = new Regex(".*<i(\\s*)/>.*");
+                Assert.IsFalse(regex.IsMatch(html));
+
+                Assert.IsTrue(html.Contains("<hr />") || html.Contains("<hr/>"));
+            }
+            catch (Exception e)
+            {
+                Assert.Fail($"Caught exception in TestEmptyTags(): {e.Message}");
             }
         }
     }
