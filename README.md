@@ -4,6 +4,8 @@ A library for performing fast, configurable cleansing of HTML coming from untrus
 
 Another way of saying that could be: It's an API that helps you make sure that clients don't supply malicious cargo code in the HTML they supply for their profile, comments, etc., that get persisted on the server. The term "malicious code" in regard to web applications usually mean "JavaScript." Mostly, Cascading Stylesheets are only considered malicious when they invoke JavaScript. However, there are many situations where "normal" HTML and CSS can be used in a malicious manner.
 
+This project will be trying to be in sync with the original Java version, its repository can be found [here](https://github.com/nahsra/antisamy).
+
 ## How to Use
 
 ### 1. Import the dependency
