@@ -5,7 +5,7 @@
 If you believe that you have found a vulnerability in OWASP AntiSamy .NET, first please search the
 GitHub issues list (for both open and closed issues) to see if it has already been reported.
 
-If it has not, then please contact Dave Wichers (sebastian.passaro at owasp.org) _directly_.
+If it has not, then please contact Sebastián Passaro (sebastian.passaro at owasp.org) _directly_.
 Please do **not** report any suspected vulnerabilities via GitHub issues
 as we wish to keep our users secure while a patch is implemented and deployed. 
 This is because if this is reported as a GitHub issue, it more or less is equivalent 
