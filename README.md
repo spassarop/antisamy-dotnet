@@ -9,7 +9,7 @@ Another way of saying that could be: It's an API that helps you make sure that c
 
 This project will be trying to be in sync with the original Java version, its repository can be found [here](https://github.com/nahsra/antisamy).
 
-## How to Use
+## How to use
 
 ### 1. Import the dependency
 <!-- TODO: Ways to include in other projects. -->
@@ -55,9 +55,9 @@ MyUser.StoreHtmlProfile(results.GetCleanHTML()); // Some custom function
 
 There are a few ways to create a `Policy` object. The `GetInstance()` method can take any of the following:
 
- * A `string` filename.
- * A `FileInfo` object.
- * `Policy` files can also be referenced by filename by passing a second argument to the `AntiSamy.Scan()` method as the following examples show:
+- A `string` filename.
+- A `FileInfo` object.
+- `Policy` files can also be referenced by filename by passing a second argument to the `AntiSamy.Scan()` method as the following examples show:
 
 ```c#
 var antiSamy = new AntiSamy();
@@ -67,10 +67,10 @@ CleanResults results = antiSamy.Scan(dirtyInput, policyFilePath);
 ### 5. Analyzing CleanResults
 The `CleanResults` object provides a lot of useful stuff.
 
- * `GetErrorMessages()` - a list of String error messages -- *if this returns 0 that does not mean there were no attacks!*
- * `GetCleanHTML()` - the clean, safe HTML output.
- * `GetCleanXMLDocumentFragment()` - the clean, safe `XMLDocumentFragment` which is reflected in `GetCleanHTML()`.
- * `GetScanTime()` - returns the scan time in seconds.
+- `GetErrorMessages()` - a list of String error messages -- *if this returns 0 that does not mean there were no attacks!*
+- `GetCleanHTML()` - the clean, safe HTML output.
+- `GetCleanXMLDocumentFragment()` - the clean, safe `XMLDocumentFragment` which is reflected in `GetCleanHTML()`.
+- `GetScanTime()` - returns the scan time in seconds.
  
 __Important note__: There has been much confusion about the `GetErrorMessages()` method. The `GetErrorMessages()` method does not subtly answer the question "is this safe input?" in the affirmative if it returns an empty list. You must always use the sanitized input and there is no way to be sure the input passed in had no attacks.
 
@@ -78,8 +78,8 @@ The serialization and deserialization process that is critical to the effectiven
 
 ## Contributing to OWASP AntiSamy .NET
 
-### Find an Issue?
-If you have found a bug, then create an issue in the OWASP AntiSamy .NET repository: https://github.com/spassarop/antisamy-dotnet/issues.
+### Found an issue?
+If you have found a bug, then create an issue in the OWASP AntiSamy .NET repository: <https://github.com/spassarop/antisamy-dotnet/issues>.
 
 ### Found a vulnerability?
 If you have found a vulnerability in OWASP AntiSamy .NET, first search the issues list (see above) to see if it has already been reported. If it has not, then please contact Sebastián Passaro (sebastian.passaro at owasp.org) directly. Please do not report vulnerabilities via GitHub issues as we wish to keep our users secure while a patch is implemented and deployed. If you wish to be acknowledged for finding the vulnerability, then please follow this process.
