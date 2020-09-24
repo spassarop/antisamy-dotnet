@@ -127,13 +127,16 @@ namespace OWASP.AntiSamy.Css
                 string result = ScanStyleSheet(styleSheet, errorMessages);
                 cleanStylesheet = isInlineCss ? CleanDummyWrapper(result) : result;
             }
-            catch (ParseException)
+            catch (Exception ex)
             {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                throw new ScanException("An error occured while scanning CSS", exception);
+                if (ex is ParseException)
+                {
+                    throw;
+                }
+                else
+                {
+                    throw new ScanException($"An error occured while scanning CSS: {ex.Message}", ex);
+                }
             }
 
             return new CleanResults(startOfScan, new DateTime(), cleanStylesheet, null, errorMessages);

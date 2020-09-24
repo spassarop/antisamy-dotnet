@@ -86,13 +86,16 @@ namespace OWASP.AntiSamy.Html
                 XmlNode cssListNode = doc.GetElementsByTagName("css-rules")[0];
                 cssRules = ParseCssRules(cssListNode);
             }
-            catch (PolicyException)
-            {
-                throw;
-            }
             catch (Exception ex)
             {
-                throw new PolicyException($"Problem parsing policy file: {ex.Message}");
+                if (ex is PolicyException)
+                {
+                    throw;
+                }
+                else
+                {
+                    throw new PolicyException($"Problem parsing policy file: {ex.Message}", ex);
+                }
             }
         }
 
