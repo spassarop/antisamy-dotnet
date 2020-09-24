@@ -22,10 +22,6 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-using System;
-using System.IO;
-using System.Net;
-using System.Text;
 using OWASP.AntiSamy.Html.Scan;
 
 namespace OWASP.AntiSamy.Html
