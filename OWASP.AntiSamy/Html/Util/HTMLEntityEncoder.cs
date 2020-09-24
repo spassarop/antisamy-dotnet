@@ -33,13 +33,15 @@ namespace OWASP.AntiSamy.Html.Util
         /// <returns> An HTML-encoded string.</returns>
         public static string HtmlEntityEncode(string value)
         {
-
-            var buff = new StringBuilder();
-
             if (value == null)
             {
                 return null;
             }
+
+            const int DC4_INT_VALUE = 20;
+            const int TILDE_INT_VALUE = 126;
+
+            var buff = new StringBuilder();
 
             for (int i = 0; i < value.Length; i++)
             {
@@ -65,9 +67,9 @@ namespace OWASP.AntiSamy.Html.Util
                 {
                     buff.Append(ch);
                 }
-                else if (ch >= 20 && ch <= 126)
+                else if (ch >= DC4_INT_VALUE && ch <= TILDE_INT_VALUE)
                 {
-                    buff.Append($"&#" + (int)ch + ";");
+                    buff.Append("&#" + (int)ch + ";");
                 }
             }
 

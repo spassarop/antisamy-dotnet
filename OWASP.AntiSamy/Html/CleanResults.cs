@@ -43,6 +43,8 @@ namespace OWASP.AntiSamy.Html
         private readonly XmlDocumentFragment cleanXMLDocumentFragment;
         private string cleanHTML;
 
+        private const double MILLISECONDS_DENOMINATOR = 1000D;
+
         public CleanResults()
         {
         }
@@ -80,7 +82,7 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary> Return the time elapsed during the scan.</summary>
         /// <returns> A <see langword="double"/> primitive indicating the amount of time elapsed between the beginning and end of the scan in seconds.</returns>
-        public double GetScanTime() => (endOfScan.Millisecond - startOfScan.Millisecond) / 1000D;
+        public double GetScanTime() => (endOfScan.Millisecond - startOfScan.Millisecond) / MILLISECONDS_DENOMINATOR;
 
         /// <summary> Add an error message to the aggregate list of error messages during filtering.</summary>
         /// <param name="msg">An error message to append to the list of aggregate error messages during filtering.</param>
