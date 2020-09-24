@@ -39,8 +39,7 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     public class Policy
     {
-        public static int DEFAULT_MAX_INPUT_SIZE = 100000;
-
+        public const int DEFAULT_MAX_INPUT_SIZE = 100000;
         private const string DEFAULT_POLICY_URI = "Resources/OWASP.AntiSamy.xml";
         private const string DEFAULT_ONINVALID = "removeAttribute";
 
