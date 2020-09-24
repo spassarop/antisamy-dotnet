@@ -29,7 +29,6 @@ namespace OWASP.AntiSamy.Exceptions
     /// <summary> This exception gets thrown when there is a problem validating or parsing
     /// the policy file. Any validation errors not caught by the XML validation
     /// will be thrown with this exception.</summary>
-    [Serializable]
     public class PolicyException : Exception
     {
         public PolicyException(Exception e)

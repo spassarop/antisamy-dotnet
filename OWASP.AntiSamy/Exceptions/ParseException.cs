@@ -26,7 +26,6 @@ using System;
 
 namespace OWASP.AntiSamy.Exceptions
 {
-    [Serializable]
     public class ParseException : Exception
     {
         public ParseException(Exception e)

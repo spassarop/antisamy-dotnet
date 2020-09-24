@@ -31,7 +31,6 @@ namespace OWASP.AntiSamy.Exceptions
     /// the tainted HTML. The code is sturdy, but the unlikely <c>IOException</c> or
     /// SAX exceptions are always theoretically possible.
     /// </summary>
-    [Serializable]
     public class ScanException : Exception
     {
         public ScanException(Exception e)
