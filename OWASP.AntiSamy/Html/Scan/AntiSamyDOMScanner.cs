@@ -197,15 +197,13 @@ namespace OWASP.AntiSamy.Html.Scan
                         string cleanHtml = cleanStyleSheet.GetCleanHTML();
                         node.FirstChild.InnerHtml = string.IsNullOrEmpty(cleanHtml) ? node.FirstChild.InnerHtml = EMPTY_CSS_COMMENT : cleanHtml;
                     }
-                    //    catch (DomException e)
-                    //    {
-                    //        addError(ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED, new Object[] { HTMLEntityEncoder.htmlEntityEncode(node.getFirstChild().getNodeValue()) });
-                    //        parentNode.removeChild(node);
-                    //    }
+                    /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
+                     *       catching with "DOMException" or equivalent.       
+                     */
                     catch (ScanException e)
                     {
                         Console.WriteLine("Scan Exception: " + e.Message);
-                        //addError(ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED, new Object[] { HTMLEntityEncoder.htmlEntityEncode(node.getFirstChild().getNodeValue()) });
+                        // TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
                         parentNode.RemoveChild(node);
                     }
                 }
@@ -234,19 +232,15 @@ namespace OWASP.AntiSamy.Html.Scan
                             htmlAttribute.Value = cleanInlineStyle.GetCleanHTML();
                             errorMessages.AddRange(cleanInlineStyle.GetErrorMessages());
                         }
-                        /*
-                        catch (DOMException e)
-                        {
-                            addError(ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED, new Object[] { tagName, HTMLEntityEncoder.htmlEntityEncode(node.getNodeValue()) });
-                            ele.removeAttribute(name);
-                            currentAttributeIndex--;
-                        }
-                        */
+                        /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED
+                         *       catching with "DOMException" or equivalent, using tagName and node.getValue().       
+                         */
                         catch (ScanException ex)
                         {
                             Console.WriteLine(ex.Message);
-                            //addError(ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED, new Object[] { tagName, HTMLEntityEncoder.htmlEntityEncode(node.getNodeValue()) });
-                            //ele.removeAttribute(name);
+                            /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED,
+                             *       using tagName and node.getValue().       
+                             */
                             currentAttributeIndex--;
                         }
                     }

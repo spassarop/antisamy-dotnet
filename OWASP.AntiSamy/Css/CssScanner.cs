@@ -311,46 +311,5 @@ namespace OWASP.AntiSamy.Css
 
             return CSS_COMMENTS_REGEX.Replace(intermediateResult, match => string.Empty);
         }
-
-        //        /// <summary> Test method to demonstrate CSS scanning.
-        //        /// 
-        //        /// </summary>
-        //        /// <deprecated>
-        //        /// </deprecated>
-        //        /// <param name="args">unused
-        //        /// </param>
-        //        /// <throws>  Exception </throws>
-        //        /// <summary>             if any error occurs
-        //        /// </summary>
-        //        [STAThread]
-        //        public static void  Main(System.String[] args)
-        //        {
-        //            Policy policy = Policy.getInstance();
-        //            CssScanner scanner = new CssScanner(policy);
-
-        //            CleanResults results = null;
-
-        //            results = scanner.scanStyleSheet(".test, demo, #id {position:absolute;border: thick solid red;} ");
-
-        //            // Test case for live CSS docs. Just change URL to a live CSS on the
-        //            // internet. Note this is test code and does not handle IO errors
-        //            //		StringBuilder sb = new StringBuilder();
-        //            //		BufferedReader reader = new BufferedReader(new InputStreamReader(
-        //            //				new URL("http://www.owasp.org/skins/monobook/main.css")
-        //            //						.openStream()));
-        //            //		String line = null;
-        //            //		while ((line = reader.readLine()) != null) {
-        //            //			sb.append(line);
-        //            //			sb.append("\n");
-        //            //		}
-        //            //		results = scanner.scanStyleSheet(sb.toString());
-
-        //            System.Console.Out.WriteLine("Cleaned result:");
-        //            System.Console.Out.WriteLine(results.CleanHTML);
-        //            System.Console.Out.WriteLine("--");
-        //            System.Console.Out.WriteLine("Error messages");
-        //            //UPGRADE_TODO: Method 'java.io.PrintStream.println' was converted to 'System.Console.Out.WriteLine' which has a different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1073_javaioPrintStreamprintln_javalangObject'"
-        //            System.Console.Out.WriteLine(SupportClass.CollectionToString(results.ErrorMessages));
-        //        }
     }
 }
