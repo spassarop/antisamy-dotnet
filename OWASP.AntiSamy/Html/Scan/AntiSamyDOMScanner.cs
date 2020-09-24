@@ -91,7 +91,7 @@ namespace OWASP.AntiSamy.Html.Scan
             // Grab the size specified in the config file
             try
             {
-                maxInputSize = int.Parse(policy.GetDirective("maxInputSize"));
+                maxInputSize = int.Parse(policy.GetDirectiveByName("maxInputSize"));
             }
             catch (FormatException fe)
             {
@@ -147,7 +147,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void RecursiveValidateTag(HtmlNode node)
         {
-            int maxinputsize = int.Parse(policy.GetDirective("maxInputSize")); // TODO: Should add try/catch or use TryParse
+            int maxinputsize = int.Parse(policy.GetDirectiveByName("maxInputSize")); // TODO: Should add try/catch or use TryParse
             HtmlNode parentNode = node.ParentNode;
             string tagName = node.Name;
 

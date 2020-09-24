@@ -123,6 +123,14 @@ namespace OWASP.AntiSamy.Html.Model
         /// <param name="name">The name of the tag, such as "b" for &lt;b&gt; tags.</param>
         public Tag(string name) => Name = name;
 
+        /// <summary> Constructor.</summary>
+        /// <param name="name">The name of the tag, such as "b" for &lt;b&gt; tags.</param>
+        public Tag(string name, Dictionary<string, Attribute> allowedAttributes) 
+        {
+            Name = name;
+            AllowedAttributes = allowedAttributes;
+        }
+
         /// <summary> Adds a fully-built <see cref="Attribute"/> to the list of attributes allowed for this tag.</summary>
         /// <param name="attribute">The <see cref="Attribute"/> to add to the list of allowed attributes.</param>
         public void AddAttribute(Attribute attribute)

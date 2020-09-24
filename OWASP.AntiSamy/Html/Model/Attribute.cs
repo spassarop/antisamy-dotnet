@@ -43,9 +43,17 @@ namespace OWASP.AntiSamy.Html.Model
         /// <param name="safeValue">A legal literal value that an attribute can have, according to the policy.</param>
         public void AddAllowedValue(string safeValue) => AllowedValues.Add(safeValue);
 
+        /// <summary>Adds an allowed value for the attribute.</summary>
+        /// <param name="safeValueList">A legal literal value list that an attribute can have, according to the policy.</param>
+        public void AddAllowedValueList(List<string> safeValueList) => AllowedValues.AddRange(safeValueList);
+
         /// <summary>Adds an allowed regular expression for the attribute.</summary>
         /// <param name="safeRegExpValue">A legal regular expression value that an attribute could have, according to the policy.</param>
         public void AddAllowedRegExp(string safeRegExpValue) => AllowedRegExp.Add(safeRegExpValue);
+
+        /// <summary>Adds an allowed regular expression for the attribute.</summary>
+        /// <param name="safeRegExpValueList">A legal regular expression value list that an attribute could have, according to the policy.</param>
+        public void AddAllowedRegExpList(List<string> safeRegExpValueList) => AllowedRegExp.AddRange(safeRegExpValueList);
 
         /// <summary> We need to implement <see cref="ICloneable.Clone"/> to make the policy file work with common attributes and the ability
         /// to use a common-attribute with an alternative <see cref="OnInvalid"/> action.</summary>
