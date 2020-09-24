@@ -35,31 +35,20 @@ namespace OWASP.AntiSamy.Html.Util
         /// <returns> The value of the attribute contained within the element.</returns>
         public static string GetAttributeValue(XmlElement element, string attributeName) => Decode(element.GetAttribute(attributeName));
 
-        /*/// <summary> Helper function for quickly retrieving an integer value of a given
-        /// XML element.
-        /// </summary>
-        /// <param name="ele">The document element from which to pull the integer value.
-        /// </param>
-        /// <param name="tagName">The name of the node.
-        /// </param>
-        /// <returns> The integer value of the given node in the element passed in.
-        /// </returns>
-        
-        public static int getIntValue(XmlElement ele, string tagName, int defaultValue)
+        /// <summary>Helper function for quickly retrieving an integer value of a given <see cref="XmlElement"/>.</summary>
+        /// <param name="element">The document element from which to pull the integer value.</param>
+        /// <param name="tagName">The name of the node.</param>
+        /// <param name="defaultValue">The default value of the node if it's value can't be processed.</param>
+        /// <returns>The integer value of the given node in the element passed in.</returns>
+        public static int GetIntValue(XmlElement element, string tagName, int defaultValue)
         {
-			
-            int toReturn = defaultValue;
-			
-            try
+            if (!int.TryParse(GetTextValue(element, tagName), out int intValue))
             {
-                toReturn = int.Parse(getTextValue(ele, tagName));
+                intValue = defaultValue;
             }
-            catch (Exception e)
-            {
-            }
-            return toReturn;
+
+            return intValue;
         }
-        */
 
         /// <summary> Helper function for quickly retrieving a string value of a given XML element.</summary>
         /// <param name="element">The document element from which to pull the string value.</param>
