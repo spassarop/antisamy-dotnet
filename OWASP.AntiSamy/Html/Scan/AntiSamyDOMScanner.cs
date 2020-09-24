@@ -95,7 +95,9 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             catch (FormatException fe)
             {
+#if DEBUG 
                 Console.WriteLine($"Format Exception: {fe.Message}. Using DEFAULT_MAX_INPUT_SIZE ({Policy.DEFAULT_MAX_INPUT_SIZE}).");
+#endif
             }
 
             // Ensure our input is less than the max
@@ -200,9 +202,8 @@ namespace OWASP.AntiSamy.Html.Scan
                     /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
                      *       catching with "DOMException" or equivalent.       
                      */
-                    catch (ScanException e)
+                    catch (ScanException)
                     {
-                        Console.WriteLine("Scan Exception: " + e.Message);
                         // TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
                         parentNode.RemoveChild(node);
                     }
@@ -235,9 +236,8 @@ namespace OWASP.AntiSamy.Html.Scan
                         /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED
                          *       catching with "DOMException" or equivalent, using tagName and node.getValue().       
                          */
-                        catch (ScanException ex)
+                        catch (ScanException)
                         {
-                            Console.WriteLine(ex.Message);
                             /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED,
                              *       using tagName and node.getValue().       
                              */
@@ -335,7 +335,6 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             else if ("truncate".Equals(tag.Action))
             {
-                Console.WriteLine("truncate");
                 HtmlAttributeCollection attributes = node.Attributes;
 
                 while (attributes.Count > 0)
