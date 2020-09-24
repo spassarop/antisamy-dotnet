@@ -31,7 +31,7 @@ namespace OWASP.AntiSamy.Html.Util
     /// <summary>
     /// Holds the model for our policy engine.
     /// </summary>
-    internal class PolicyParserUtil
+    internal static class PolicyParserUtil
     {
         /// <summary>Get the list of nodes descending two levels, based on the tag names provided.</summary>
         /// <param name="parent">The parent <see cref="XmlElement"/>.</param>
