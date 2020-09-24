@@ -161,12 +161,13 @@ namespace OWASP.AntiSamy.Css
         /// <returns>A clean CSS style sheet as string.</returns>
         private string ScanStyleSheet(ICssStyleSheet styleSheet, List<string> errorMessages)
         {
-            for (var i = 0; i < styleSheet.Rules.Length;)
+            var i = 0;
+            while (i < styleSheet.Rules.Length)
             {
                 ICssRule rule = styleSheet.Rules[i];
                 if (!ScanStyleRule(rule, errorMessages))
                 {
-                    styleSheet.RemoveAt(i);
+                    styleSheet.RemoveAt(i); // Deletes rule in-place (length is dynamic), counter must not be incremented.
                 }
                 else
                 {

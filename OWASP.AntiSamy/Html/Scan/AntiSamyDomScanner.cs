@@ -119,15 +119,17 @@ namespace OWASP.AntiSamy.Html.Scan
             doc.OptionOutputAsXml = true;
 
             // Loop through every node now, and enforce the rules held in the policy object
-            for (int i = 0; i < doc.DocumentNode.ChildNodes.Count; i++)
+            var currentChildIndex = 0;
+            while (currentChildIndex < doc.DocumentNode.ChildNodes.Count)
             {
                 // Grab current node
-                HtmlNode tmp = doc.DocumentNode.ChildNodes[i];
+                HtmlNode tmp = doc.DocumentNode.ChildNodes[currentChildIndex];
 
                 // This node can hold other nodes, so recursively validate
                 RecursiveValidateTag(tmp);
 
-                if (tmp.ParentNode == null) { i--; }
+                if (tmp.ParentNode == null) { currentChildIndex--; }
+                currentChildIndex++;
             }
 
             // All the cleaned HTML
@@ -201,7 +203,8 @@ namespace OWASP.AntiSamy.Html.Scan
                     }
                 }
 
-                for (int currentAttributeIndex = 0; currentAttributeIndex < node.Attributes.Count; currentAttributeIndex++)
+                int currentAttributeIndex = 0;
+                while (currentAttributeIndex < node.Attributes.Count)
                 {
                     HtmlAttribute htmlAttribute = node.Attributes[currentAttributeIndex];
                     string name = htmlAttribute.Name;
@@ -316,6 +319,8 @@ namespace OWASP.AntiSamy.Html.Scan
                             currentAttributeIndex--;
                         } // End if attribute is or is not found in policy file
                     } // End if style.equals("name") 
+
+                    currentAttributeIndex++;
                 } // End while loop through attributes 
 
                 for (int i = 0; i < node.ChildNodes.Count; i++)
