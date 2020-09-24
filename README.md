@@ -55,9 +55,9 @@ MyUser.StoreHtmlProfile(results.GetCleanHTML()); // Some custom function
 
 There are a few ways to create a `Policy` object. The `GetInstance()` method can take any of the following:
 
-- A `string` filename.
-- A `FileInfo` object.
-- `Policy` files can also be referenced by filename by passing a second argument to the `AntiSamy.Scan()` method as the following examples show:
+-   A `string` filename.
+-   A `FileInfo` object.
+-   `Policy` files can also be referenced by filename by passing a second argument to the `AntiSamy.Scan()` method as the following examples show:
 
 ```c#
 var antiSamy = new AntiSamy();
@@ -67,10 +67,10 @@ CleanResults results = antiSamy.Scan(dirtyInput, policyFilePath);
 ### 5. Analyzing CleanResults
 The `CleanResults` object provides a lot of useful stuff.
 
-- `GetErrorMessages()` - a list of String error messages -- *if this returns 0 that does not mean there were no attacks!*
-- `GetCleanHTML()` - the clean, safe HTML output.
-- `GetCleanXMLDocumentFragment()` - the clean, safe `XMLDocumentFragment` which is reflected in `GetCleanHTML()`.
-- `GetScanTime()` - returns the scan time in seconds.
+-   `GetErrorMessages()` - a list of String error messages -- *if this returns 0 that does not mean there were no attacks!*
+-   `GetCleanHTML()` - the clean, safe HTML output.
+-   `GetCleanXMLDocumentFragment()` - the clean, safe `XMLDocumentFragment` which is reflected in `GetCleanHTML()`.
+-   `GetScanTime()` - returns the scan time in seconds.
  
 __Important note__: There has been much confusion about the `GetErrorMessages()` method. The `GetErrorMessages()` method does not subtly answer the question "is this safe input?" in the affirmative if it returns an empty list. You must always use the sanitized input and there is no way to be sure the input passed in had no attacks.
 
