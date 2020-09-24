@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -245,28 +246,11 @@ namespace OWASP.AntiSamy.Html.Scan
                         {
                             // TODO: Try to find out how robust this is - do I need to do this in a loop?
                             value = HtmlEntity.DeEntitize(value);
+                            string lowerCaseValue = value.ToLowerInvariant();
 
-                            foreach (string allowedValue in attribute.AllowedValues)
-                            {
-                                if (isAttributeValid) { break; }
-
-                                if (allowedValue != null && allowedValue.ToLower().Equals(value.ToLower()))
-                                {
-                                    isAttributeValid = true;
-                                }
-                            }
-
-                            foreach (string allowedPattern in attribute.AllowedRegExp)
-                            {
-                                if (isAttributeValid) { break; }
-
-                                var pattern = "^" + allowedPattern + "$";
-                                var match = Regex.Match(value, pattern);
-                                if (match.Success)
-                                {
-                                    isAttributeValid = true;
-                                }
-                            }
+                            // TODO: Why are ^ and $ needed if it already is a pattern itself?
+                            isAttributeValid = attribute.AllowedValues.Any(v => v != null && v.ToLowerInvariant() == lowerCaseValue)
+                                || attribute.AllowedRegExp.Any(r => r != null && Regex.IsMatch(value, "^" + r + "$"));
 
                             if (!isAttributeValid)
                             {
