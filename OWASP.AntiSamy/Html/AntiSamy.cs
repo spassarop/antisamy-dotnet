@@ -64,7 +64,7 @@ namespace OWASP.AntiSamy.Html
             /*
             * Go get 'em!
             */
-            return new AntiSamyDOMScanner(policy).Scan(taintedHTML);
+            return new AntiSamyDomScanner(policy).Scan(taintedHTML);
         }
     }
 }

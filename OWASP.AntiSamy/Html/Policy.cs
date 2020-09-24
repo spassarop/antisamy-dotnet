@@ -84,7 +84,7 @@ namespace OWASP.AntiSamy.Html
                 tagRules = ParseTagRules(tagListNode);
 
                 XmlNode cssListNode = doc.GetElementsByTagName("css-rules")[0];
-                cssRules = ParseCSSRules(cssListNode);
+                cssRules = ParseCssRules(cssListNode);
             }
             catch (PolicyException)
             {
@@ -162,10 +162,10 @@ namespace OWASP.AntiSamy.Html
 
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(directiveListNode, "directive"))
             {
-                string name = XMLUtil.GetAttributeValue(node, "name");
+                string name = XmlUtil.GetAttributeValue(node, "name");
                 if (!directivesDictionary.ContainsKey(name))
                 {
-                    string value = XMLUtil.GetAttributeValue(node, "value");
+                    string value = XmlUtil.GetAttributeValue(node, "value");
                     directivesDictionary.Add(name, value);
                 }
             }
@@ -182,7 +182,7 @@ namespace OWASP.AntiSamy.Html
 
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(globalAttributeListNode, "attribute"))
             {
-                string name = XMLUtil.GetAttributeValue(node, "name");
+                string name = XmlUtil.GetAttributeValue(node, "name");
                 Attribute toAdd = GetCommonAttributeByName(name);
                 if (toAdd != null)
                 {
@@ -206,10 +206,10 @@ namespace OWASP.AntiSamy.Html
 
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(commonRegularExpressionListNode, "regexp"))
             {
-                string name = XMLUtil.GetAttributeValue(node, "name");
+                string name = XmlUtil.GetAttributeValue(node, "name");
                 if (!commonRegularExpressionsDictionary.ContainsKey(name))
                 {
-                    string value = XMLUtil.GetAttributeValue(node, "value");
+                    string value = XmlUtil.GetAttributeValue(node, "value");
                     commonRegularExpressionsDictionary.Add(name, value);
                 }
             }
@@ -227,13 +227,13 @@ namespace OWASP.AntiSamy.Html
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(commonAttributeListNode, "attribute"))
             {
                 // TODO: DEFAULT_ONINVALID seems to have been removed from common attributes. Do we need this code?
-                string onInvalid = XMLUtil.GetAttributeValue(node, "onInvalid");
-                string name = XMLUtil.GetAttributeValue(node, "name");
+                string onInvalid = XmlUtil.GetAttributeValue(node, "onInvalid");
+                string name = XmlUtil.GetAttributeValue(node, "name");
                 var attribute = new Attribute(name)
                 {
                     AllowedRegExp = GetAllowedRegexpsForCommonAttributes(node),
                     AllowedValues = PolicyParserUtil.GetAttributeOrValueFromGrandchildren(node, "literal-list", "literal", "value"),
-                    Description = XMLUtil.GetAttributeValue(node, "description"),
+                    Description = XmlUtil.GetAttributeValue(node, "description"),
                     OnInvalid = string.IsNullOrEmpty(onInvalid) ? DEFAULT_ONINVALID : onInvalid,
                 };
 
@@ -251,8 +251,8 @@ namespace OWASP.AntiSamy.Html
             var allowedList = new List<string>();
             foreach (XmlElement regExNode in PolicyParserUtil.GetGrandchildrenByTagNames(node, "regexp-list", "regexp"))
             {
-                string regExName = XMLUtil.GetAttributeValue(regExNode, "name");
-                string value = XMLUtil.GetAttributeValue(regExNode, "value");
+                string regExName = XmlUtil.GetAttributeValue(regExNode, "name");
+                string value = XmlUtil.GetAttributeValue(regExNode, "value");
                 string allowedRegEx = string.IsNullOrEmpty(regExName) ? value : GetCommonRegularExpressionByName(regExName).ToString();
                 allowedList.Add(allowedRegEx);
             }
@@ -269,11 +269,11 @@ namespace OWASP.AntiSamy.Html
 
             foreach (XmlElement tagNode in PolicyParserUtil.GetChildrenByTagName(tagAttributeListNode, "tag"))
             {
-                string tagName = XMLUtil.GetAttributeValue(tagNode, "name");
+                string tagName = XmlUtil.GetAttributeValue(tagNode, "name");
 
                 var tag = new Tag(tagName)
                 {
-                    Action = XMLUtil.GetAttributeValue(tagNode, "action"),
+                    Action = XmlUtil.GetAttributeValue(tagNode, "action"),
                     AllowedAttributes = GetTagAllowedAttributes(tagNode, tagName)
                 };
 
@@ -293,7 +293,7 @@ namespace OWASP.AntiSamy.Html
 
             foreach (XmlElement attributeNode in PolicyParserUtil.GetChildrenByTagName(tagNode, "attribute"))
             {
-                string attributeName = XMLUtil.GetAttributeValue(attributeNode, "name");
+                string attributeName = XmlUtil.GetAttributeValue(attributeNode, "name");
                 if (!attributeNode.HasChildNodes)
                 {
                     /* All they provided was the name, so they must want a common attribute. */
@@ -302,8 +302,8 @@ namespace OWASP.AntiSamy.Html
                     if (attribute != null)
                     {
                         /* If they provide onInvalid/description values here they will override the common values. */
-                        string onInvalid = XMLUtil.GetAttributeValue(attributeNode, "onInvalid");
-                        string description = XMLUtil.GetAttributeValue(attributeNode, "description");
+                        string onInvalid = XmlUtil.GetAttributeValue(attributeNode, "onInvalid");
+                        string description = XmlUtil.GetAttributeValue(attributeNode, "description");
 
                         if (!string.IsNullOrEmpty(onInvalid))
                         {
@@ -318,18 +318,18 @@ namespace OWASP.AntiSamy.Html
                     }
                     else
                     {
-                        throw new PolicyException($"Attribute '{XMLUtil.GetAttributeValue(attributeNode, "name")}' was referenced as a common attribute in definition of '{tagName}', but does not exist in <common-attributes>");
+                        throw new PolicyException($"Attribute '{XmlUtil.GetAttributeValue(attributeNode, "name")}' was referenced as a common attribute in definition of '{tagName}', but does not exist in <common-attributes>");
                     }
                 }
                 else
                 {
                     /* Custom attribute for this tag */
-                    var attribute = new Attribute(XMLUtil.GetAttributeValue(attributeNode, "name"))
+                    var attribute = new Attribute(XmlUtil.GetAttributeValue(attributeNode, "name"))
                     {
                         AllowedValues = PolicyParserUtil.GetAttributeOrValueFromGrandchildren(attributeNode, "literal-list", "literal", "value"),
                         AllowedRegExp = GetAllowedRegexpsForRules(attributeNode, tagName),
-                        Description = XMLUtil.GetAttributeValue(attributeNode, "description"),
-                        OnInvalid = XMLUtil.GetAttributeValue(attributeNode, "onInvalid")
+                        Description = XmlUtil.GetAttributeValue(attributeNode, "description"),
+                        OnInvalid = XmlUtil.GetAttributeValue(attributeNode, "onInvalid")
                     };
 
                     allowedAttributes.Add(attributeName, attribute);
@@ -348,8 +348,8 @@ namespace OWASP.AntiSamy.Html
             var allowedList = new List<string>();
             foreach (XmlElement regExNode in PolicyParserUtil.GetGrandchildrenByTagNames(node, "regexp-list", "regexp"))
             {
-                string regExName = XMLUtil.GetAttributeValue(regExNode, "name");
-                string value = XMLUtil.GetAttributeValue(regExNode, "value");
+                string regExName = XmlUtil.GetAttributeValue(regExNode, "name");
+                string value = XmlUtil.GetAttributeValue(regExNode, "value");
 
                 /*
                 * Look up common regular expression specified by the "name" field. They can put a common
@@ -380,15 +380,15 @@ namespace OWASP.AntiSamy.Html
         /// <summary> Go through the <css-rules> section of the policy file.</summary>
         /// <param name="cssNodeList">Top level of <css-rules>.</param>
         /// <returns> An List of <see cref="Property"/> objects.</returns>
-        private Dictionary<string, Property> ParseCSSRules(XmlNode cssNodeList)
+        private Dictionary<string, Property> ParseCssRules(XmlNode cssNodeList)
         {
             var cssRulesDictionary = new Dictionary<string, Property>();
 
             foreach (XmlElement propertyNode in PolicyParserUtil.GetChildrenByTagName(cssNodeList, "property"))
             {
-                string name = XMLUtil.GetAttributeValue(propertyNode, "name");
-                string description = XMLUtil.GetAttributeValue(propertyNode, "description");
-                string onInvalid = XMLUtil.GetAttributeValue(propertyNode, "onInvalid");
+                string name = XmlUtil.GetAttributeValue(propertyNode, "name");
+                string description = XmlUtil.GetAttributeValue(propertyNode, "description");
+                string onInvalid = XmlUtil.GetAttributeValue(propertyNode, "onInvalid");
 
                 var property = new Property(name)
                 {

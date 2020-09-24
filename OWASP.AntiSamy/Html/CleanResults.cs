@@ -40,8 +40,8 @@ namespace OWASP.AntiSamy.Html
         private readonly List<string> errorMessages = new List<string>();
         private readonly DateTime startOfScan;
         private readonly DateTime endOfScan;
-        private readonly XmlDocumentFragment cleanXMLDocumentFragment;
-        private string cleanHTML;
+        private readonly XmlDocumentFragment cleanXmlDocumentFragment;
+        private string cleanHtml;
 
         private const double MILLISECONDS_DENOMINATOR = 1000D;
 
@@ -49,24 +49,24 @@ namespace OWASP.AntiSamy.Html
         {
         }
 
-        public CleanResults(DateTime startOfScan, DateTime endOfScan, string cleanHTML, XmlDocumentFragment XMLDocumentFragment, List<string> errorMessages)
+        public CleanResults(DateTime startOfScan, DateTime endOfScan, string cleanHTML, XmlDocumentFragment xmlDocumentFragment, List<string> errorMessages)
         {
             this.startOfScan = startOfScan;
             this.endOfScan = endOfScan;
-            this.cleanXMLDocumentFragment = XMLDocumentFragment;
-            this.cleanHTML = cleanHTML;
+            this.cleanXmlDocumentFragment = xmlDocumentFragment;
+            this.cleanHtml = cleanHTML;
             this.errorMessages = errorMessages;
         }
 
         public CleanResults(DateTime date) => startOfScan = date;
 
-        public XmlDocumentFragment GetCleanXMLDocumentFragment() => cleanXMLDocumentFragment;
+        public XmlDocumentFragment GetCleanXmlDocumentFragment() => cleanXmlDocumentFragment;
 
-        public void SetCleanHTML(string cleanHTML) => this.cleanHTML = cleanHTML;
+        public void SetCleanHtml(string cleanHtml) => this.cleanHtml = cleanHtml;
 
         /// <summary> Return the filtered HTML as a string.</summary>
         /// <returns> A string object which contains the serialized, safe HTML.</returns>
-        public string GetCleanHTML() => cleanHTML;
+        public string GetCleanHtml() => cleanHtml;
 
         /// <summary> Return a list of error messages.</summary>
         /// <returns> A <see cref="List{string}"/> object which contains the error messages after a scan.</returns>

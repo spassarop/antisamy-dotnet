@@ -41,7 +41,7 @@ namespace OWASP.AntiSamy.Html.Util
         internal static List<XmlElement> GetGrandchildrenByTagNames(XmlElement parent, string childrenName, string grandchildrenName)
         {
             XmlNodeList childrenNodes = parent.SelectNodes(childrenName);
-            if (XMLUtil.IsXmlNodeListNullOrEmpty(childrenNodes)) 
+            if (XmlUtil.IsXmlNodeListNullOrEmpty(childrenNodes)) 
             { 
                 return new List<XmlElement>(); 
             }
@@ -57,7 +57,7 @@ namespace OWASP.AntiSamy.Html.Util
         internal static List<XmlElement> GetChildrenByTagName(XmlNode parent, string childrenName)
         {
             XmlNodeList childrenNodes = parent.SelectNodes(childrenName);
-            return XMLUtil.IsXmlNodeListNullOrEmpty(childrenNodes) ? 
+            return XmlUtil.IsXmlNodeListNullOrEmpty(childrenNodes) ? 
                 new List<XmlElement>() : new List<XmlElement>(childrenNodes.Cast<XmlElement>());
         }
 
@@ -72,7 +72,7 @@ namespace OWASP.AntiSamy.Html.Util
             var values = new List<string>();
             foreach (XmlElement element in GetGrandchildrenByTagNames(parent, childrenName, grandchildrenName))
             {
-                string value = XMLUtil.GetAttributeValue(element, attributeName);
+                string value = XmlUtil.GetAttributeValue(element, attributeName);
 
                 if (!string.IsNullOrEmpty(value))
                 {
