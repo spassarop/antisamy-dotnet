@@ -41,7 +41,7 @@ namespace OWASP.AntiSamy.Html.Scan
     /// directly. All scanning should be done through a <see cref="AntiSamy"/><c>.Scan()</c> method.</summary>
     public class AntiSamyDomScanner
     {
-        public const string EMPTY_CSS_COMMENT = "/* */";
+        private const string EMPTY_CSS_COMMENT = "/* */";
 
         // Will hold the results of the scan
         public CleanResults Results { get; set; }
@@ -174,7 +174,6 @@ namespace OWASP.AntiSamy.Html.Scan
                     if (tmp.ParentNode == null) { i--; }
                 }
                 PromoteChildren(node);
-                return;
             }
             else if ("validate".Equals(tag.Action))
             {
@@ -192,7 +191,7 @@ namespace OWASP.AntiSamy.Html.Scan
                          * with an empty style tag and break all CSS. To prevent that, we have this check.
                          */
                         string cleanHtml = cleanStyleSheet.GetCleanHtml();
-                        node.FirstChild.InnerHtml = string.IsNullOrEmpty(cleanHtml) ? node.FirstChild.InnerHtml = EMPTY_CSS_COMMENT : cleanHtml;
+                        node.FirstChild.InnerHtml = string.IsNullOrEmpty(cleanHtml) ? EMPTY_CSS_COMMENT : cleanHtml;
                     }
                     /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
                      *       catching with "DOMException" or equivalent.       
@@ -330,9 +329,10 @@ namespace OWASP.AntiSamy.Html.Scan
                 }
 
                 HtmlNodeCollection childNodes = node.ChildNodes;
-                int i = 0, j = 0, length = childNodes.Count;
+                int j = 0;
+                int length = childNodes.Count;
 
-                while (i < length)
+                for (int i = 0; i < length; i++)
                 {
                     HtmlNode nodeToRemove = childNodes[j];
                     if (nodeToRemove.NodeType != HtmlNodeType.Text && nodeToRemove.NodeType != HtmlNodeType.Comment)
@@ -343,7 +343,6 @@ namespace OWASP.AntiSamy.Html.Scan
                     {
                         j++;
                     }
-                    i++;
                 }
             }
             else

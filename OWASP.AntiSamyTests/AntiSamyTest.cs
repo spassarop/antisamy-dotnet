@@ -39,11 +39,6 @@ namespace AntiSamyTests
         [SetUp]
         public void SetUp() => policy = Policy.GetInstance(filename);
 
-        [TearDown]
-        public void TearDown()
-        {
-        }
-
         /*
          * Test basic XSS cases. 
          */

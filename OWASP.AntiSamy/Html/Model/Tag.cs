@@ -152,7 +152,7 @@ namespace OWASP.AntiSamy.Html.Model
             }
             for (int i = 0; i < REGEXP_CHARACTERS.Length; i++)
             {
-                toReturn.Replace("\\" + System.Convert.ToString(REGEXP_CHARACTERS[i]), "\\" + REGEXP_CHARACTERS[i]);
+                toReturn = toReturn.Replace("\\" + System.Convert.ToString(REGEXP_CHARACTERS[i]), "\\" + REGEXP_CHARACTERS[i]);
             }
             return toReturn;
         }
