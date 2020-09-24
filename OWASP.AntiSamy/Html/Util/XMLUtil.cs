@@ -135,5 +135,9 @@ namespace OWASP.AntiSamy.Html.Util
                                              .Replace("\"", "&quot;")
                                              .Replace("&", "&amp;")
                                              .ToString();
+
+        /// <summary>Helper function to know if a <see cref="XmlNodeList"/> object is null or empty.</summary>
+        /// <param name="nodeList">The node list to check.</param>
+        public static bool IsXmlNodeListNullOrEmpty(XmlNodeList nodeList) => nodeList == null || nodeList.Count == 0;
     }
 }
