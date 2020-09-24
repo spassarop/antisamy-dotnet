@@ -134,7 +134,7 @@ namespace OWASP.AntiSamy.Html
         /// <summary> A simple method for returning on of the <global-attribute> entries by name.</summary>
         /// <param name="name">The name of the global-attribute we want to look up.</param>
         /// <returns> An Attribute associated with the global-attribute lookup name specified.</returns>
-        public Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrDefault(name.ToLower());
+        public Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrDefault(name.ToLowerInvariant());
 
         /// <summary> Return a directive value based on a lookup name.</summary>
         /// <param name="name">The name of the Tag to look up.</param>
@@ -144,17 +144,17 @@ namespace OWASP.AntiSamy.Html
         /// <summary> Retrieves a Tag from the Policy.</summary>
         /// <param name="name">The name of the Tag to look up.</param>
         /// <returns> The <see cref="Tag"/> associated with the name specified, or null if none is found.</returns>
-        public Tag GetTagByName(string name) => tagRules.GetValueOrDefault(name.ToLower());
+        public Tag GetTagByName(string name) => tagRules.GetValueOrDefault(name.ToLowerInvariant());
 
         /// <summary> Retrieves a CSS Property from the Policy.</summary>
         /// <param name="name">The name of the CSS Property to look up.</param>
         /// <returns> The CSS <see cref="Property"/> associated with the name specified, or null if none is found.</returns>
-        public Property GetPropertyByName(string name) => cssRules.GetValueOrDefault(name.ToLower());
+        public Property GetPropertyByName(string name) => cssRules.GetValueOrDefault(name.ToLowerInvariant());
 
         /// <summary> A simple method for returning on of the <common-attribute> entries by name.</summary>
         /// <param name="name">The name of the common-attribute we want to look up.</param>
         /// <returns> An <see cref="Attribute"/> associated with the common-attribute lookup name specified.</returns>
-        public Attribute GetCommonAttributeByName(string name) => commonAttributes.GetValueOrDefault(name.ToLower());
+        public Attribute GetCommonAttributeByName(string name) => commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
 
         /// <summary> Go through <directives> section of the policy file.</summary>
         /// <param name="directiveListNode">Top level of <directives></param>
@@ -189,7 +189,7 @@ namespace OWASP.AntiSamy.Html
                 Attribute toAdd = GetCommonAttributeByName(name);
                 if (toAdd != null)
                 {
-                    globalAttributesDictionary.Add(name.ToLower(), toAdd);
+                    globalAttributesDictionary.Add(name.ToLowerInvariant(), toAdd);
                 }
                 else
                 {
@@ -240,7 +240,7 @@ namespace OWASP.AntiSamy.Html
                     OnInvalid = string.IsNullOrEmpty(onInvalid) ? DEFAULT_ONINVALID : onInvalid,
                 };
 
-                commonAttributesDictionary.Add(name.ToLower(), attribute);
+                commonAttributesDictionary.Add(name.ToLowerInvariant(), attribute);
             }
 
             return commonAttributesDictionary;
@@ -280,7 +280,7 @@ namespace OWASP.AntiSamy.Html
                     AllowedAttributes = GetTagAllowedAttributes(tagNode, tagName)
                 };
 
-                tagRulesDictionary.Add(tagName.ToLower(), tag);
+                tagRulesDictionary.Add(tagName.ToLowerInvariant(), tag);
             }
 
             return tagRulesDictionary;
@@ -402,7 +402,7 @@ namespace OWASP.AntiSamy.Html
                     ShorthandRefs = PolicyParserUtil.GetAttributeOrValueFromGrandchildren(propertyNode, "shorthand-list", "shorthand", "name"),
                 };
 
-                cssRulesDictionary.Add(name.ToLower(), property);
+                cssRulesDictionary.Add(name.ToLowerInvariant(), property);
             }
 
             return cssRulesDictionary;

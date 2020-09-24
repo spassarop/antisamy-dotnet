@@ -148,20 +148,20 @@ namespace OWASP.AntiSamy.Html.Scan
             HtmlNode parentNode = node.ParentNode;
             string tagName = node.Name;
 
-            // TODO: Check this out, might not be robust enough.
-            if (tagName.ToLower().Equals("#text"))  // || tagName.ToLower().Equals("#comment"))
+            // TODO: Check this out, might not be robust enough. Check if this is needed: || tagName.ToLowerInvariant().Equals("#comment"))
+            if (tagName.ToLowerInvariant().Equals("#text"))
             {
                 return;
             }
 
-            Tag tag = policy.GetTagByName(tagName.ToLower());
+            Tag tag = policy.GetTagByName(tagName.ToLowerInvariant());
             HtmlNode tmp;
             
             if (tag == null || "filter".Equals(tag.Action))
             {
                 var errBuff = new StringBuilder();
                 errBuff.Append(string.IsNullOrEmpty(tagName) ? 
-                    "An unprocessable " : $"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName.ToLower())}</b> ");
+                    "An unprocessable " : $"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName.ToLowerInvariant())}</b> ");
                 errBuff.Append("tag has been filtered for security reasons. The contents of the tag will remain in place.");
 
                 errorMessages.Add(errBuff.ToString());
@@ -177,7 +177,7 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             else if ("validate".Equals(tag.Action))
             {
-                if ("style".Equals(tagName.ToLower()) && policy.GetTagByName("style") != null)
+                if ("style".Equals(tagName.ToLowerInvariant()) && policy.GetTagByName("style") != null)
                 {
                     var styleScanner = new CssScanner(policy);
                     try
@@ -218,7 +218,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
                     bool isAttributeValid = false;
 
-                    if ("style".Equals(name.ToLower()) && attribute != null)
+                    if ("style".Equals(name.ToLowerInvariant()) && attribute != null)
                     {
                         var styleScanner = new CssScanner(policy);
 
