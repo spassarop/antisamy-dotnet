@@ -85,19 +85,11 @@ namespace OWASP.AntiSamy.Html.Scan
             // We have to replace any invalid XML characters
             html = StripNonValidXMLCharacters(html);
 
-            // Holds the maximum input size for the incoming fragment
-            int maxInputSize = Policy.DEFAULT_MAX_INPUT_SIZE;
-
             // Grab the size specified in the config file
-            try
+            if (!int.TryParse(policy.GetDirectiveByName("maxInputSize"), out int maxInputSize))
             {
-                maxInputSize = int.Parse(policy.GetDirectiveByName("maxInputSize"));
-            }
-            catch (FormatException fe)
-            {
-#if DEBUG 
-                Console.WriteLine($"Format Exception: {fe.Message}. Using DEFAULT_MAX_INPUT_SIZE ({Policy.DEFAULT_MAX_INPUT_SIZE}).");
-#endif
+                // Holds the maximum input size for the incoming fragment
+                maxInputSize = Policy.DEFAULT_MAX_INPUT_SIZE;
             }
 
             // Ensure our input is less than the max
