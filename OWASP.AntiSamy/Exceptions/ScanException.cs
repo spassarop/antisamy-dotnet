@@ -23,6 +23,7 @@
 */
 
 using System;
+using System.Runtime.Serialization;
 
 namespace OWASP.AntiSamy.Exceptions
 {
@@ -33,8 +34,7 @@ namespace OWASP.AntiSamy.Exceptions
     /// </summary>
     public class ScanException : Exception
     {
-        public ScanException(Exception e)
-            : base(e.Message)
+        public ScanException()
         {
         }
 
@@ -45,6 +45,11 @@ namespace OWASP.AntiSamy.Exceptions
 
         public ScanException(string message, Exception innerException)
             : base(message, innerException)
+        {
+        }
+
+        protected ScanException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

@@ -23,6 +23,7 @@
 */
 
 using System;
+using System.Runtime.Serialization;
 
 namespace OWASP.AntiSamy.Exceptions
 {
@@ -31,13 +32,22 @@ namespace OWASP.AntiSamy.Exceptions
     /// will be thrown with this exception.</summary>
     public class PolicyException : Exception
     {
-        public PolicyException(Exception e)
-            : base(e.Message)
+        public PolicyException()
         {
         }
 
         public PolicyException(string message)
             : base(message)
+        {
+        }
+
+        public PolicyException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+
+        protected PolicyException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

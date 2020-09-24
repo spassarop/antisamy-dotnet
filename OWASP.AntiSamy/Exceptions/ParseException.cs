@@ -23,13 +23,13 @@
 */
 
 using System;
+using System.Runtime.Serialization;
 
 namespace OWASP.AntiSamy.Exceptions
 {
     public class ParseException : Exception
     {
-        public ParseException(Exception e)
-            : base(e.Message)
+        public ParseException()
         {
         }
 
@@ -40,6 +40,11 @@ namespace OWASP.AntiSamy.Exceptions
 
         public ParseException(string message, Exception innerException)
             : base(message, innerException)
+        {
+        }
+
+        protected ParseException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }
