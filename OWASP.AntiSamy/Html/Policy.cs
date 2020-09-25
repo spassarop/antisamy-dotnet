@@ -28,6 +28,7 @@ using System.IO;
 using System.Xml;
 using OWASP.AntiSamy.Exceptions;
 using OWASP.AntiSamy.Html.Model;
+using OWASP.AntiSamy.Html.Scan;
 using OWASP.AntiSamy.Html.Util;
 using Attribute = OWASP.AntiSamy.Html.Model.Attribute;
 using Tag = OWASP.AntiSamy.Html.Model.Tag;
@@ -43,12 +44,13 @@ namespace OWASP.AntiSamy.Html
         private const string DEFAULT_POLICY_URI = "Resources/OWASP.AntiSamy.xml";
         private const string DEFAULT_ONINVALID = "removeAttribute";
 
-        private readonly Dictionary<string, string> commonRegularExpressions;
-        private readonly Dictionary<string, Attribute> commonAttributes;
-        private readonly Dictionary<string, Tag> tagRules;
-        private readonly Dictionary<string, Property> cssRules;
-        private readonly Dictionary<string, string> directives;
-        private readonly Dictionary<string, Attribute> globalAttributes;
+        private Dictionary<string, string> commonRegularExpressions;
+        private Dictionary<string, Attribute> commonAttributes;
+        private Dictionary<string, Tag> tagRules;
+        private Dictionary<string, Property> cssRules;
+        private Dictionary<string, string> directives;
+        private Dictionary<string, Attribute> globalAttributes;
+        private TagMatcher allowedEmptyTagsMatcher;
 
         /// <summary> Load the policy from an XML file.</summary>
         /// <param name="file">Load a policy from the File object.</param>
@@ -59,45 +61,14 @@ namespace OWASP.AntiSamy.Html
         }
 
         /// <summary> Load the policy from an XML file.</summary>
-        /// <param name="filename">Load a policy from the filename specified.</param>
+        /// <param name="filename">Load a policy from the specified filename.</param>
         /// <exception cref="PolicyException"></exception>
-        private Policy(string filename)
-        {
-            try
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.Load(filename);
+        private Policy(string filename) => ParsePolicy(GetXmlDocumentFromFile(filename));
 
-                XmlNode commonRegularExpressionListNode = doc.GetElementsByTagName("common-regexps")[0];
-                commonRegularExpressions = ParseCommonRegExps(commonRegularExpressionListNode);
-
-                XmlNode directiveListNode = doc.GetElementsByTagName("directives")[0];
-                directives = ParseDirectives(directiveListNode);
-
-                XmlNode commonAttributeListNode = doc.GetElementsByTagName("common-attributes")[0];
-                commonAttributes = ParseCommonAttributes(commonAttributeListNode);
-
-                XmlNode globalAttributesListNode = doc.GetElementsByTagName("global-tag-attributes")[0];
-                globalAttributes = ParseGlobalAttributes(globalAttributesListNode);
-
-                XmlNode tagListNode = doc.GetElementsByTagName("tag-rules")[0];
-                tagRules = ParseTagRules(tagListNode);
-
-                XmlNode cssListNode = doc.GetElementsByTagName("css-rules")[0];
-                cssRules = ParseCssRules(cssListNode);
-            }
-            catch (Exception ex)
-            {
-                if (ex is PolicyException)
-                {
-                    throw;
-                }
-                else
-                {
-                    throw new PolicyException($"Problem parsing policy file: {ex.Message}", ex);
-                }
-            }
-        }
+        /// <summary> Load the policy from an XML file.</summary>
+        /// <param name="stream">Load a policy from the specified stream.</param>
+        /// <exception cref="PolicyException"></exception>
+        private Policy(Stream stream) => ParsePolicy(GetXmlDocumentFromStream(stream));
 
         /// <summary> This retrieves a policy based on a default location ("Resources/antisamy.xml")</summary>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the default location.</returns>
@@ -110,28 +81,24 @@ namespace OWASP.AntiSamy.Html
         /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance(string filename) => new Policy(filename);
 
-        /// <summary> This retrieves a policy based on the File object passed in</summary>
+        /// <summary> This retrieves a policy based on the file object passed in</summary>
         /// <param name="file">A <see cref="FileInfo"/> object which contains the XML policy information.</param>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file pointed to by the <c>file</c> parameter.</returns>
         /// <exception cref="PolicyException"></exception>
-        public static Policy GetInstance(FileInfo file)
-        {
-            try
-            {
-                return new Policy(new FileInfo(file.FullName));
-            }
-            catch (Exception ex)
-            {
-                throw new PolicyException($"Problem parsing policy file: {ex.Message}");
-            }
-        }
+        public static Policy GetInstance(FileInfo file) => new Policy(file);
 
-        /// <summary>A simple method for returning on of the <common-regexp> entries by name.</summary>
+        /// <summary> This retrieves a policy based on the <see cref="Stream"/> object passed in</summary>
+        /// <param name="file">A <see cref="Stream"/> object which contains the XML policy information.</param>
+        /// <returns> A populated <see cref="Policy"/> object based on the XML policy file pointed to by the <c>file</c> parameter.</returns>
+        /// <exception cref="PolicyException"></exception>
+        public static Policy GetInstance(Stream stream) => new Policy(stream);
+
+        /// <summary>A simple method for returning one of the <common-regexp> entries by name.</summary>
         /// <param name="name">The name of the common-regexp we want to look up.</param>
         /// <returns> A string associated with the common-regexp lookup name specified.</returns>
         public string GetCommonRegularExpressionByName(string name) => name == null ? null : commonRegularExpressions.GetValueOrDefault(name);
 
-        /// <summary> A simple method for returning on of the <global-attribute> entries by name.</summary>
+        /// <summary> A simple method for returning one of the <global-attribute> entries by name.</summary>
         /// <param name="name">The name of the global-attribute we want to look up.</param>
         /// <returns> An Attribute associated with the global-attribute lookup name specified.</returns>
         public Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrDefault(name.ToLowerInvariant());
@@ -151,10 +118,98 @@ namespace OWASP.AntiSamy.Html
         /// <returns> The CSS <see cref="Property"/> associated with the name specified, or null if none is found.</returns>
         public Property GetPropertyByName(string name) => cssRules.GetValueOrDefault(name.ToLowerInvariant());
 
-        /// <summary> A simple method for returning on of the <common-attribute> entries by name.</summary>
+        /// <summary> A simple method for returning one of the <common-attribute> entries by name.</summary>
         /// <param name="name">The name of the common-attribute we want to look up.</param>
         /// <returns> An <see cref="Attribute"/> associated with the common-attribute lookup name specified.</returns>
         public Attribute GetCommonAttributeByName(string name) => commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
+
+        /// <summary> Return all the allowed empty tags configured in the Policy.</summary>
+        /// <returns> A <see cref="TagMatcher"/> with all the allowed empty tags configured in the policy.</returns>
+        public TagMatcher GetAllowedEmptyTags() => allowedEmptyTagsMatcher;
+
+        /// <summary>Generates a <see cref="XmlDocument"/> by loading it from a file.</summary>
+        /// <param name="filename">The name of the file which contains the policy XML.</param>
+        /// <returns>The loaded <see cref="XmlDocument"/>.</returns>
+        /// <exception cref="PolicyException"/>
+        private XmlDocument GetXmlDocumentFromFile(string filename)
+        {
+            try
+            {
+                var document = new XmlDocument
+                {
+                    // Setting this to NULL disables DTDs - Its NOT null by default.
+                    XmlResolver = null
+                };
+                document.Load(filename);
+                return document;
+            }
+            catch (Exception ex)
+            {
+                throw new PolicyException($"Problem loading policy XML from stream: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>Generates a <see cref="XmlDocument"/> by loading it from a stream.</summary>
+        /// <param name="stream">The <see cref="Stream"/> which contains the policy XML.</param>
+        /// <returns>The loaded <see cref="XmlDocument"/>.</returns>
+        /// <exception cref="PolicyException"/>
+        private XmlDocument GetXmlDocumentFromStream(Stream stream)
+        {
+            try
+            {
+                var document = new XmlDocument
+                {
+                    // Setting this to NULL disables DTDs - Its NOT null by default.
+                    XmlResolver = null
+                };
+                document.Load(stream);
+                return document;
+            }
+            catch (Exception ex)
+            {
+                throw new PolicyException($"Problem loading policy XML from file: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>Parse the policy from the provided <see cref="XmlDocument"/>.</summary>
+        /// <param name="document">The policy XML.</param>
+        private void ParsePolicy(XmlDocument document)
+        {
+            try
+            {
+                XmlNode commonRegularExpressionListNode = document.GetElementsByTagName("common-regexps")[0];
+                commonRegularExpressions = ParseCommonRegExps(commonRegularExpressionListNode);
+
+                XmlNode directiveListNode = document.GetElementsByTagName("directives")[0];
+                directives = ParseDirectives(directiveListNode);
+
+                XmlNode commonAttributeListNode = document.GetElementsByTagName("common-attributes")[0];
+                commonAttributes = ParseCommonAttributes(commonAttributeListNode);
+
+                XmlNode globalAttributesListNode = document.GetElementsByTagName("global-tag-attributes")[0];
+                globalAttributes = ParseGlobalAttributes(globalAttributesListNode);
+
+                XmlNode tagListNode = document.GetElementsByTagName("tag-rules")[0];
+                tagRules = ParseTagRules(tagListNode);
+
+                XmlNode cssListNode = document.GetElementsByTagName("css-rules")[0];
+                cssRules = ParseCssRules(cssListNode);
+
+                XmlNode allowedEmptyTagListNode = document.GetElementsByTagName("allowed-empty-tags")[0];
+                allowedEmptyTagsMatcher = new TagMatcher(ParseAllowedEmptyTags(allowedEmptyTagListNode));
+            }
+            catch (Exception ex)
+            {
+                if (ex is PolicyException)
+                {
+                    throw;
+                }
+                else
+                {
+                    throw new PolicyException($"Problem parsing policy file: {ex.Message}", ex);
+                }
+            }
+        }
 
         /// <summary> Go through <directives> section of the policy file.</summary>
         /// <param name="directiveListNode">Top level of <directives></param>
@@ -382,7 +437,7 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary> Go through the <css-rules> section of the policy file.</summary>
         /// <param name="cssNodeList">Top level of <css-rules>.</param>
-        /// <returns> An List of <see cref="Property"/> objects.</returns>
+        /// <returns> A dictionary of <see cref="Property"/> objects.</returns>
         private Dictionary<string, Property> ParseCssRules(XmlNode cssNodeList)
         {
             var cssRulesDictionary = new Dictionary<string, Property>();
@@ -406,6 +461,32 @@ namespace OWASP.AntiSamy.Html
             }
 
             return cssRulesDictionary;
+        }
+
+
+        /// <summary> Go through the <allowed-empty-tags> section of the policy file.</summary>
+        /// <param name="allowedEmptyTagListNode">Top level of <allowed-empty-tags>.</param>
+        /// <returns> A list of strings containing the allowed empty tag names.</returns>
+        private List<string> ParseAllowedEmptyTags(XmlNode allowedEmptyTagListNode)
+        {
+            var allowedEmptyTags = new List<string>();
+            if (allowedEmptyTagListNode != null)
+            {
+                foreach (XmlElement element in PolicyParserUtil.GetGrandchildrenByTagNames(allowedEmptyTagListNode as XmlElement, "literal-list", "literal"))
+                {
+                    string value = XmlUtil.GetAttributeValue(element, "value");
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        allowedEmptyTags.Add(value);
+                    }
+                }
+            }
+            else
+            {
+                allowedEmptyTags.AddRange(Constants.DEFAULT_ALLOWED_EMPTY_TAGS);
+            }
+
+            return allowedEmptyTags;
         }
     }
 }
