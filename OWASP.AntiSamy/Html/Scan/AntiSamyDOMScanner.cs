@@ -148,20 +148,20 @@ namespace OWASP.AntiSamy.Html.Scan
             HtmlNode parentNode = node.ParentNode;
             string tagName = node.Name;
 
-            // TODO: Check this out, might not be robust enough. Check if this is needed: || tagName.ToUpperInvariant().Equals("#comment"))
-            if (tagName.ToUpperInvariant().Equals("#text"))
+            // TODO: Check this out, might not be robust enough. Check if this is needed: || tagName.ToLowerInvariant().Equals("#comment"))
+            if (tagName.ToLowerInvariant().Equals("#text"))
             {
                 return;
             }
 
-            Tag tag = policy.GetTagByName(tagName.ToUpperInvariant());
+            Tag tag = policy.GetTagByName(tagName.ToLowerInvariant());
             HtmlNode tmp;
             
             if (tag == null || "filter".Equals(tag.Action))
             {
                 var errBuff = new StringBuilder();
                 errBuff.Append(string.IsNullOrEmpty(tagName) ? 
-                    "An unprocessable " : $"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName.ToUpperInvariant())}</b> ");
+                    "An unprocessable " : $"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName.ToLowerInvariant())}</b> ");
                 errBuff.Append("tag has been filtered for security reasons. The contents of the tag will remain in place.");
 
                 errorMessages.Add(errBuff.ToString());
@@ -177,7 +177,7 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             else if ("validate".Equals(tag.Action))
             {
-                if ("style".Equals(tagName.ToUpperInvariant()) && policy.GetTagByName("style") != null)
+                if ("style".Equals(tagName.ToLowerInvariant()) && policy.GetTagByName("style") != null)
                 {
                     var styleScanner = new CssScanner(policy);
                     try
@@ -218,7 +218,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
                     bool isAttributeValid = false;
 
-                    if ("style".Equals(name.ToUpperInvariant()) && attribute != null)
+                    if ("style".Equals(name.ToLowerInvariant()) && attribute != null)
                     {
                         var styleScanner = new CssScanner(policy);
 
@@ -245,10 +245,10 @@ namespace OWASP.AntiSamy.Html.Scan
                         {
                             // TODO: Try to find out how robust this is - do I need to do this in a loop?
                             value = HtmlEntity.DeEntitize(value);
-                            string upperCaseValue = value.ToUpperInvariant();
+                            string lowerCaseValue = value.ToLowerInvariant();
 
                             // TODO: Why are ^ and $ needed if it already is a pattern itself?
-                            isAttributeValid = attribute.AllowedValues.Any(v => v != null && v.ToUpperInvariant() == upperCaseValue)
+                            isAttributeValid = attribute.AllowedValues.Any(v => v != null && v.ToLowerInvariant() == lowerCaseValue)
                                 || attribute.AllowedRegExp.Any(r => r != null && Regex.IsMatch(value, "^" + r + "$"));
 
                             if (!isAttributeValid)
