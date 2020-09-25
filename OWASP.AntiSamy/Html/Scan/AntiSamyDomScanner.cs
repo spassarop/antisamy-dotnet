@@ -129,8 +129,10 @@ namespace OWASP.AntiSamy.Html.Scan
                 // This node can hold other nodes, so recursively validate
                 RecursiveValidateTag(tmp);
 
-                if (tmp.ParentNode == null) { currentChildIndex--; }
-                currentChildIndex++;
+                if (tmp.ParentNode != null)
+                {
+                    currentChildIndex++;
+                }
             }
 
             // All the cleaned HTML
@@ -266,11 +268,15 @@ namespace OWASP.AntiSamy.Html.Scan
                                 }
                                 else if ("filterTag".Equals(onInvalidAction))
                                 {
-                                    for (int i = 0; i < node.ChildNodes.Count; i++)
+                                    int i = 0;
+                                    while (i < node.ChildNodes.Count)
                                     {
                                         tmp = node.ChildNodes[i];
                                         RecursiveValidateTag(tmp);
-                                        if (tmp.ParentNode == null) { i--; }
+                                        if (tmp.ParentNode != null)
+                                        {
+                                            i++;
+                                        }
                                     }
                                     PromoteChildren(node);
                                     errBuff.Append($"filter the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and leave its contents in place so that we could process this input.");

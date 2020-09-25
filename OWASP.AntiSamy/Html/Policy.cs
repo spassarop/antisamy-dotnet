@@ -39,7 +39,7 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     public class Policy
     {
-        public static int DEFAULT_MAX_INPUT_SIZE = 100_000;
+        public static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
         private const string DEFAULT_POLICY_URI = "Resources/OWASP.AntiSamy.xml";
         private const string DEFAULT_ONINVALID = "removeAttribute";
 
@@ -256,7 +256,7 @@ namespace OWASP.AntiSamy.Html
             {
                 string regExName = XmlUtil.GetAttributeValue(regExNode, "name");
                 string value = XmlUtil.GetAttributeValue(regExNode, "value");
-                string allowedRegEx = string.IsNullOrEmpty(regExName) ? value : GetCommonRegularExpressionByName(regExName).ToString();
+                string allowedRegEx = string.IsNullOrEmpty(regExName) ? value : GetCommonRegularExpressionByName(regExName);
                 allowedList.Add(allowedRegEx);
             }
             return allowedList;
