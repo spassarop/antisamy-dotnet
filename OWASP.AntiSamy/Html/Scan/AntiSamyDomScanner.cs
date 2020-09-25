@@ -165,16 +165,20 @@ namespace OWASP.AntiSamy.Html.Scan
                 errBuff.Append(string.IsNullOrEmpty(tagName) ? 
                     "An unprocessable " : $"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName.ToLowerInvariant())}</b> ");
                 errBuff.Append("tag has been filtered for security reasons. The contents of the tag will remain in place.");
-
                 errorMessages.Add(errBuff.ToString());
-
-                for (int i = 0; i < node.ChildNodes.Count; i++)
+                
+                int i = 0;
+                while (i < node.ChildNodes.Count)
                 {
                     tmp = node.ChildNodes[i];
                     RecursiveValidateTag(tmp);
 
-                    if (tmp.ParentNode == null) { i--; }
+                    if (tmp.ParentNode != null)
+                    {
+                        i++;
+                    }
                 }
+
                 PromoteChildren(node);
             }
             else if ("validate".Equals(tag.Action))
@@ -312,11 +316,14 @@ namespace OWASP.AntiSamy.Html.Scan
                     currentAttributeIndex++;
                 } // End while loop through attributes 
 
-                for (int i = 0; i < node.ChildNodes.Count; i++)
+                int childNodeIndex = 0;
+                while (childNodeIndex < node.ChildNodes.Count)
                 {
-                    tmp = node.ChildNodes[i];
+                    tmp = node.ChildNodes[childNodeIndex];
                     RecursiveValidateTag(tmp);
-                    if (tmp.ParentNode == null) { i--; }
+                    if (tmp.ParentNode != null) {
+                        childNodeIndex++; 
+                    }
                 }
             }
             else if ("truncate".Equals(tag.Action))
