@@ -27,7 +27,7 @@ using System.Collections.Immutable;
 
 namespace OWASP.AntiSamy.Html.Scan
 {
-    public static class Constants
+    internal static class Constants
     {
         public static readonly ImmutableList<string> DEFAULT_ALLOWED_EMPTY_TAGS = new List<string> {
             "br", "hr", "a", "img", "link", "iframe", "script", "object", "applet", "frame", 

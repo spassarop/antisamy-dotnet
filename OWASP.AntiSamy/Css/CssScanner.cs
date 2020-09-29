@@ -46,7 +46,7 @@ namespace OWASP.AntiSamy.Css
     /// To make use of this class, instantiate the scanner with the desired policy and call either 
     /// <see cref="ScanInlineStyle(string, string, int)"/> or <see cref="ScanStyleSheet(string, int)"/> as appropriate.
     /// </summary>
-    public class CssScanner
+    internal class CssScanner
     {
         private const string DUMMY_SELECTOR_BEGIN = ".dummySelector {";
         private const string DUMMY_SELECTOR_END = " }";

@@ -27,7 +27,7 @@ using System.Xml;
 
 namespace OWASP.AntiSamy.Html.Util
 {
-    public static class XmlUtil
+    internal static class XmlUtil
     {
         /// <summary> Helper function for quickly retrieving an attribute from a given element.</summary>
         /// <param name="element">The document element from which to pull the attribute value.</param>

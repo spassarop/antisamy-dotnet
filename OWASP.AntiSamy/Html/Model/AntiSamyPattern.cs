@@ -25,7 +25,7 @@
 namespace OWASP.AntiSamy.Html.Model
 {
     /// <summary>An extension of the Pattern to give it a "lookup name" that we can use from a centralized store.</summary>
-    public class AntiSamyPattern
+    internal class AntiSamyPattern
     {
         public string Name { get; set; }
         public string Pattern { get; set; }

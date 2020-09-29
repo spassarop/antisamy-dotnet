@@ -39,7 +39,7 @@ namespace OWASP.AntiSamy.Html.Scan
 {
     /// <summary> This is where the magic lives. All the scanning/filtration logic resides here, but it should not be called
     /// directly. All scanning should be done through a <see cref="AntiSamy"/><c>.Scan()</c> method.</summary>
-    public class AntiSamyDomScanner
+    internal class AntiSamyDomScanner
     {
         private const string EMPTY_CSS_COMMENT = "/* */";
 

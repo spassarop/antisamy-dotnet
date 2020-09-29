@@ -26,7 +26,7 @@ using System.Text;
 
 namespace OWASP.AntiSamy.Html.Util
 {
-    public static class HtmlEntityEncoder
+    internal static class HtmlEntityEncoder
     {
         /// <summary> A helper method for HTML entity-encoding a string value.</summary>
         /// <param name="value">A string containing HTML control characters.</param>

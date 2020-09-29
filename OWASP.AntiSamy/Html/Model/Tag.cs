@@ -32,7 +32,7 @@ namespace OWASP.AntiSamy.Html.Model
     /// <summary> A model for HTML "tags" and the rules dictating their validation/filtration. Also contains 
     /// information about their allowed attributes. There is also some experimental (unused) code in here for
     /// generating a valid regular expression according to a policy file on a per-tag basis.</summary>
-    public class Tag
+    internal class Tag
     {
         public string Action { get; set; }
         public string Name { get; set; }

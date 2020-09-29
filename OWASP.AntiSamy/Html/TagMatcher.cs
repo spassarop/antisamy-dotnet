@@ -28,7 +28,7 @@ using System.Linq;
 namespace OWASP.AntiSamy.Html
 {
     /// <summary>Uses smart matching to match tags.</summary>
-    public class TagMatcher
+    internal class TagMatcher
     {
         private readonly HashSet<string> allowedLowercase;
 

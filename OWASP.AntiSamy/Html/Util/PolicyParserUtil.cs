@@ -38,7 +38,7 @@ namespace OWASP.AntiSamy.Html.Util
         /// <param name="childrenName">Name of the first level children.</param>
         /// <param name="grandchildrenName">Name of the second level children.</param>
         /// <returns></returns>
-        internal static List<XmlElement> GetGrandchildrenByTagNames(XmlElement parent, string childrenName, string grandchildrenName)
+        public static List<XmlElement> GetGrandchildrenByTagNames(XmlElement parent, string childrenName, string grandchildrenName)
         {
             XmlNodeList childrenNodes = parent.SelectNodes(childrenName);
             if (XmlUtil.IsXmlNodeListNullOrEmpty(childrenNodes)) 
@@ -54,7 +54,7 @@ namespace OWASP.AntiSamy.Html.Util
         /// <param name="parent">The parent <see cref="XmlNode"/>.</param>
         /// <param name="childrenName">Name of the first level children.</param>
         /// <returns></returns>
-        internal static List<XmlElement> GetChildrenByTagName(XmlNode parent, string childrenName)
+        public static List<XmlElement> GetChildrenByTagName(XmlNode parent, string childrenName)
         {
             XmlNodeList childrenNodes = parent.SelectNodes(childrenName);
             return XmlUtil.IsXmlNodeListNullOrEmpty(childrenNodes) ? 
@@ -67,7 +67,7 @@ namespace OWASP.AntiSamy.Html.Util
         /// <param name="grandchildrenName">Name of the second level children.</param>
         /// <param name="attributeName">Name of the XML attribute to look for in grandchildren elements.</param>
         /// <returns>A list with the values.</returns>
-        internal static List<string> GetAttributeOrValueFromGrandchildren(XmlElement parent, string childrenName, string grandchildrenName, string attributeName)
+        public static List<string> GetAttributeOrValueFromGrandchildren(XmlElement parent, string childrenName, string grandchildrenName, string attributeName)
         {
             var values = new List<string>();
             foreach (XmlElement element in GetGrandchildrenByTagNames(parent, childrenName, grandchildrenName))

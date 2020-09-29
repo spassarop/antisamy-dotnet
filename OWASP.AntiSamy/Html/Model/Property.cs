@@ -34,7 +34,7 @@ namespace OWASP.AntiSamy.Html.Model
     /// <summary> A model for CSS properties and the "rules" they must follow (either literals
     /// or regular expressions) in order to be considered valid.</summary>
     // Author: Jason Li
-    public class Property
+    internal class Property
     {
         public List<string> AllowedRegExp { get; set; } = new List<string>();
         public List<string> AllowedValues { get; set; } = new List<string>();

@@ -40,7 +40,7 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     public class Policy
     {
-        public static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
+        internal static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
         private const string DEFAULT_POLICY_URI = "Resources/antisamy.xml";
         private const string DEFAULT_ONINVALID = "removeAttribute";
 
@@ -96,36 +96,36 @@ namespace OWASP.AntiSamy.Html
         /// <summary>A simple method for returning one of the <common-regexp> entries by name.</summary>
         /// <param name="name">The name of the common-regexp we want to look up.</param>
         /// <returns> A string associated with the common-regexp lookup name specified.</returns>
-        public string GetCommonRegularExpressionByName(string name) => name == null ? null : commonRegularExpressions.GetValueOrDefault(name);
+        internal string GetCommonRegularExpressionByName(string name) => name == null ? null : commonRegularExpressions.GetValueOrDefault(name);
 
         /// <summary> A simple method for returning one of the <global-attribute> entries by name.</summary>
         /// <param name="name">The name of the global-attribute we want to look up.</param>
         /// <returns> An Attribute associated with the global-attribute lookup name specified.</returns>
-        public Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrDefault(name.ToLowerInvariant());
+        internal Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrDefault(name.ToLowerInvariant());
 
         /// <summary> Return a directive value based on a lookup name.</summary>
         /// <param name="name">The name of the Tag to look up.</param>
         /// <returns> A string object containing the directive associated with the lookup name, or null if none is found.</returns>
-        public string GetDirectiveByName(string name) => directives.GetValueOrDefault(name);
+        internal string GetDirectiveByName(string name) => directives.GetValueOrDefault(name);
 
         /// <summary> Retrieves a Tag from the Policy.</summary>
         /// <param name="name">The name of the Tag to look up.</param>
         /// <returns> The <see cref="Tag"/> associated with the name specified, or null if none is found.</returns>
-        public Tag GetTagByName(string name) => tagRules.GetValueOrDefault(name.ToLowerInvariant());
+        internal Tag GetTagByName(string name) => tagRules.GetValueOrDefault(name.ToLowerInvariant());
 
         /// <summary> Retrieves a CSS Property from the Policy.</summary>
         /// <param name="name">The name of the CSS Property to look up.</param>
         /// <returns> The CSS <see cref="Property"/> associated with the name specified, or null if none is found.</returns>
-        public Property GetPropertyByName(string name) => cssRules.GetValueOrDefault(name.ToLowerInvariant());
+        internal Property GetPropertyByName(string name) => cssRules.GetValueOrDefault(name.ToLowerInvariant());
 
         /// <summary> A simple method for returning one of the <common-attribute> entries by name.</summary>
         /// <param name="name">The name of the common-attribute we want to look up.</param>
         /// <returns> An <see cref="Attribute"/> associated with the common-attribute lookup name specified.</returns>
-        public Attribute GetCommonAttributeByName(string name) => commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
+        internal Attribute GetCommonAttributeByName(string name) => commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
 
         /// <summary> Return all the allowed empty tags configured in the Policy.</summary>
         /// <returns> A <see cref="TagMatcher"/> with all the allowed empty tags configured in the policy.</returns>
-        public TagMatcher GetAllowedEmptyTags() => allowedEmptyTagsMatcher;
+        internal TagMatcher GetAllowedEmptyTags() => allowedEmptyTagsMatcher;
 
         /// <summary>Generates a <see cref="XmlDocument"/> by loading it from a file.</summary>
         /// <param name="filename">The name of the file which contains the policy XML.</param>

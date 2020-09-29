@@ -32,7 +32,7 @@ namespace OWASP.AntiSamy.Html.Model
 {
     /// <summary> A model for HTML attributes and the "rules" they must follow 
     /// (either literals or regular expressions) in order to be considered valid.</summary>
-    public class Attribute : ICloneable
+    internal class Attribute : ICloneable
     {
         public List<string> AllowedRegExp { get; set; } = new List<string>();
         public List<string> AllowedValues { get; set; } = new List<string>();
