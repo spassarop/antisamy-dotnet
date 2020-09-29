@@ -23,6 +23,9 @@
 */
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using OWASP.AntiSamy.Html.Scan;
 
 namespace OWASP.AntiSamy.Html.Model
 {
@@ -35,99 +38,18 @@ namespace OWASP.AntiSamy.Html.Model
         public string Name { get; set; }
         public Dictionary<string, Attribute> AllowedAttributes { get; set; } = new Dictionary<string, Attribute>();
 
-        // Begin constants needed for generating regular expressions
-        private const string REGEXP_CHARACTERS = "\\(){}.*?$^-+";
-
-        /*
-        private const string ANY_NORMAL_WHITESPACES = "(\\s)*";
-        private const string OPEN_ATTRIBUTE = "(";
-        private const string ATTRIBUTE_DIVIDER = "|";
-        private const string CLOSE_ATTRIBUTE = ")";
-        //private final static String OPEN_VALUES = "(";
-        //private final static String VALUE_DIVIDER = "|";
-        //private final static String CLOSE_VALUE = ")";
-        //UPGRADE_NOTE: Final was removed from the declaration of 'OPEN_TAG_ATTRIBUTES '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
-        //private static readonly string OPEN_TAG_ATTRIBUTES = ANY_NORMAL_WHITESPACES + OPEN_ATTRIBUTE;
-        private const string CLOSE_TAG_ATTRIBUTES = ")*";
-        
-        /// <summary> Returns a regular expression for validating individual tags. Not used by the AntiSamy scanner, but you might find some use for this.</summary>
-        /// <returns> A regular expression for the tag, i.e., "^<b>$", or "<hr(\s)*(width='((\w){2,3}(\%)*)'>"</returns>
-        // TODO: redo this method, even though apparently it's not being used in AntiSamy
-        public string RegularExpression
-        {	
-            get
-            {
-                StringBuilder regExp;		
-                // For such tags as <b>, <i>, <u>
-                if (allowedAttributes.Count == 0)
-                {
-                    return "^<" + name + ">$";
-                }
-				
-                regExp = new System.Text.StringBuilder("<" + ANY_NORMAL_WHITESPACES + name + OPEN_TAG_ATTRIBUTES);
-                System.Collections.IEnumerator attributes = new SupportClass.HashSetSupport(allowedAttributes.Keys).GetEnumerator();
-				
-                while (attributes.MoveNext())
-                {
-                    Attribute attr = (Attribute) allowedAttributes[(string) attributes.Current];
-                    // <p (id=#([0-9.*{6})|sdf).*>
-					
-                    regExp.Append(attr.Name + ANY_NORMAL_WHITESPACES + "=" + ANY_NORMAL_WHITESPACES + "\"" + OPEN_ATTRIBUTE);
-                    System.Collections.IEnumerator allowedValues = attr.AllowedValues.GetEnumerator();
-                    System.Collections.IEnumerator allowedRegExps = attr.AllowedRegExp.GetEnumerator();
-					
-                    if (attr.AllowedRegExp.Count + attr.AllowedValues.Count > 0)
-                    {
-                        // Go through and add static values to the regular expression.
-                        while (allowedValues.MoveNext())
-                        {
-                            string allowedValue = (string) allowedValues.Current;
-                            regExp.Append(EscapeRegularExpressionCharacters(allowedValue));
-                            if (allowedValues.MoveNext() || allowedRegExps.MoveNext())
-                            {
-                                regExp.Append(ATTRIBUTE_DIVIDER);
-                            }
-                        }
-						
-                        // Add the regular expressions for this attribute value to the mother regular expression.
-                        while (allowedRegExps.MoveNext())
-                        {
-                            Pattern allowedRegExp = (Pattern) allowedRegExps.Current;
-                            regExp.Append(allowedRegExp.pattern());
-                            if (allowedRegExps.MoveNext())
-                            {
-                                regExp.Append(ATTRIBUTE_DIVIDER);
-                            }
-                        }
-						
-                        if (attr.AllowedRegExp.Count + attr.AllowedValues.Count > 0)
-                        {
-                            regExp.Append(CLOSE_ATTRIBUTE);
-                        }
-						
-                        regExp.Append("\"" + ANY_NORMAL_WHITESPACES);
-						
-                        if (attributes.MoveNext())
-                        {
-                            regExp.Append(ATTRIBUTE_DIVIDER);
-                        }
-                    }
-                }
-				
-                regExp.Append(CLOSE_TAG_ATTRIBUTES + ANY_NORMAL_WHITESPACES + ">");
-                return regExp.ToString();
-            }
-        }*/
-
         /// <summary> Constructor.</summary>
         /// <param name="name">The name of the tag, such as "b" for &lt;b&gt; tags.</param>
         public Tag(string name) => Name = name;
 
         /// <summary> Constructor.</summary>
         /// <param name="name">The name of the tag, such as "b" for &lt;b&gt; tags.</param>
-        public Tag(string name, Dictionary<string, Attribute> allowedAttributes) 
+        /// <param name="action">The action to take with the tag, like <c>"remove"</c>.</param>
+        /// <param name="allowedAttributes">The allowed attributes dictionary for the tag.</param>
+        public Tag(string name, string action, Dictionary<string, Attribute> allowedAttributes) 
         {
             Name = name;
+            Action = action;
             AllowedAttributes = allowedAttributes;
         }
 
@@ -143,16 +65,41 @@ namespace OWASP.AntiSamy.Html.Model
         /// <returns> The <see cref="Attribute"/> object associated with the name.</returns>
         public Attribute GetAttributeByName(string name) => AllowedAttributes.GetValueOrDefault(name);
 
-        private string EscapeRegularExpressionCharacters(string allowedValue)
+        public string GetRegularExpression()
+        {
+            // For such tags as <b>, <i>, <u>
+            if (!AllowedAttributes.Any())
+            {
+                return $"^<{Name}>$";
+            }
+
+            var regExp = new StringBuilder($"<{Constants.ANY_NORMAL_WHITESPACES}{Name}{Constants.OPEN_TAG_ATTRIBUTES}");
+
+            List<Attribute> attributeList = AllowedAttributes.Values.OrderBy(a => a.Name).ToList();
+            for (int i = 0; i < attributeList.Count; i++)
+            {
+                regExp.Append(attributeList[i].MatcherRegEx());
+                if (i < attributeList.Count - 1)
+                {
+                    regExp.Append(Constants.ATTRIBUTE_DIVIDER);
+                }
+            }
+
+            regExp.Append($"{Constants.CLOSE_TAG_ATTRIBUTES}{Constants.ANY_NORMAL_WHITESPACES}>");
+
+            return regExp.ToString();
+        }
+
+        public static string EscapeRegularExpressionCharacters(string allowedValue)
         {
             string toReturn = allowedValue;
             if (toReturn == null)
             {
                 return null;
             }
-            for (int i = 0; i < REGEXP_CHARACTERS.Length; i++)
+            for (int i = 0; i < Constants.REGEXP_CHARACTERS.Length; i++)
             {
-                toReturn = toReturn.Replace("\\" + System.Convert.ToString(REGEXP_CHARACTERS[i]), "\\" + REGEXP_CHARACTERS[i]);
+                toReturn = toReturn.Replace("\\" + System.Convert.ToString(Constants.REGEXP_CHARACTERS[i]), "\\" + Constants.REGEXP_CHARACTERS[i]);
             }
             return toReturn;
         }

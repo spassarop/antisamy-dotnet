@@ -24,6 +24,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using OWASP.AntiSamy.Html.Scan;
 
 namespace OWASP.AntiSamy.Html.Model
 {
@@ -38,6 +41,14 @@ namespace OWASP.AntiSamy.Html.Model
         public string Description { get; set; }
 
         public Attribute(string name) => Name = name;
+        public Attribute(string name, string description, string onInvalid, List<string> allowedRegExp, List<string> allowedValues)
+        {
+            Name = name;
+            Description = description;
+            OnInvalid = onInvalid;
+            AllowedRegExp = allowedRegExp;
+            AllowedValues = allowedValues;
+        }
 
         /// <summary>Adds an allowed value for the attribute.</summary>
         /// <param name="safeValue">A legal literal value that an attribute can have, according to the policy.</param>
@@ -64,5 +75,31 @@ namespace OWASP.AntiSamy.Html.Model
             AllowedValues = AllowedValues,
             AllowedRegExp = AllowedRegExp
         };
+
+        public string MatcherRegEx()
+        {
+            var regExp = new StringBuilder()
+                .Append(Name)
+                .Append(Constants.ANY_NORMAL_WHITESPACES)
+                .Append("=")
+                .Append(Constants.ANY_NORMAL_WHITESPACES)
+                .Append("\"")
+                .Append(Constants.OPEN_ATTRIBUTE);
+
+            string joinedAttributes = string.Join(Constants.ATTRIBUTE_DIVIDER, AllowedValues.Select(v => Tag.EscapeRegularExpressionCharacters(v)));
+            regExp.Append(joinedAttributes);
+
+            if (!string.IsNullOrEmpty(joinedAttributes) && AllowedRegExp.Any())
+            {
+                regExp.Append(Constants.ATTRIBUTE_DIVIDER); //
+            }
+
+            regExp.Append(string.Join(Constants.ATTRIBUTE_DIVIDER, AllowedRegExp));
+
+            return regExp
+                .Append(Constants.CLOSE_ATTRIBUTE)
+                .Append($"\"{Constants.ANY_NORMAL_WHITESPACES}")
+                .ToString();
+        }
     }
 }

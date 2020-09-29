@@ -32,5 +32,14 @@ namespace OWASP.AntiSamy.Html.Scan
             "br", "hr", "a", "img", "link", "iframe", "script", "object", "applet", "frame", 
             "base", "param", "meta", "input", "textarea", "embed", "basefont", "col"
         };
+
+        // For Tag regular expression building
+        public static readonly string REGEXP_CHARACTERS = "\\(){}.*?$^-+";
+        public static readonly string ANY_NORMAL_WHITESPACES = "(\\s)*";
+        public static readonly string OPEN_ATTRIBUTE = "(";
+        public static readonly string ATTRIBUTE_DIVIDER = "|";
+        public static readonly string CLOSE_ATTRIBUTE = ")";
+        public static readonly string OPEN_TAG_ATTRIBUTES = ANY_NORMAL_WHITESPACES + OPEN_ATTRIBUTE;
+        public static readonly string CLOSE_TAG_ATTRIBUTES = CLOSE_ATTRIBUTE + "*";
     }
 }
