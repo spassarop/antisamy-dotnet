@@ -22,7 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,7 +30,7 @@ namespace OWASP.AntiSamy.Html
     /// <summary>Uses smart matching to match tags.</summary>
     public class TagMatcher
     {
-        private readonly HashSet<string> allowedLowercase = new HashSet<String>();
+        private readonly HashSet<string> allowedLowercase = new HashSet<string>();
 
         public TagMatcher(List<string> allowedValues) => allowedLowercase = allowedValues.Select(v => v.ToLowerInvariant()).ToHashSet();
 
