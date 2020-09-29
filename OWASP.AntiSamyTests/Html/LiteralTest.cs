@@ -44,14 +44,14 @@ namespace AntiSamyTests
         [Test]
         public void TestDomGoodResult()
         {
-            var goodHtml = "<div align=\"right\">html</div>";
+            const string goodHtml = "<div align=\"right\">html</div>";
             antisamy.Scan(goodHtml, policy).GetErrorMessages().Should().BeEmpty();
         }
 
         [Test]
         public void TestDomBadResult()
         {
-            var badHtml = "<div align=\"foo\">badhtml</div>";
+            const string badHtml = "<div align=\"foo\">badhtml</div>";
             antisamy.Scan(badHtml, policy).GetErrorMessages().Should().NotBeEmpty();
         }
     }

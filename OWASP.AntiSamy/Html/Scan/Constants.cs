@@ -23,15 +23,16 @@
 */
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace OWASP.AntiSamy.Html.Scan
 {
     public static class Constants
     {
-        public static readonly List<string> DEFAULT_ALLOWED_EMPTY_TAGS = new List<string> {
+        public static readonly ImmutableList<string> DEFAULT_ALLOWED_EMPTY_TAGS = new List<string> {
             "br", "hr", "a", "img", "link", "iframe", "script", "object", "applet", "frame", 
             "base", "param", "meta", "input", "textarea", "embed", "basefont", "col"
-        };
+        }.ToImmutableList();
 
         // For Tag regular expression building
         public static readonly string REGEXP_CHARACTERS = "\\(){}.*?$^-+";

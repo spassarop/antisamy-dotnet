@@ -30,7 +30,7 @@ namespace OWASP.AntiSamy.Html
     /// <summary>Uses smart matching to match tags.</summary>
     public class TagMatcher
     {
-        private readonly HashSet<string> allowedLowercase = new HashSet<string>();
+        private readonly HashSet<string> allowedLowercase;
 
         public TagMatcher(List<string> allowedValues) => allowedLowercase = allowedValues.Select(v => v.ToLowerInvariant()).ToHashSet();
 

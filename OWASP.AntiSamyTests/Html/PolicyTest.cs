@@ -34,23 +34,12 @@ namespace AntiSamyTests
     [TestFixture]
     public class PolicyTest
     {
-        private const string HEADER = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
-                                         "<anti-samy-rules xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-                                         "xsi:noNamespaceSchemaLocation=\"antisamy.xsd\">\n";
-        private const string DIRECTIVES = "<directives>\n</directives>\n";
-        private const string COMMON_ATTRIBUTES = "<common-attributes>\n</common-attributes>\n";
-        private const string GLOBAL_TAG_ATTRIBUTES = "<global-tag-attributes>\n</global-tag-attributes>\n";
-        private const string DYNAMIC_TAG_ATTRIBUTES = "<dynamic-tag-attributes>\n</dynamic-tag-attributes>\n";
-        private const string TAG_RULES = "<tag-rules>\n</tag-rules>";
-        private const string CSS_RULES = "<css-rules>\n</css-rules>\n";
-        private const string COMMON_REGEXPS = "<common-regexps>\n</common-regexps>";
-        private const string FOOTER = "</anti-samy-rules>";
-        private Policy policy;
-
         private string AssembleFile(string allowedEmptyTagsSection)
         {
-            return HEADER + DIRECTIVES + COMMON_REGEXPS + COMMON_ATTRIBUTES + GLOBAL_TAG_ATTRIBUTES + 
-                DYNAMIC_TAG_ATTRIBUTES + TAG_RULES + CSS_RULES + allowedEmptyTagsSection + FOOTER;
+            return TestConstants.POLICY_HEADER + TestConstants.POLICY_DIRECTIVES + TestConstants.POLICY_COMMON_REGEXPS 
+                + TestConstants.POLICY_COMMON_ATTRIBUTES + TestConstants.POLICY_GLOBAL_TAG_ATTRIBUTES 
+                + TestConstants.POLICY_DYNAMIC_TAG_ATTRIBUTES + TestConstants.POLICY_TAG_RULES 
+                + TestConstants.POLICY_CSS_RULES + allowedEmptyTagsSection + TestConstants.POLICY_FOOTER;
         }
 
         [Test]
@@ -63,7 +52,7 @@ namespace AntiSamyTests
                                          "    </literal-list>\n" +
                                          "</allowed-empty-tags>\n");
 
-            policy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyFile)));
+            var policy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyFile)));
 
             TagMatcher actualTags = policy.GetAllowedEmptyTags();
             actualTags.Matches("td").Should().BeTrue();
@@ -78,7 +67,7 @@ namespace AntiSamyTests
                                          "    </literal-list>\n" +
                                          "</allowed-empty-tags>\n");
 
-            policy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyFile)));
+            var policy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyFile)));
             policy.GetAllowedEmptyTags().Size().Should().Be(0);
         }
 
@@ -88,7 +77,7 @@ namespace AntiSamyTests
             string policyFile = AssembleFile("<allowed-empty-tags>\n" +
                                          "</allowed-empty-tags>\n");
 
-            policy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyFile)));
+            var policy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyFile)));
             policy.GetAllowedEmptyTags().Size().Should().Be(0);
         }
 
@@ -97,20 +86,21 @@ namespace AntiSamyTests
         {
             string policyFile = AssembleFile(string.Empty);
 
-            policy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyFile)));
+            var policy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyFile)));
             policy.GetAllowedEmptyTags().Size().Should().Be(Constants.DEFAULT_ALLOWED_EMPTY_TAGS.Count);
         }
 
         [Test]
         public void TestCreateFromFilename()
         {
-            policy = null;
+            Policy policy = null;
             try
             {
                 policy = Policy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
             }
             catch 
             { 
+                // To comply with try/catch
             }
 
             policy.Should().NotBeNull();
@@ -119,13 +109,14 @@ namespace AntiSamyTests
         [Test]
         public void TestCreateFromFileInfo()
         {
-            policy = null;
+            Policy policy = null;
             try
             {
                 policy = Policy.GetInstance(new FileInfo(TestConstants.DEFAULT_POLICY_PATH));
             }
             catch
             {
+                // To comply with try/catch
             }
 
             policy.Should().NotBeNull();

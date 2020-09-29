@@ -26,6 +26,17 @@ namespace AntiSamyTests
 {
     public static class TestConstants
     {
-        public const string DEFAULT_POLICY_PATH = "Resources/antisamy.xml";
+        public static readonly string DEFAULT_POLICY_PATH = "Resources/antisamy.xml";
+        public static readonly string POLICY_HEADER = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
+                                         "<anti-samy-rules xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                                         "xsi:noNamespaceSchemaLocation=\"antisamy.xsd\">\n";
+        public static readonly string POLICY_DIRECTIVES = "<directives>\n</directives>\n";
+        public static readonly string POLICY_COMMON_ATTRIBUTES = "<common-attributes>\n</common-attributes>\n";
+        public static readonly string POLICY_GLOBAL_TAG_ATTRIBUTES = "<global-tag-attributes>\n</global-tag-attributes>\n";
+        public static readonly string POLICY_DYNAMIC_TAG_ATTRIBUTES = "<dynamic-tag-attributes>\n</dynamic-tag-attributes>\n";
+        public static readonly string POLICY_TAG_RULES = "<tag-rules>\n</tag-rules>";
+        public static readonly string POLICY_CSS_RULES = "<css-rules>\n</css-rules>\n";
+        public static readonly string POLICY_COMMON_REGEXPS = "<common-regexps>\n</common-regexps>";
+        public static readonly string POLICY_FOOTER = "</anti-samy-rules>";
     }
 }
