@@ -39,6 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Html\Model\" />
     <Folder Include="Resources\" />
   </ItemGroup>
 
