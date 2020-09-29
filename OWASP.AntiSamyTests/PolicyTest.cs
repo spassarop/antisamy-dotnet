@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2009-2020, Jerry Hoff, Sebastián Passaro
+* Copyright (c) 2009-2020, Arshan Dabirsiaghi
 * 
 * All rights reserved.
 * 
@@ -107,7 +107,7 @@ namespace AntiSamyTests
             policy = null;
             try
             {
-                policy = Policy.GetInstance("Resources/antisamy.xml");
+                policy = Policy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
             }
             catch 
             { 
@@ -122,7 +122,7 @@ namespace AntiSamyTests
             policy = null;
             try
             {
-                policy = Policy.GetInstance(new FileInfo("Resources/antisamy.xml"));
+                policy = Policy.GetInstance(new FileInfo(TestConstants.DEFAULT_POLICY_PATH));
             }
             catch
             {

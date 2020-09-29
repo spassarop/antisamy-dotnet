@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright (c) 2009-2020, Jerry Hoff
+* Copyright (c) 2009-2020, Arshan Dabirsiaghi
 * 
 * All rights reserved.
 * 
@@ -32,12 +32,15 @@ namespace AntiSamyTests
     [TestFixture]
     public class AntiSamyTest
     {
-        readonly AntiSamy antisamy = new AntiSamy();
-        readonly string filename = "Resources/antisamy.xml";
+        private AntiSamy antisamy;
         private Policy policy;
 
         [SetUp]
-        public void SetUp() => policy = Policy.GetInstance(filename);
+        public void SetUp()
+        {
+            antisamy = new AntiSamy();
+            policy = Policy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
+        }
 
         /*
          * Test basic XSS cases. 
