@@ -45,7 +45,6 @@ namespace OWASP.AntiSamy.Html.Scan
 
         // Will hold the results of the scan
         public CleanResults Results { get; set; }
-        private void InitBlock() => dom = document.CreateDocumentFragment();
         // Policy holds the parsed attributes from the XML config file
         private readonly Policy policy;
         // All error messages live in here
@@ -72,19 +71,12 @@ namespace OWASP.AntiSamy.Html.Scan
         /// <returns> A <see cref="CleanResults"/> object with an <see cref="XmlDocumentFragment"/>
         ///  object and its string representation, as well as some scan statistics.</returns>
         /// <exception cref="ScanException">  ScanException </exception>
-        // TODO: Use in/out encodings or remove them
         public virtual CleanResults Scan(string html) 
         {
             if (html == null)
             {
                 throw new ScanException("No input (null)");
             }
-
-            // Had problems with the &nbsp; getting double encoded, so this converts it to a literal space. This may need to be changed.
-            html = html.Replace("&nbsp;", char.Parse("\u00a0").ToString());
-
-            // We have to replace any invalid XML characters
-            html = StripNonValidXmlCharacters(html);
 
             // Grab the size specified in the config file
             if (!int.TryParse(policy.GetDirectiveByName("maxInputSize"), out int maxInputSize))
@@ -99,6 +91,17 @@ namespace OWASP.AntiSamy.Html.Scan
                 throw new ScanException($"File size [{html.Length}] is larger than maximum [{maxInputSize}]");
             }
 
+            if (dom != null)
+            {
+                InitBlock(); // There was a scan before on the same instance
+            }
+
+            // Had problems with the &nbsp; getting double encoded, so this converts it to a literal space. This may need to be changed.
+            html = html.Replace("&nbsp;", char.Parse("\u00a0").ToString());
+
+            // We have to replace any invalid XML characters
+            html = StripNonValidXmlCharacters(html);
+
             // Grab start time (to be put in the result set along with end time)
             var start = DateTime.Now;
 
@@ -110,21 +113,21 @@ namespace OWASP.AntiSamy.Html.Scan
             HtmlNode.ElementsFlags.Remove("form");
 
             // Let's parse the incoming HTML
-            HtmlDocument doc = new HtmlDocument();
-            doc.LoadHtml(html);
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
 
             // Add closing tags
-            doc.OptionAutoCloseOnEnd = true;
+            htmlDocument.OptionAutoCloseOnEnd = true;
 
             // Enforces XML rules, encodes big 5
-            doc.OptionOutputAsXml = true;
+            htmlDocument.OptionOutputAsXml = true;
 
             // Loop through every node now, and enforce the rules held in the policy object
             var currentChildIndex = 0;
-            while (currentChildIndex < doc.DocumentNode.ChildNodes.Count)
+            while (currentChildIndex < htmlDocument.DocumentNode.ChildNodes.Count)
             {
                 // Grab current node
-                HtmlNode tmp = doc.DocumentNode.ChildNodes[currentChildIndex];
+                HtmlNode tmp = htmlDocument.DocumentNode.ChildNodes[currentChildIndex];
 
                 // This node can hold other nodes, so recursively validate
                 RecursiveValidateTag(tmp);
@@ -136,12 +139,18 @@ namespace OWASP.AntiSamy.Html.Scan
             }
 
             // All the cleaned HTML
-            string finalCleanHTML = doc.DocumentNode.InnerHtml;
+            string finalCleanHTML = htmlDocument.DocumentNode.InnerHtml;
 
             // Grab end time (to be put in the result set along with start time)
             var end = DateTime.Now;
             Results = new CleanResults(start, end, finalCleanHTML, dom, errorMessages);
             return Results;
+        }
+
+        private void InitBlock()
+        {
+            dom = document.CreateDocumentFragment();
+            errorMessages.Clear();
         }
 
         private void RecursiveValidateTag(HtmlNode node)
