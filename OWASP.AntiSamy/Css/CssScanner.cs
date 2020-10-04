@@ -81,9 +81,8 @@ namespace OWASP.AntiSamy.Css
         /// <returns>A <see cref="CleanResults"/> object containing the results of the scan.</returns>
         /// <exception cref="ScanException"/>
         /// <exception cref="ParseException"/>
-        public CleanResults ScanStyleSheet(string taintedCss, int sizeLimit)
+        public CleanResults ScanStyleSheet(string taintedCss)
         {
-            // TODO: Do something about sizeLimit
             return DoScan(taintedCss, isInlineCss: false);
         }
 
@@ -94,7 +93,7 @@ namespace OWASP.AntiSamy.Css
         /// <returns>A <see cref="CleanResults"/> object containing the results of the scan.</returns>
         /// <exception cref="ScanException"/>
         /// <exception cref="ParseException"/>
-        public CleanResults ScanInlineStyle(string taintedCss, string tagName, int sizeLimit)
+        public CleanResults ScanInlineStyle(string taintedCss, string tagName)
         {
             // TODO: Do something about tagName (probably delete it later)
             return DoScan(taintedCss, isInlineCss: true);
@@ -278,7 +277,6 @@ namespace OWASP.AntiSamy.Css
             else if (!IsValidValue(allowedCssProperty, cssProperty, decodedValue, removingProperties))
             {
                 removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{decodedValue}\" is not allowed by any criteria"));
-                return;
             }
         }
 

@@ -41,6 +41,9 @@ namespace OWASP.AntiSamy.Html
     public class Policy
     {
         internal static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
+        internal static readonly string ACTION_FILTER = "filter";
+        internal static readonly string ACTION_VALIDATE = "validate";
+        internal static readonly string ACTION_TRUNCATE = "truncate";
         private const string DEFAULT_POLICY_URI = "Resources/antisamy.xml";
         private const string DEFAULT_ONINVALID = "removeAttribute";
 
@@ -126,6 +129,18 @@ namespace OWASP.AntiSamy.Html
         /// <summary> Return all the allowed empty tags configured in the Policy.</summary>
         /// <returns> A <see cref="TagMatcher"/> with all the allowed empty tags configured in the policy.</returns>
         internal TagMatcher GetAllowedEmptyTags() => allowedEmptyTagsMatcher;
+
+        internal int GetMaximumInputSize()
+        {
+            // Grab the size specified in the config file
+            if (!int.TryParse(GetDirectiveByName("maxInputSize"), out int maxInputSize))
+            {
+                // Holds the maximum input size for the incoming fragment
+                maxInputSize = DEFAULT_MAX_INPUT_SIZE;
+            }
+
+            return maxInputSize;
+        }
 
         /// <summary>Generates a <see cref="XmlDocument"/> by loading it from a file.</summary>
         /// <param name="filename">The name of the file which contains the policy XML.</param>
@@ -462,7 +477,6 @@ namespace OWASP.AntiSamy.Html
 
             return cssRulesDictionary;
         }
-
 
         /// <summary> Go through the <allowed-empty-tags> section of the policy file.</summary>
         /// <param name="allowedEmptyTagListNode">Top level of <allowed-empty-tags>.</param>
