@@ -42,10 +42,7 @@ namespace AntiSamyTests
             policy = Policy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
         }
 
-        /*
-         * Test basic XSS cases. 
-         */
-        [Test]
+        [Test(Description = "Test basic XSS cases.")]
         public void TestScriptAttacks()
         {
             antisamy.Scan("test<script>alert(document.cookie)</script>", policy).GetCleanHtml().Should().NotContain("script");
@@ -99,7 +96,7 @@ namespace AntiSamyTests
             antisamy.Scan("<BASE HREF=\"javascript:alert('XSS');//\">", policy).GetCleanHtml().Should().NotContain("javascript");
             antisamy.Scan("<BaSe hReF=\"http://arbitrary.com/\">", policy).GetCleanHtml().Should().NotContain("<base");
             antisamy.Scan("<OBJECT TYPE=\"text/x-scriptlet\" DATA=\"http://ha.ckers.org/scriptlet.html\"></OBJECT>", policy).GetCleanHtml().Should().NotContain("<object");
-            antisamy.Scan("<OBJECT classid=clsid:ae24fdae-03c6-11d1-8b76-0080c744f389><param name=url value=javascript:alert('XSS')></OBJECT>", policy).GetCleanHtml().Should().NotContain("<object");
+            antisamy.Scan("<OBJECT classid=clsid:ae24fdae-03c6-11d1-8b76-0080c744f389><param name=url value=javascript:alert('XSS')></OBJECT>", policy).GetCleanHtml().Should().NotContain("javascript");
             antisamy.Scan("<EMBED SRC=\"http://ha.ckers.org/xss.swf\" AllowScriptAccess=\"always\"></EMBED>", policy).GetCleanHtml().Should().NotContain("<embed");
             antisamy.Scan("<EMBED SRC=\"data:image/svg+xml;base64,PHN2ZyB4bWxuczpzdmc9Imh0dH A6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcv MjAwMC9zdmciIHhtbG5zOnhsaW5rPSJod" +
                 "HRwOi8vd3d3LnczLm9yZy8xOTk5L3hs aW5rIiB2ZXJzaW9uPSIxLjAiIHg9IjAiIHk9IjAiIHdpZHRoPSIxOTQiIGhlaWdodD0iMjAw IiBpZD0ieHNzIj48c2NyaXB0IHR5cGU9InRleHQvZWNtYXNjcmlwdCI+YWxlcnQoIlh TUy" +
@@ -118,24 +115,19 @@ namespace AntiSamyTests
             antisamy.Scan("<!--\n<A href=\n- --><a href=javascript:alert:document.domain>test-->", policy).GetCleanHtml().Should().NotContain("javascript");
             antisamy.Scan("<a></a style=\"\"xx:expr/**/ession(document.appendChild(document.createElement('script')).src='http://h4k.in/i.js')\">", policy).GetCleanHtml()
                 .Should().NotContain("document");
+            antisamy.Scan("<dIv sTyLe='background-image: url(sheep.png), url(betweengrassandsky.png), linear-gradient(#e66465, #9198e5);'></dIv>", policy).GetCleanHtml();
         }
 
-        /*
-         * Test CSS protections. 
-         */
-        [Test]
+        [Test(Description = "Test CSS protections.")]
         public void TestCssAttacks()
         {
             antisamy.Scan("<div style=\"position:absolute\">", policy).GetCleanHtml().Should().NotContain("position");
             antisamy.Scan("<style>b { position:absolute }</style>", policy).GetCleanHtml().Should().NotContain("position");
-            antisamy.Scan("<div style=\"z-index:25\">", policy).GetCleanHtml().Should().NotContain("position");
-            antisamy.Scan("<style>z-index:25</style>", policy).GetCleanHtml().Should().NotContain("position");
+            antisamy.Scan("<div style=\"z-index:25\">", policy).GetCleanHtml().Should().NotContain("z-index");
+            antisamy.Scan("<style>z-index:25</style>", policy).GetCleanHtml().Should().NotContain("z-index");
         }
 
-        /*
-         * Tests issues #12 and #36 from nahsra/antisamy.
-         */
-        [Test]
+        [Test(Description = "Tests issues #12 and #36 from owaspantisamy Google Code Archive.")]
         public void TestEmptyTags()
         {
             string html = antisamy.Scan("<br ><strong></strong><a>hello world</a><b /><i/><hr>", policy).GetCleanHtml();
@@ -152,22 +144,22 @@ namespace AntiSamyTests
             (html.Contains("<hr />") || html.Contains("<hr/>")).Should().BeTrue();
         }
 
-        /*
-         * Tests issues #20 from nahsra/antisamy.
-         */
-        [Test]
+        [Test(Description = "Tests issue #20 from owaspantisamy Google Code Archive.")]
         public void TestMisplacedTag()
         {
             antisamy.Scan("<b><i>Some Text</b></i>", policy).GetCleanHtml().Should().NotContain("<i />");
         }
 
-        /*
-         * Tests issues #25 from nahsra/antisamy.
-         */
-        [Test]
+        [Test(Description = "Tests issue #25 from owaspantisamy Google Code Archive.")]
         public void TestMarginRemovalFromInlineStyle()
         {
             antisamy.Scan("<div style=\"margin: -5em\">Test</div>", policy).GetCleanHtml().Should().Be("<div style=\"\">Test</div>");
+        }
+
+        [Test(Description = "Tests issue #28 from owaspantisamy Google Code Archive.")]
+        public void TestPreserveFontFamily()
+        {
+            antisamy.Scan("<div style=\"font-family: Geneva, Arial, courier new, sans-serif\">Test</div>", policy).GetCleanHtml().Should().Contain("font-family");
         }
     }
 }
