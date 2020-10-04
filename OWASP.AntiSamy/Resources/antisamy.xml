@@ -9,13 +9,15 @@ http://www.w3.org/TR/html401/struct/global.html
 	
 <anti-samy-rules xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:noNamespaceSchemaLocation="antisamy.xsd">
-	
+
 	<directives>
 		<directive name="omitXmlDeclaration" value="true"/>
 		<directive name="omitDoctypeDeclaration" value="true"/>
 		<directive name="maxInputSize" value="200000"/>
 		<directive name="useXHTML" value="true"/>
 		<directive name="formatOutput" value="true"/>
+		<directive name="nofollowAnchors" value="true" />
+		<directive name="validateParamAsEmbed" value="true" />
 		
 		<!--
 		remember, this won't work for relative URIs - AntiSamy doesn't
@@ -25,6 +27,8 @@ http://www.w3.org/TR/html401/struct/global.html
 		<directive name="connectionTimeout" value="5000"/>
 		<directive name="maxStyleSheetImports" value="3"/>
 		
+		<!-- Allows the use of dynamic attributes (i.e. HTML5 "data-") -->
+		<directive name="allowDynamicAttributes" value="true" />
 	</directives>
 	
 	<common-regexps>
@@ -36,36 +40,41 @@ http://www.w3.org/TR/html401/struct/global.html
 		name or names. Multiple class names must be separated by white 
 		space characters.
 		-->
+
+		<!-- The 16 colors defined by the HTML Spec (also used by the CSS Spec) -->
+		<regexp name="colorName" value="(aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|purple|red|silver|teal|white|yellow)"/>
 		
-		<regexp name="colorNameOrCode" value="(#[0-9a-fA-F]{6}|[a-zA-Z]{1,20})"/>
-		<regexp name="number" value="[0-9]+"/>
+		<!-- HTML/CSS Spec allows 3 or 6 digit hex to specify color -->
+		<regexp name="colorCode" value="(#([0-9a-fA-F]{6}|[0-9a-fA-F]{3}))"/>
+				
 		<regexp name="anything" value=".*"/>
 		<regexp name="numberOrPercent" value="(\d)+(%{0,1})"/>
-		<regexp name="paragraph" value="([\p{L}\p{N},'\.\s\-_\(\)]|&amp;[0-9]{2};)*"/>	
-		<regexp name="htmlId" value="[a-zA-Z0-9-_]+"/>
-		<regexp name="htmlTitle" value="[\p{L}\p{N}\s-_',:\[\]!\./\\\(\)]*"/> <!-- force non-empty with a '+' at the end instead of '*' -->
-		<regexp name="htmlClass" value="[a-zA-Z0-9\s,-_]+"/>
+		<regexp name="paragraph" value="([\p{L}\p{N},'\.\s\-_\(\)]|&amp;[0-9]{2};)*"/>
+		<regexp name="htmlId" value="[a-zA-Z0-9\:\-_\.]+"/>
+		<regexp name="htmlTitle" value="[\p{L}\p{N}\s\-_',:\[\]!\./\\\(\)&amp;]*"/> <!-- force non-empty with a '+' at the end instead of '*' -->
+		<regexp name="htmlClass" value="[a-zA-Z0-9\s,\-_]+"/>
 
-		<regexp name="onsiteURL" value="([\p{L}\p{N}\\/\.\?=\#&amp;;\-_~]+|\#(\w)+)"/>
-		<regexp name="offsiteURL" value="(\s)*((ht|f)tp(s?)://|mailto:)[\p{L}\p{N}]+[~\p{L}\p{N}\p{Zs}\-_\.@#$%&amp;;:,\?=/\+!]*(\s)*"/>
+		<regexp name="onsiteURL" value="^(?![\p{L}\p{N}\\\.\#@\$%\+&amp;;\-_~,\?=/!]*(&amp;colon))[\p{L}\p{N}\\\.\#@\$%\+&amp;;\-_~,\?=/!]*"/>
+		<regexp name="anchoredURL" value="#(\w)+"/>
+		<regexp name="offsiteURL" value="(\s)*((ht|f)tp(s?)://|mailto:)[\p{L}\p{N}]+[\p{L}\p{N}\p{Zs}\.\#@\$%\+&amp;;:\-_~,\?=/!\(\)]*(\s)*"/>
 		
 		<regexp name="boolean" value="(true|false)"/>
 		<regexp name="singlePrintable" value="[a-zA-Z0-9]{1}"/> <!-- \w allows the '_' character -->
 
 		<!-- This is for elements (ex: elemName { ... }) -->
-		<regexp name="cssElementSelector" value="[a-zA-Z0-9-_]+|\*"/>
+		<regexp name="cssElementSelector" value="[a-zA-Z0-9\-_]+|\*"/>
 		
 		<!--  This is to list out any element names that are *not* valid -->
 		<regexp name="cssElementExclusion" value=""/>
 		
 		<!--  This if for classes (ex: .className { ... }) -->
-		<regexp name="cssClassSelector" value="\.[a-zA-Z0-9-_]+"/>
+		<regexp name="cssClassSelector" value="\.[a-zA-Z0-9\-_]+"/>
 
 		<!--  This is to list out any class names that are *not* valid -->
 		<regexp name="cssClassExclusion" value=""/>
 		
 		<!--  This is for ID selectors (ex: #myId { ... } -->
-		<regexp name="cssIDSelector" value="#[a-zA-Z0-9-_]+"/>
+		<regexp name="cssIDSelector" value="#[a-zA-Z0-9\-_]+"/>
 		
 		<!--  This is to list out any IDs that are *not* valid - FIXME: What should the default be to avoid div hijacking? *? -->
 		<regexp name="cssIDExclusion" value=""/>
@@ -86,19 +95,34 @@ http://www.w3.org/TR/html401/struct/global.html
 		<regexp name="cssOnsiteUri" value="url\(([\p{L}\p{N}\\/\.\?=\#&amp;;\-_~]+|\#(\w)+)\)"/>
 		<regexp name="cssOffsiteUri" value="url\((\s)*((ht|f)tp(s?)://)[\p{L}\p{N}]+[~\p{L}\p{N}\p{Zs}\-_\.@#$%&amp;;:,\?=/\+!]*(\s)*\)"/>
 		
-		<!--  This is for comments within CSS (ex. /* comment */) -->
-		<regexp name="cssCommentText" value="[\p{L}\p{N}-_,\/\\\.\s\(\)!\?\=\$#%\^&amp;:&quot;']+"/>
+		<!--  This if for CSS Identifiers -->
+		<regexp name="cssIdentifier" value="[a-zA-Z0-9\-_]+"/>
 		
+		<!--  This is for comments within CSS (ex. /* comment */) -->
+		<regexp name="cssCommentText" value="[\p{L}\p{N}\-_,\/\\\.\s\(\)!\?\=\$#%\^&amp;:&quot;']+"/>
+
 		<regexp name="integer" value="(-|\+)?[0-9]+"/>
-		<regexp name="number" value="(-|\+)?([0-9]+(.[0-9]+)?)"/>		
-		<regexp name="angle" value="(-|\+)?([0-9]+(.[0-9]+)?)(deg|grads|rad)"/>
-		<regexp name="time" value="([0-9]+(.[0-9]+)?)(ms|s)"/>
-		<regexp name="frequency" value="([0-9]+(.[0-9]+)?)(hz|khz)"/>	
-		<regexp name="length" value="((-|\+)?0|(-|\+)?([0-9]+(.[0-9]+)?)(em|ex|px|in|cm|mm|pt|pc))"/>
-		<regexp name="percentage" value="(-|\+)?([0-9]+(.[0-9]+)?)%"/>
-		<regexp name="cssColor" value="(aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|purple|red|silver|teal|white|yellow)|rgb\(([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\)"/>		
+		<regexp name="positiveInteger" value="(\+)?[0-9]+"/>
+		<regexp name="number" value="(-|\+)?([0-9]+(\.[0-9]+)?)"/>
+		<regexp name="angle" value="(-|\+)?([0-9]+(\.[0-9]+)?)(deg|grads|rad)"/>
+		<regexp name="time" value="([0-9]+(\.[0-9]+)?)(ms|s)"/>
+		<regexp name="frequency" value="([0-9]+(\.[0-9]+)?)(hz|khz)"/>	
+		<regexp name="length" value="((-|\+)?0|(-|\+)?([0-9]+(\.[0-9]+)?)(em|ex|px|in|cm|mm|pt|pc))"/>
+		<regexp name="positiveLength" value="((\+)?0|(\+)?([0-9]+(\.[0-9]+)?)(em|ex|px|in|cm|mm|pt|pc))"/>
+		<regexp name="percentage" value="(-|\+)?([0-9]+(\.[0-9]+)?)%"/>
+		<regexp name="positivePercentage" value="(\+)?([0-9]+(\.[0-9]+)?)%"/>
+		
 		<regexp name="absolute-size" value="(xx-small|x-small|small|medium|large|x-large|xx-large)"/>
 		<regexp name="relative-size" value="(larger|smaller)"/>
+		
+		<!-- Used for CSS Color specifications (complex regexp expresses integer values of 0-255) -->
+		<regexp name="rgbCode" value="rgb\(([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\)"/>
+		
+		<!-- CSS2 Allowed System Color Values -->		
+		<regexp name="systemColor" value="(activeborder|activecaption|appworkspace|background|buttonface|buttonhighlight|buttonshadow|buttontext|captiontext|graytext|highlight|highlighttext|inactiveborder|inactivecaption|inactivecaptiontext|infobackground|infotext|menu|menutext|scrollbar|threeddarkshadow|threedface|threedhighlight|threedlightshadow|threedshadow|window|windowframe|windowtext)"/>
+
+		<!-- This is where we specify what Flash src to allow -->
+		<regexp name="flashSites" value="http://(download\.macromedia\.com/pub|www\.macromedia\.com/(go|shockwave)|c\.brightcove\.com/services|gamevideos\.1up\.com/swf|www\.youtube\.com/v|vimeo\.com|www\.gametrailers\.com|videomedia\.ign\.com/ev|image\.com\.com/gamespot|www\.hulu\.com/embed|embed\.break\.com|player\.ordienetworks\.com/flash|www\.adultswim\.com/video/vplayer|www\.dailymotion\.com/swf|www\.ustream\.tv/flash/video|cdn-i\.dmdentertainment\.com|media\.mtvnservices\.com|www\.justin\.tv/widgets|www\.viddler\.com/(player|simple_on_site)|static\.twitter\.com/flash|www\.gamepro\.com/bin|www\.divshare\.com/flash|www\.facebook\.com/v)/.*"/>
 	</common-regexps>
 	
 	<!-- 
@@ -123,10 +147,22 @@ http://www.w3.org/TR/html401/struct/global.html
 		
 		<attribute name="id" description="The 'id' of any HTML attribute should not contain anything besides letters and numbers">
 			<regexp-list>
-				<regexp value="[a-zA-Z0-9_\-\:]+"/>
+				<regexp name="htmlId"/>
 			</regexp-list>
 		</attribute>
 	
+		<attribute name="classid">
+			<regexp-list>
+				<regexp name="anything" />
+			</regexp-list>
+		</attribute>
+
+		<attribute name="codebase">
+			<regexp-list>
+				<regexp name="flashSites" />
+			</regexp-list>
+		</attribute>
+
 		<attribute name="class" description="The 'class' of any HTML attribute is usually a single word, but it can also be a list of class names separated by spaces">
 			<regexp-list>
 				<regexp name="htmlClass"/>
@@ -150,11 +186,20 @@ http://www.w3.org/TR/html401/struct/global.html
 		 	</regexp-list>
 		 </attribute>
 
-		 
+		<attribute name="data-" description="Allows the HTML5 'data-' attribute to be added to elements">
+			<regexp-list>
+				<regexp name="anything"/>
+			</regexp-list>
+		</attribute>
+
  		<!-- the "style" attribute will be validated by an inline stylesheet scanner, so no need to define anything here - i hate having to special case this but no other choice -->
 		 <attribute name="style" description="The 'style' attribute provides the ability for users to change many attributes of the tag's contents using a strict syntax"/>
 		 
 		 <attribute name="media">
+		 	<regexp-list>
+		 		<regexp value="[a-zA-Z0-9,\-\s]+"/>
+		 	</regexp-list>
+		 	
 		 	<literal-list>
 		 		<literal value="screen"/>
 		 		<literal value="tty"/>
@@ -166,6 +211,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		 		<literal value="aural"/>
 		 		<literal value="all"/>
 		 	</literal-list>
+		 	
 		 </attribute>
 		 
 		 
@@ -175,20 +221,15 @@ http://www.w3.org/TR/html401/struct/global.html
 		<attribute name="href">
 			<regexp-list>
 				<regexp name="onsiteURL"/>
+				<regexp name="anchoredURL"/>
 				<regexp name="offsiteURL"/>
 			</regexp-list>
-			<literal-list>
-				<literal value="javascript:history.go(0)"/>
-				<literal value="javascript:history.go(-1)"/>
-				<literal value="javascript:void(0)"/>
-				<literal value="javascript:location.reload()"/>
-			</literal-list>
 		</attribute>
 		
 		<attribute name="name">
 		 	<regexp-list>
 		 		
-		 		<regexp value="[a-zA-Z0-9-_\$]+"/>
+		 		<regexp value="[a-zA-Z0-9\-_\$]+"/>
 		 		
 		 		<!--
 		 		have to allow the $ for .NET controls - although,
@@ -252,11 +293,12 @@ http://www.w3.org/TR/html401/struct/global.html
 
 		<attribute name="bgcolor">		
 			<regexp-list>
-				<regexp name="colorNameOrCode"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
 			</regexp-list>
 		</attribute>
 		 
-		 <attribute name="abbrev">
+		 <attribute name="abbr">
 			<regexp-list>
 			 	<regexp name="paragraph"/>
 		 	</regexp-list>
@@ -276,7 +318,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		 
 		 <attribute name="char">
 			<regexp-list>
-				<regexp value=".*{0,1}"/>
+				<regexp value=".{0,1}"/>
 			</regexp-list>				
 		 </attribute>
 
@@ -467,8 +509,16 @@ http://www.w3.org/TR/html401/struct/global.html
 		<!-- Not valid in base, br, frame, frameset, hr, iframe, param, and script elements.  -->
 		<attribute name="lang"/>
 	</global-tag-attributes>
-	
-	
+
+	<!-- Declare "dynamic" tag attributes here. The directive "allowDynamicAttributes" must be set to true -->
+	<dynamic-tag-attributes>
+		<attribute name="data-"/> <!-- HTML5 "data-" tag -->
+	</dynamic-tag-attributes>
+
+	<tags-to-encode>
+		<tag>g</tag>
+		<tag>grin</tag>
+	</tags-to-encode>
 	
 	<tag-rules>
 	
@@ -592,6 +642,7 @@ http://www.w3.org/TR/html401/struct/global.html
 			<attribute name="usemap">
 				<regexp-list>
 					<regexp name="onsiteURL"/>
+					<regexp name="anchoredURL"/>
 				</regexp-list>
 			</attribute>
 			
@@ -708,18 +759,17 @@ http://www.w3.org/TR/html401/struct/global.html
 		<tag name="hr" action="validate"/>
 		<tag name="br" action="validate"/>
 		
-		
-		
 		<tag name="font" action="validate">
 			<attribute name="color">
 				<regexp-list>
-					<regexp name="colorNameOrCode"/>
+					<regexp name="colorName"/>
+					<regexp name="colorCode"/>
 				</regexp-list>
 			</attribute>
 			
 			<attribute name="face">
 				<regexp-list>
-					<regexp value="[\w;, ]+"/>
+					<regexp value="[\w;, \-]+"/>
 				</regexp-list>
 			</attribute>
 			
@@ -780,14 +830,8 @@ http://www.w3.org/TR/html401/struct/global.html
 		<tag name="div" action="validate">
 			<attribute name="align"/>
 		</tag>
-		
-		<!-- <attribute name="id"/>  what could an attacker do if they could overwrite an existing div definition? prolly something bad -->
-		<!-- <attribute name="class"/> what could an attacker do if they could specify any class in the namespace? prolly something bad -->
 
-		
-		
-		
-		
+	
 		<!-- Image & image related tags -->
 		
 		<tag name="img" action="validate">
@@ -911,7 +955,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		<tag name="td" action="validate">
 			<attribute name="background"/>
 			<attribute name="bgcolor"/>
-			<attribute name="abbrev"/>
+			<attribute name="abbr"/>
 			<attribute name="axis"/>
 			<attribute name="headers"/>
 			<attribute name="scope"/>
@@ -927,7 +971,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		</tag>
 		
 		<tag name="th" action="validate">
-			<attribute name="abbrev"/>
+			<attribute name="abbr"/>
 			<attribute name="axis"/>
 			<attribute name="headers"/>
 			<attribute name="scope"/>
@@ -982,6 +1026,118 @@ http://www.w3.org/TR/html401/struct/global.html
 				
 		<tag name="fieldset" action="validate"/>
 		<tag name="legend" action="validate"/>
+		
+
+		<!-- tags for popular Flash embeds -->
+
+		<tag name="object" action="validate">
+			<attribute name="id" />
+			<attribute name="classid" />
+			<attribute name="codebase" />
+			<attribute name="type" onInvalid="removeTag">
+				<literal-list>
+					<literal value="application/x-shockwave-flash" />
+				</literal-list>
+			</attribute>
+			<attribute name="data" onInvalid="removeTag">
+				<regexp-list>
+					<regexp name="flashSites" />
+				</regexp-list>
+			</attribute>
+			<attribute name="align" />
+			<attribute name="height" />
+			<attribute name="width" />
+			<attribute name="alt" />
+			<attribute name="bgcolor">
+				<regexp-list>
+					<regexp name="colorCode" />
+				</regexp-list>
+			</attribute>
+		</tag>
+
+		<!-- with validateParamAsEmbed=true, this tag rule also covers <param> name/value pairs -->
+		<tag name="embed" action="validate">
+			<attribute name="src" onInvalid="removeTag">
+				<regexp-list>
+					<regexp name="flashSites" />
+				</regexp-list>
+			</attribute>
+			<attribute name="movie" onInvalid="removeTag">
+				<regexp-list>
+					<regexp name="flashSites" />
+				</regexp-list>
+			</attribute>
+			<attribute name="pluginspage">
+				<regexp-list>
+					<regexp name="flashSites" />
+				</regexp-list>
+			</attribute>
+			<attribute name="bgcolor">
+				<regexp-list>
+					<regexp name="colorCode" />
+				</regexp-list>
+			</attribute>
+			<attribute name="base">
+				<literal-list>
+					<literal value="http://admin.brightcove.com" />
+				</literal-list>
+			</attribute>
+			<attribute name="type">
+				<literal-list>
+					<literal value="application/x-shockwave-flash" />
+				</literal-list>
+			</attribute>
+			<attribute name="name">
+				<regexp-list>
+					<regexp name="anything" />
+				</regexp-list>
+			</attribute>
+			<attribute name="flashvars">
+				<regexp-list>
+					<regexp name="anything" /><!-- we could put something complex in here, but this is prolly fine for now-->
+				</regexp-list>
+			</attribute>
+			<attribute name="align" />
+			<attribute name="height" />
+			<attribute name="width" />
+			<attribute name="allowfullscreen">
+				<regexp-list>
+					<regexp name="boolean" />
+				</regexp-list>
+			</attribute>
+			<attribute name="quality">
+				<literal-list>
+					<literal value="high" />
+				</literal-list>
+			</attribute>
+			<attribute name="allowscriptaccess">
+				<literal-list>
+					<literal value="always" />
+					<literal value="samedomain" />
+				</literal-list>
+			</attribute>
+			<attribute name="seamlesstabbing">
+				<regexp-list>
+					<regexp name="boolean" />
+				</regexp-list>
+			</attribute>
+			<attribute name="swliveconnect">
+				<regexp-list>
+					<regexp name="boolean" />
+				</regexp-list>
+			</attribute>
+			<attribute name="wmode">
+				<literal-list>
+					<literal value="transparent" />
+					<literal value="window" />
+				</literal-list>
+			</attribute>
+			<attribute name="allownetworking">
+				<literal-list>
+					<literal value="all" />
+				</literal-list>
+			</attribute>
+		</tag>
 		
 	</tag-rules>
 
@@ -1038,7 +1194,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
 		
@@ -1099,7 +1258,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
 		<property name="border-top-color" description="">
@@ -1110,7 +1272,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
 		<property name="border-right-color" description="">
@@ -1121,7 +1286,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
 		<property name="border-bottom-color" description="">
@@ -1132,7 +1300,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
 		<property name="border-left-color" description="">
@@ -1143,7 +1314,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
 		<property name="bottom" default="auto" description="">
@@ -1191,7 +1365,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
 		<property name="cue-after" default="none" description="">
@@ -1567,7 +1744,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
 		<property name="overflow" default="visible" description="">
@@ -1951,18 +2131,6 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="length"/>
 			</regexp-list>
 		</property>
-		<property name="z-index" default="auto" description="">
-			<category-list>
-				<category value="visual"/>
-			</category-list>
-			<literal-list>
-				<literal value="auto"/>
-				<literal value="inherit"/>
-			</literal-list>
-			<regexp-list>
-				<regexp name="integer"/>
-			</regexp-list>
-		</property>
 		
 		<!-- end simple properties -->
 		
@@ -2093,8 +2261,8 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="auto"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="length"/>
-				<regexp name="percentage"/>				
+				<regexp name="positiveLength"/>
+				<regexp name="positivePercentage"/>				
 			</regexp-list>
 		</property>
 		<property name="margin-top" default="0" description="">
@@ -2235,7 +2403,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
 				<shorthand name="border-width"/>
@@ -2250,7 +2421,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
 				<shorthand name="border-top-width"/>
@@ -2265,7 +2439,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
 				<shorthand name="border-top-width"/>
@@ -2280,7 +2457,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
 				<shorthand name="border-top-width"/>
@@ -2295,7 +2475,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
 				<shorthand name="border-top-width"/>
@@ -2391,23 +2574,6 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="length"/>
 			</regexp-list>
 		</property>
-		<property name="counter-increment" default="none" description="The 'counter-increment' property accepts one or more names of counters (identifiers), each one optionally followed by an integer.">
-			<category-list>
-				<category value="all"/>
-			</category-list>
-			<literal-list>
-				<literal value="none"/>			
-				<literal value="inherit"/>
-			</literal-list>
-			<regexp-list>
-				<regexp name="cssElementSelector"/>
-				<regexp name="cssClassSelector"/>
-				<regexp name="cssIDSelector"/>
-				<!--regexp name="cssPsuedoElementSelector"/-->
-				<regexp name="cssAttributeSelector"/>
-				<regexp name="integer"/>
-			</regexp-list>
-		</property>
 		<property name="clip" default="auto" description="The 'clip' property applies to elements that have a 'overflow' property with a value other than 'visible'.">
 			<category-list>
 				<category value="visual"/>
@@ -2418,6 +2584,19 @@ http://www.w3.org/TR/html401/struct/global.html
 			</literal-list>
 			<regexp-list>
 				<regexp name="length"/>
+			</regexp-list>
+		</property>
+		<property name="counter-increment" default="none" description="The 'counter-increment' property accepts one or more names of counters (identifiers), each one optionally followed by an integer.">
+			<category-list>
+				<category value="all"/>
+			</category-list>
+			<literal-list>
+				<literal value="none"/>			
+				<literal value="inherit"/>
+			</literal-list>
+			<regexp-list>
+				<regexp name="cssIdentifier"/>
+				<regexp name="integer"/>
 			</regexp-list>
 		</property>
 		<property name="cursor" default="auto" description="This property specifies the type of cursor to be displayed for the pointing device.">
@@ -2458,7 +2637,10 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="inherit"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssColor"/>
+				<regexp name="colorName"/>
+				<regexp name="colorCode"/>
+				<regexp name="rgbCode"/>
+				<regexp name="systemColor"/>
 				<regexp name="length"/>
 			</regexp-list>
 		</property>
@@ -2518,11 +2700,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="auto"/>
 			</literal-list>
 			<regexp-list>
-				<regexp name="cssElementSelector"/>
-				<regexp name="cssClassSelector"/>
-				<regexp name="cssIDSelector"/>
-				<!--regexp name="cssPsuedoElementSelector"/-->
-				<regexp name="cssAttributeSelector"/>
+				<regexp name="cssIdentifier"/>
 			</regexp-list>
 		</property>
 		<property name="play-during" default="auto" description="Similar to the 'cue-before' and 'cue-after' properties, this property specifies a sound to be played as a background while an element's content is spoken.">
@@ -2568,5 +2746,30 @@ http://www.w3.org/TR/html401/struct/global.html
 		</property>		
 		<!--  end manual properties -->
 	</css-rules>
+
+
+    <allowed-empty-tags>
+        <literal-list>
+            <literal value="br"/>
+            <literal value="hr"/>
+            <literal value="a"/>
+            <literal value="img"/>
+            <literal value="link"/>
+            <literal value="iframe"/>
+            <literal value="script"/>
+            <literal value="object"/>
+            <literal value="applet"/>
+            <literal value="frame"/>
+            <literal value="base"/>
+            <literal value="param"/>
+            <literal value="meta"/>
+            <literal value="input"/>
+            <literal value="textarea"/>
+            <literal value="embed"/>
+            <literal value="basefont"/>
+            <literal value="col"/>
+            <literal value="div"/>
+        </literal-list>
+    </allowed-empty-tags>
 
 </anti-samy-rules>

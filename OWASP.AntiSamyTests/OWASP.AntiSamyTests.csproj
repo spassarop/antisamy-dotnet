@@ -22,6 +22,7 @@
     <Content Include="..\OWASP.AntiSamy\Resources\antisamy-test.xml" Link="Resources\antisamy-test.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\OWASP.AntiSamy\Resources\antisamy-tinymce.xml" Link="Resources\antisamy-tinymce.xml" />
     <Content Include="..\OWASP.AntiSamy\Resources\antisamy.xml" Link="Resources\antisamy.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
