@@ -34,11 +34,17 @@ namespace AntiSamyTests
     [TestFixture]
     public class PolicyTest
     {
+        private static string[] AllPolicyFilePaths = { 
+            TestConstants.DEFAULT_POLICY_PATH, TestConstants.ANYTHINGGOES_POLICY_PATH, TestConstants.EBAY_POLICY_PATH, 
+            TestConstants.MYSPACE_POLICY_PATH, TestConstants.SLASHDOT_POLICY_PATH, TestConstants.TEST_POLICY_PATH, 
+            TestConstants.TINYMCE_POLICY_PATH 
+        };
+
         private string AssembleFile(string allowedEmptyTagsSection)
         {
-            return TestConstants.POLICY_HEADER + TestConstants.POLICY_DIRECTIVES + TestConstants.POLICY_COMMON_REGEXPS 
-                + TestConstants.POLICY_COMMON_ATTRIBUTES + TestConstants.POLICY_GLOBAL_TAG_ATTRIBUTES 
-                + TestConstants.POLICY_DYNAMIC_TAG_ATTRIBUTES + TestConstants.POLICY_TAG_RULES 
+            return TestConstants.POLICY_HEADER + TestConstants.POLICY_DIRECTIVES + TestConstants.POLICY_COMMON_REGEXPS
+                + TestConstants.POLICY_COMMON_ATTRIBUTES + TestConstants.POLICY_GLOBAL_TAG_ATTRIBUTES
+                + TestConstants.POLICY_DYNAMIC_TAG_ATTRIBUTES + TestConstants.POLICY_TAG_RULES
                 + TestConstants.POLICY_CSS_RULES + allowedEmptyTagsSection + TestConstants.POLICY_FOOTER;
         }
 
@@ -91,15 +97,15 @@ namespace AntiSamyTests
         }
 
         [Test]
-        public void TestCreateFromFilename()
+        public void TestCreateFromFilename([ValueSource("AllPolicyFilePaths")] string policyFile)
         {
             Policy policy = null;
             try
             {
-                policy = Policy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
+                policy = Policy.GetInstance(policyFile);
             }
-            catch 
-            { 
+            catch
+            {
                 // To comply with try/catch
             }
 
