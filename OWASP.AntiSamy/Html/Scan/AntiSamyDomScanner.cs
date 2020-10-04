@@ -153,6 +153,9 @@ namespace OWASP.AntiSamy.Html.Scan
             errorMessages.Clear();
         }
 
+        /// <summary>The workhorse of the scanner. Recursively scans document elements according to the policy.
+        /// This should be called implicitly through the <c>AntiSamy.Scan()</c> method.</summary>
+        /// <param name="node">The node to validate.</param>
         private void RecursiveValidateTag(HtmlNode node)
         {
             int maxinputsize = int.Parse(policy.GetDirectiveByName("maxInputSize")); // TODO: Should add try/catch or use TryParse
@@ -262,7 +265,6 @@ namespace OWASP.AntiSamy.Html.Scan
                             value = HtmlEntity.DeEntitize(value);
                             string lowerCaseValue = value.ToLowerInvariant();
 
-                            // TODO: Why are ^ and $ needed if it already is a pattern itself?
                             isAttributeValid = attribute.AllowedValues.Any(v => v != null && v.ToLowerInvariant() == lowerCaseValue)
                                 || attribute.AllowedRegExp.Any(r => r != null && Regex.IsMatch(value, "^" + r + "$"));
 

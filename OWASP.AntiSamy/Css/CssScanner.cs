@@ -36,6 +36,7 @@ using System.Text.RegularExpressions;
 using AngleSharp.Css;
 using AngleSharp.Css.Dom;
 using AngleSharp.Css.Parser;
+using AngleSharp.Css.Values;
 using OWASP.AntiSamy.Exceptions;
 using OWASP.AntiSamy.Html;
 using OWASP.AntiSamy.Html.Model;
@@ -51,8 +52,6 @@ namespace OWASP.AntiSamy.Css
         private const string DUMMY_SELECTOR_BEGIN = ".dummySelector {";
         private const string DUMMY_SELECTOR_END = " }";
 
-        private readonly Regex SCHEME_REGEX = new Regex(@"^\s*([^\/#]*?)(?:\:|&#0*58|&#x0*3a)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private readonly Regex CSS_URL_REGEX = new Regex(@"[Uu][Rr\u0280][Ll\u029F]\s*\(\s*(['""]?)\s*([^'"")\s]+)\s*(['""]?)\s*", RegexOptions.Compiled);
         private readonly Regex CSS_UNICODE_ESCAPES_REGEX = new Regex(@"\\([0-9a-fA-F]{1,6})\s?|\\([^\r\n\f0-9a-fA-F'""{};:()#*])", RegexOptions.Compiled);
         private readonly Regex CSS_COMMENTS_REGEX = new Regex(@"/\*.*?\*/", RegexOptions.Compiled);
         private readonly Regex DANGEROUS_CSS_EXPRESSION_REGEX = new Regex(
@@ -233,28 +232,23 @@ namespace OWASP.AntiSamy.Css
 
             foreach (ICssProperty cssProperty in styleDeclaration)
             {
-                string key = DecodeCss(cssProperty.Name);
-                string value = DecodeCss(cssProperty.Value);
-                Property allowedCssProperty = policy.GetPropertyByName(key);
+                string decodedName = DecodeCss(cssProperty.Name);
+                string decodedValue = DecodeCss(cssProperty.Value);
+                
+                Property allowedCssProperty = policy.GetPropertyByName(decodedName);
 
                 if (allowedCssProperty == null)
                 {
-                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"CSS property \"{key}\" is not allowed"));
-                    continue;
+                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"CSS property \"{decodedName}\" is not allowed"));
                 }
-
-                if (DANGEROUS_CSS_EXPRESSION_REGEX.IsMatch(value))
+                else if (DANGEROUS_CSS_EXPRESSION_REGEX.IsMatch(decodedValue))
                 {
-                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{value}\" is invalid CSS expression"));
-                    continue;
+                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{decodedValue}\" is invalid CSS expression"));
                 }
-
-                ValidateValue(allowedCssProperty, cssProperty, value, removingProperties);
-                MatchCollection urls = CSS_URL_REGEX.Matches(value);
-
-                if (urls.Count > 0 && !urls.Cast<Match>().All(u => SCHEME_REGEX.IsMatch(u.Value)))
+                else
                 {
-                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, "Illegal URL detected."));
+                    ICssValue value = cssProperty.RawValue;
+                    ValidateValue(removingProperties, cssProperty, allowedCssProperty, value);
                 }
             }
 
@@ -265,25 +259,46 @@ namespace OWASP.AntiSamy.Css
             }
         }
 
+        private void ValidateValue(List<Tuple<ICssProperty, string>> removingProperties, ICssProperty cssProperty, Property allowedCssProperty, ICssValue value)
+        {
+            string decodedValue = DecodeCss(RemoveQuotesIfUrlValue(value));
+
+            if (value is ICssMultipleValue multipleValues)
+            {
+                foreach (ICssValue singleValue in multipleValues)
+                {
+                    string decodedSingleValue = DecodeCss(RemoveQuotesIfUrlValue(singleValue));
+                    if (!IsValidValue(allowedCssProperty, cssProperty, decodedSingleValue, removingProperties))
+                    {
+                        removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{decodedSingleValue}\" in \"{decodedValue}\" is not allowed by any criteria"));
+                        return;
+                    }
+                }
+            }
+            else if (!IsValidValue(allowedCssProperty, cssProperty, decodedValue, removingProperties))
+            {
+                removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{decodedValue}\" is not allowed by any criteria"));
+                return;
+            }
+        }
+
         /// <summary>Validates if the provided <c>value</c> is allowed in the CSS property.
         /// It checks against allowed literal values and regular expressions, if the <c>value</c>
         /// is not allowed, the <c>cssProperty</c> is added to the <c>removeStyles</c> list.</summary>
         /// <param name="allowedCssProperty">The policy CSS property.</param>
         /// <param name="cssProperty">The CSS property which might be removed.</param>
         /// <param name="value">The literal value to check.</param>
-        /// <param name="removeStyles">The collection of CSS properties to be removed.</param>
-        private void ValidateValue(Property allowedCssProperty, ICssProperty cssProperty, string value, List<Tuple<ICssProperty, string>> removeStyles)
+        /// <param name="removingProperties">The collection of CSS properties to be removed.</param>
+        private bool IsValidValue(Property allowedCssProperty, ICssProperty cssProperty, string value, List<Tuple<ICssProperty, string>> removingProperties)
         {
-            if (allowedCssProperty.AllowedValues.Any() && !allowedCssProperty.AllowedValues.Any(lit => lit.Equals(value, StringComparison.OrdinalIgnoreCase)))
+            if (allowedCssProperty.AllowedValues.Any() && allowedCssProperty.AllowedValues.Any(lit => lit.Equals(value, StringComparison.OrdinalIgnoreCase)))
             {
-                removeStyles.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{value}\" is not allowed literal"));
-                return;
+                return true;
             }
 
-            if (allowedCssProperty.AllowedRegExp.Any() && !allowedCssProperty.AllowedRegExp.Any(regex => new Regex(regex).IsMatch(value)))
+            if (allowedCssProperty.AllowedRegExp.Any() && allowedCssProperty.AllowedRegExp.Any(regex => new Regex($"^{regex}$").IsMatch(value)))
             {
-                removeStyles.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{value}\" is not allowed literal by regex"));
-                return;
+                return true;
             }
 
             foreach (string shortHandRef in allowedCssProperty.ShorthandRefs)
@@ -291,9 +306,14 @@ namespace OWASP.AntiSamy.Css
                 Property shorthand = policy.GetPropertyByName(shortHandRef);
                 if (shorthand != null)
                 {
-                    ValidateValue(shorthand, cssProperty, value, removeStyles);
+                    if (IsValidValue(shorthand, cssProperty, value, removingProperties))
+                    {
+                        return true;
+                    }
                 }
             }
+
+            return false;
         }
 
         /// <summary>Decodes unicode characters and removes comments from a CSS string based on 
@@ -313,6 +333,19 @@ namespace OWASP.AntiSamy.Css
             });
 
             return CSS_COMMENTS_REGEX.Replace(intermediateResult, match => string.Empty);
+        }
+
+        /// <summary>If the CSS parser recognizes the value as an URL, this method builds a value of the form
+        /// <c>url(newVlaue)</c>, where <c>newValue</c> is the original URL value but without surrounding quotes.</summary>
+        /// <remarks>Note: This method was created to match the behavior of OWASP AntiSamy Java version,
+        /// were the parser removes the quotes automatically. This parser adds them, so there is no common point.
+        /// Also, the default allowed regular expressions don't have quotes, so any parser behavior becomes contradictory.</remarks>
+        /// <param name="value">The <see cref="ICssValue"/> that may be an URL.</param>
+        /// <returns>A string with the unquoted URL value or the original value if it is not an URL.</returns>
+        private string RemoveQuotesIfUrlValue(ICssValue value)
+        {
+            string valueAsUrl = value.AsUrl();
+            return string.IsNullOrEmpty(valueAsUrl) ? value.CssText : $"url({valueAsUrl})";
         }
     }
 }
