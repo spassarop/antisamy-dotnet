@@ -118,20 +118,7 @@ namespace OWASP.AntiSamy.Html.Scan
             htmlDocument.OptionOutputAsXml = true;
 
             // Loop through every node now, and enforce the rules held in the policy object
-            var currentChildIndex = 0;
-            while (currentChildIndex < htmlDocument.DocumentNode.ChildNodes.Count)
-            {
-                // Grab current node
-                HtmlNode tmp = htmlDocument.DocumentNode.ChildNodes[currentChildIndex];
-
-                // This node can hold other nodes, so recursively validate
-                RecursiveValidateTag(tmp);
-
-                if (tmp.ParentNode != null)
-                {
-                    currentChildIndex++;
-                }
-            }
+            ProcessChildren(htmlDocument.DocumentNode);
 
             // All the cleaned HTML
             string finalCleanHTML = htmlDocument.DocumentNode.InnerHtml;
@@ -157,21 +144,20 @@ namespace OWASP.AntiSamy.Html.Scan
             string tagName = node.Name;
 
             // TODO: Check this out, might not be robust enough. Check if this is needed: || tagName.ToLowerInvariant().Equals("#comment"))
-            if (tagName.ToLowerInvariant() == "#text")
+            if (node is HtmlTextNode)//tagName.ToLowerInvariant() == "#text"
             {
                 return;
             }
 
             Tag tag = policy.GetTagByName(tagName.ToLowerInvariant());
-            HtmlNode tmp = null;
             
             if (tag == null || tag.Action == Policy.ACTION_FILTER)
             {
-                FilterTag(node, tagName, tmp);
+                FilterTag(node, tagName);
             }
             else if (tag.Action == Policy.ACTION_VALIDATE)
             {
-                ValidateTag(node, parentNode, tagName, tag, tmp);
+                ValidateTag(node, parentNode, tagName, tag);
             }
             else if (tag.Action == Policy.ACTION_TRUNCATE)
             {
@@ -179,12 +165,13 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             else
             {
+                // If we reached this it means the tag's action is "remove", which means to remove the tag (including its contents).
                 parentNode.RemoveChild(node);
                 errorMessages.Add($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons.");
             }
         }
 
-        private void FilterTag(HtmlNode node, string tagName, HtmlNode tmp)
+        private void FilterTag(HtmlNode node, string tagName)
         {
             var errBuff = new StringBuilder();
             errBuff.Append(string.IsNullOrEmpty(tagName) ?
@@ -192,11 +179,11 @@ namespace OWASP.AntiSamy.Html.Scan
             errBuff.Append("tag has been filtered for security reasons. The contents of the tag will remain in place.");
             errorMessages.Add(errBuff.ToString());
 
-            ProcessChildren(node, tmp);
+            ProcessChildren(node);
             PromoteChildren(node);
         }
 
-        private void ValidateTag(HtmlNode node, HtmlNode parentNode, string tagName, Tag tag, HtmlNode tmp)
+        private void ValidateTag(HtmlNode node, HtmlNode parentNode, string tagName, Tag tag)
         {
             /*
             * Check to see if it's a <style> tag. We have to special case this
@@ -211,12 +198,12 @@ namespace OWASP.AntiSamy.Html.Scan
             * Go through the attributes in the tainted tag and validate them against the values we have for them.
             * If we don't have a rule for the attribute we remove the attribute.
             */
-            if (!ProcessAttributes(node, parentNode, tmp, tag))
+            if (!ProcessAttributes(node, parentNode, tag))
             {
                 return;
             }
 
-            ProcessChildren(node, tmp);
+            ProcessChildren(node);
         }
 
         private void TruncateTag(HtmlNode node, string tagName)
@@ -285,7 +272,7 @@ namespace OWASP.AntiSamy.Html.Scan
             return true;
         }
 
-        private bool ProcessAttributes(HtmlNode node, HtmlNode parentNode, HtmlNode tmp, Tag tag)
+        private bool ProcessAttributes(HtmlNode node, HtmlNode parentNode, Tag tag)
         {
             string tagName = tag.Name;
             int currentAttributeIndex = 0;
@@ -346,12 +333,12 @@ namespace OWASP.AntiSamy.Html.Scan
                             if (onInvalidAction == "removeTag")
                             {
                                 parentNode.RemoveChild(node);
-                                errBuff.Append("remove the <b>" + HtmlEntityEncoder.HtmlEntityEncode(tagName) + "</b> tag and its contents in order to process this input. ");
+                                errBuff.Append($"remove the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and its contents in order to process this input. ");
                             }
                             else if (onInvalidAction == "filterTag")
                             {
                                 // Remove the attribute and keep the rest of the tag.
-                                ProcessChildren(node, tmp);
+                                ProcessChildren(node);
                                 PromoteChildren(node);
                                 errBuff.Append($"filter the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and leave its contents in place so that we could process this input.");
                             }
@@ -389,12 +376,13 @@ namespace OWASP.AntiSamy.Html.Scan
             return true;
         }
 
-        private void ProcessChildren(HtmlNode node, HtmlNode tmp)
+        private void ProcessChildren(HtmlNode node)
         {
             int childNodeIndex = 0;
             while (childNodeIndex < node.ChildNodes.Count)
             {
-                tmp = node.ChildNodes[childNodeIndex];
+                HtmlNode tmp = node.ChildNodes[childNodeIndex];
+                // This node can hold other nodes, so recursively validate
                 RecursiveValidateTag(tmp);
                 if (tmp.ParentNode != null)
                 {
