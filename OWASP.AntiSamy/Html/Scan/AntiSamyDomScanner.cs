@@ -143,8 +143,7 @@ namespace OWASP.AntiSamy.Html.Scan
             HtmlNode parentNode = node.ParentNode;
             string tagName = node.Name;
 
-            // TODO: Check this out, might not be robust enough. Check if this is needed: || tagName.ToLowerInvariant().Equals("#comment"))
-            if (node is HtmlTextNode)//tagName.ToLowerInvariant() == "#text"
+            if (node is HtmlTextNode || node is HtmlCommentNode)
             {
                 return;
             }
