@@ -1,4 +1,4 @@
-/*
+﻿/*
 * Copyright (c) 2009-2020, Arshan Dabirsiaghi
 * 
 * All rights reserved.
@@ -162,6 +162,14 @@ namespace AntiSamyTests
         public void TestPreserveFontFamily()
         {
             antisamy.Scan("<div style=\"font-family: Geneva, Arial, courier new, sans-serif\">Test</div>", policy).GetCleanHtml().Should().Contain("font-family");
+        }
+       
+        [Test(Description = "Tests issue #29 from owaspantisamy Google Code Archive>: 'missing quotes around properties with spaces'")]
+        [Ignore("CDATA is not well-handled by HtmlAgilityPack. Use this test when a solution comes up.")]
+        public void TesCsstPropertiesWithSpaces()
+        {
+            const string html = "<style type=\"text/css\"><![CDATA[P {\n	font-family: \"Arial Unicode MS\";\n}\n]]></style>";
+            antisamy.Scan(html, policy).GetCleanHtml().Should().Be(html);
         }
     }
 }
