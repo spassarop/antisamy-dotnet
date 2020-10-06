@@ -78,12 +78,7 @@ namespace OWASP.AntiSamy.Html.Scan
                 throw new ScanException("No input (null)");
             }
 
-            // Grab the size specified in the config file
-            if (!int.TryParse(policy.GetDirectiveByName("maxInputSize"), out int maxInputSize))
-            {
-                // Holds the maximum input size for the incoming fragment
-                maxInputSize = Policy.DEFAULT_MAX_INPUT_SIZE;
-            }
+            int maxInputSize = policy.GetMaximumInputSize();
 
             // Ensure our input is less than the max
             if (maxInputSize < html.Length)
@@ -123,20 +118,7 @@ namespace OWASP.AntiSamy.Html.Scan
             htmlDocument.OptionOutputAsXml = true;
 
             // Loop through every node now, and enforce the rules held in the policy object
-            var currentChildIndex = 0;
-            while (currentChildIndex < htmlDocument.DocumentNode.ChildNodes.Count)
-            {
-                // Grab current node
-                HtmlNode tmp = htmlDocument.DocumentNode.ChildNodes[currentChildIndex];
-
-                // This node can hold other nodes, so recursively validate
-                RecursiveValidateTag(tmp);
-
-                if (tmp.ParentNode != null)
-                {
-                    currentChildIndex++;
-                }
-            }
+            ProcessChildren(htmlDocument.DocumentNode);
 
             // All the cleaned HTML
             string finalCleanHTML = htmlDocument.DocumentNode.InnerHtml;
@@ -158,228 +140,254 @@ namespace OWASP.AntiSamy.Html.Scan
         /// <param name="node">The node to validate.</param>
         private void RecursiveValidateTag(HtmlNode node)
         {
-            int maxinputsize = int.Parse(policy.GetDirectiveByName("maxInputSize")); // TODO: Should add try/catch or use TryParse
             HtmlNode parentNode = node.ParentNode;
             string tagName = node.Name;
 
-            // TODO: Check this out, might not be robust enough. Check if this is needed: || tagName.ToLowerInvariant().Equals("#comment"))
-            if (tagName.ToLowerInvariant().Equals("#text"))
+            if (node is HtmlTextNode || node is HtmlCommentNode)
             {
                 return;
             }
 
             Tag tag = policy.GetTagByName(tagName.ToLowerInvariant());
-            HtmlNode tmp;
             
-            if (tag == null || "filter".Equals(tag.Action))
+            if (tag == null || tag.Action == Policy.ACTION_FILTER)
             {
-                var errBuff = new StringBuilder();
-                errBuff.Append(string.IsNullOrEmpty(tagName) ? 
-                    "An unprocessable " : $"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName.ToLowerInvariant())}</b> ");
-                errBuff.Append("tag has been filtered for security reasons. The contents of the tag will remain in place.");
-                errorMessages.Add(errBuff.ToString());
-                
-                int i = 0;
-                while (i < node.ChildNodes.Count)
-                {
-                    tmp = node.ChildNodes[i];
-                    RecursiveValidateTag(tmp);
-
-                    if (tmp.ParentNode != null)
-                    {
-                        i++;
-                    }
-                }
-
-                PromoteChildren(node);
+                FilterTag(node, tagName);
             }
-            else if ("validate".Equals(tag.Action))
+            else if (tag.Action == Policy.ACTION_VALIDATE)
             {
-                if ("style".Equals(tagName.ToLowerInvariant()) && policy.GetTagByName("style") != null)
-                {
-                    var styleScanner = new CssScanner(policy);
-                    try
-                    {
-                        CleanResults cleanStyleSheet = styleScanner.ScanStyleSheet(node.FirstChild.InnerHtml, maxinputsize);
-                        errorMessages.AddRange(cleanStyleSheet.GetErrorMessages());
-
-                        /*
-                         * If IE gets an empty style tag, i.e. <style/> it will break all CSS on the page. I wish I
-                         * was kidding. So, if after validation no CSS properties are left, we would normally be left
-                         * with an empty style tag and break all CSS. To prevent that, we have this check.
-                         */
-                        string cleanHtml = cleanStyleSheet.GetCleanHtml();
-                        node.FirstChild.InnerHtml = string.IsNullOrEmpty(cleanHtml) ? EMPTY_CSS_COMMENT : cleanHtml;
-                    }
-                    /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
-                     *       catching with "DOMException" or equivalent.       
-                     */
-                    catch (ScanException)
-                    {
-                        // TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
-                        parentNode.RemoveChild(node);
-                    }
-                }
-
-                int currentAttributeIndex = 0;
-                while (currentAttributeIndex < node.Attributes.Count)
-                {
-                    HtmlAttribute htmlAttribute = node.Attributes[currentAttributeIndex];
-                    string name = htmlAttribute.Name;
-                    string value = htmlAttribute.Value;
-                    Attribute attribute = tag.GetAttributeByName(name);
-
-                    if (attribute == null)
-                    {
-                        attribute = policy.GetGlobalAttributeByName(name);
-                    }
-
-                    bool isAttributeValid = false;
-
-                    if ("style".Equals(name.ToLowerInvariant()) && attribute != null)
-                    {
-                        var styleScanner = new CssScanner(policy);
-
-                        try
-                        {
-                            CleanResults cleanInlineStyle = styleScanner.ScanInlineStyle(value, tagName, maxinputsize);
-                            htmlAttribute.Value = cleanInlineStyle.GetCleanHtml();
-                            errorMessages.AddRange(cleanInlineStyle.GetErrorMessages());
-                        }
-                        /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED
-                         *       catching with "DOMException" or equivalent, using tagName and node.getValue().       
-                         */
-                        catch (ScanException)
-                        {
-                            /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED,
-                             *       using tagName and node.getValue().       
-                             */
-                            currentAttributeIndex--;
-                        }
-                    }
-                    else
-                    {
-                        if (attribute != null)
-                        {
-                            // TODO: Try to find out how robust this is - do I need to do this in a loop?
-                            value = HtmlEntity.DeEntitize(value);
-                            string lowerCaseValue = value.ToLowerInvariant();
-
-                            isAttributeValid = attribute.AllowedValues.Any(v => v != null && v.ToLowerInvariant() == lowerCaseValue)
-                                || attribute.AllowedRegExp.Any(r => r != null && Regex.IsMatch(value, "^" + r + "$"));
-
-                            if (!isAttributeValid)
-                            {
-                                var errBuff = new StringBuilder()
-                                    .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag contained an attribute that we couldn't process. ")
-                                    .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}</b> attribute had a value of <u>{HtmlEntityEncoder.HtmlEntityEncode(value)}</u>. ")
-                                    .Append("This value could not be accepted for security reasons. We have chosen to ");
-
-                                string onInvalidAction = attribute.OnInvalid;
-                                if ("removeTag".Equals(onInvalidAction))
-                                {
-                                    parentNode.RemoveChild(node);
-                                    errBuff.Append("remove the <b>" + HtmlEntityEncoder.HtmlEntityEncode(tagName) + "</b> tag and its contents in order to process this input. ");
-                                }
-                                else if ("filterTag".Equals(onInvalidAction))
-                                {
-                                    int i = 0;
-                                    while (i < node.ChildNodes.Count)
-                                    {
-                                        tmp = node.ChildNodes[i];
-                                        RecursiveValidateTag(tmp);
-                                        if (tmp.ParentNode != null)
-                                        {
-                                            i++;
-                                        }
-                                    }
-                                    PromoteChildren(node);
-                                    errBuff.Append($"filter the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and leave its contents in place so that we could process this input.");
-                                }
-                                else
-                                {
-                                    node.Attributes.Remove(attribute.Name);
-                                    currentAttributeIndex--;
-                                    errBuff.Append($"remove the <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}</b> attribute from the tag and leave everything else in place so that we could process this input.");
-                                }
-
-                                errorMessages.Add(errBuff.ToString());
-
-                                if ("removeTag".Equals(onInvalidAction) || "filterTag".Equals(onInvalidAction))
-                                {
-                                    return; // Can't process any more if we remove/filter the tag	
-                                }
-                            }
-                        }
-                        else
-                        {
-                            var errBuff = new StringBuilder()
-                                .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}")
-                                .Append($"</b> attribute of the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons. ")
-                                .Append("This removal should not affect the display of the HTML submitted.");
-
-                            errorMessages.Add(errBuff.ToString());
-                            node.Attributes.Remove(name);
-                            currentAttributeIndex--;
-                        } // End if attribute is or is not found in policy file
-                    } // End if style.equals("name") 
-
-                    currentAttributeIndex++;
-                } // End while loop through attributes 
-
-                int childNodeIndex = 0;
-                while (childNodeIndex < node.ChildNodes.Count)
-                {
-                    tmp = node.ChildNodes[childNodeIndex];
-                    RecursiveValidateTag(tmp);
-                    if (tmp.ParentNode != null) {
-                        childNodeIndex++; 
-                    }
-                }
+                ValidateTag(node, parentNode, tagName, tag);
             }
-            else if ("truncate".Equals(tag.Action))
+            else if (tag.Action == Policy.ACTION_TRUNCATE)
             {
-                HtmlAttributeCollection attributes = node.Attributes;
-
-                while (attributes.Count > 0)
-                {
-                    var errBuff = new StringBuilder()
-                        .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name)}")
-                        .Append($"</b> attribute of the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons. ")
-                        .Append("This removal should not affect the display of the HTML submitted.");
-
-                    node.Attributes.Remove(attributes[0].Name);
-                    errorMessages.Add(errBuff.ToString());
-                }
-
-                HtmlNodeCollection childNodes = node.ChildNodes;
-                int j = 0;
-                int length = childNodes.Count;
-
-                for (int i = 0; i < length; i++)
-                {
-                    HtmlNode nodeToRemove = childNodes[j];
-                    if (nodeToRemove.NodeType != HtmlNodeType.Text && nodeToRemove.NodeType != HtmlNodeType.Comment)
-                    {
-                        node.RemoveChild(nodeToRemove);
-                    }
-                    else
-                    {
-                        j++;
-                    }
-                }
+                TruncateTag(node, tagName);
             }
             else
             {
+                // If we reached this it means the tag's action is "remove", which means to remove the tag (including its contents).
                 parentNode.RemoveChild(node);
                 errorMessages.Add($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons.");
             }
         }
 
-        // TODO: Use in future refactor or delete, its purpose is to build errors from constants and parameters.
-        private void AddError(string errorKey, object[] objs)
+        private void FilterTag(HtmlNode node, string tagName)
         {
-            errorMessages.Add(errorKey); // Here, ErrorMessageUtil would be used with errorKey and obj.
+            var errBuff = new StringBuilder();
+            errBuff.Append(string.IsNullOrEmpty(tagName) ?
+                "An unprocessable " : $"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName.ToLowerInvariant())}</b> ");
+            errBuff.Append("tag has been filtered for security reasons. The contents of the tag will remain in place.");
+            errorMessages.Add(errBuff.ToString());
+
+            ProcessChildren(node);
+            PromoteChildren(node);
+        }
+
+        private void ValidateTag(HtmlNode node, HtmlNode parentNode, string tagName, Tag tag)
+        {
+            /*
+            * Check to see if it's a <style> tag. We have to special case this
+            * tag so we can hand it off to the custom style sheet validating parser.
+            */
+            if (tagName.ToLowerInvariant() == "style" && policy.GetTagByName("style") != null && !ProcessStyleTag(node, parentNode))
+            {
+                return;
+            }
+
+            /*
+            * Go through the attributes in the tainted tag and validate them against the values we have for them.
+            * If we don't have a rule for the attribute we remove the attribute.
+            */
+            if (!ProcessAttributes(node, parentNode, tag))
+            {
+                return;
+            }
+
+            ProcessChildren(node);
+        }
+
+        private void TruncateTag(HtmlNode node, string tagName)
+        {
+            HtmlAttributeCollection attributes = node.Attributes;
+
+            while (attributes.Count > 0)
+            {
+                var errBuff = new StringBuilder()
+                    .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name)}")
+                    .Append($"</b> attribute of the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons. ")
+                    .Append("This removal should not affect the display of the HTML submitted.");
+
+                node.Attributes.Remove(attributes[0].Name);
+                errorMessages.Add(errBuff.ToString());
+            }
+
+            HtmlNodeCollection childNodes = node.ChildNodes;
+            int j = 0;
+            int length = childNodes.Count;
+
+            for (int i = 0; i < length; i++)
+            {
+                HtmlNode nodeToRemove = childNodes[j];
+                if (nodeToRemove.NodeType != HtmlNodeType.Text && nodeToRemove.NodeType != HtmlNodeType.Comment)
+                {
+                    node.RemoveChild(nodeToRemove);
+                }
+                else
+                {
+                    j++;
+                }
+            }
+        }
+
+        /// <summary>Invokes the CSS parser on the element.</summary>
+        /// <param name="node">The <see cref="HtmlNode"/> to scan.</param>
+        /// <param name="parentNode">The parent of the node.</param>
+        /// <returns><see langword="true"/> if processing ended with no exceptions.</returns>
+        private bool ProcessStyleTag(HtmlNode node, HtmlNode parentNode)
+        {
+            var styleScanner = new CssScanner(policy);
+            try
+            {
+                CleanResults cleanStyleSheet = styleScanner.ScanStyleSheet(node.FirstChild.InnerHtml);
+                errorMessages.AddRange(cleanStyleSheet.GetErrorMessages());
+
+                /*
+                 * If IE gets an empty style tag, i.e. <style/> it will break all CSS on the page. I wish I
+                 * was kidding. So, if after validation no CSS properties are left, we would normally be left
+                 * with an empty style tag and break all CSS. To prevent that, we have this check.
+                 */
+                string cleanHtml = cleanStyleSheet.GetCleanHtml();
+                node.FirstChild.InnerHtml = string.IsNullOrEmpty(cleanHtml) ? EMPTY_CSS_COMMENT : cleanHtml;
+            }
+            /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
+             *       catching with "DOMException" or equivalent.       
+             */
+            catch (ScanException)
+            {
+                // TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
+                parentNode.RemoveChild(node);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ProcessAttributes(HtmlNode node, HtmlNode parentNode, Tag tag)
+        {
+            string tagName = tag.Name;
+            int currentAttributeIndex = 0;
+            while (currentAttributeIndex < node.Attributes.Count)
+            {
+                HtmlAttribute htmlAttribute = node.Attributes[currentAttributeIndex];
+                string name = htmlAttribute.Name;
+                string value = htmlAttribute.Value;
+                Attribute attribute = tag.GetAttributeByName(name);
+
+                if (attribute == null)
+                {
+                    attribute = policy.GetGlobalAttributeByName(name);
+                }
+
+                bool isAttributeValid = false;
+
+                if (name.ToLowerInvariant() == "style" && attribute != null)
+                {
+                    var styleScanner = new CssScanner(policy);
+
+                    try
+                    {
+                        CleanResults cleanInlineStyle = styleScanner.ScanInlineStyle(value, tagName);
+                        htmlAttribute.Value = cleanInlineStyle.GetCleanHtml();
+                        errorMessages.AddRange(cleanInlineStyle.GetErrorMessages());
+                    }
+                    /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED
+                     *       catching with "DOMException" or equivalent, using tagName and node.getValue().       
+                     */
+                    catch (ScanException)
+                    {
+                        /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED,
+                         *       using tagName and node.getValue().       
+                         */
+                        currentAttributeIndex--;
+                    }
+                }
+                else
+                {
+                    if (attribute != null)
+                    {
+                        // TODO: Try to find out how robust this is - do I need to do this in a loop?
+                        value = HtmlEntity.DeEntitize(value);
+                        string lowerCaseValue = value.ToLowerInvariant();
+
+                        isAttributeValid = attribute.AllowedValues.Any(v => v != null && v.ToLowerInvariant() == lowerCaseValue)
+                            || attribute.AllowedRegExp.Any(r => r != null && Regex.IsMatch(value, "^" + r + "$"));
+
+                        if (!isAttributeValid)
+                        {
+                            var errBuff = new StringBuilder()
+                                .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag contained an attribute that we couldn't process. ")
+                                .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}</b> attribute had a value of <u>{HtmlEntityEncoder.HtmlEntityEncode(value)}</u>. ")
+                                .Append("This value could not be accepted for security reasons. We have chosen to ");
+
+                            string onInvalidAction = attribute.OnInvalid;
+                            if (onInvalidAction == "removeTag")
+                            {
+                                parentNode.RemoveChild(node);
+                                errBuff.Append($"remove the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and its contents in order to process this input. ");
+                            }
+                            else if (onInvalidAction == "filterTag")
+                            {
+                                // Remove the attribute and keep the rest of the tag.
+                                ProcessChildren(node);
+                                PromoteChildren(node);
+                                errBuff.Append($"filter the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and leave its contents in place so that we could process this input.");
+                            }
+                            else
+                            {
+                                node.Attributes.Remove(attribute.Name);
+                                currentAttributeIndex--;
+                                errBuff.Append($"remove the <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}</b> attribute from the tag and leave everything else in place so that we could process this input.");
+                            }
+
+                            errorMessages.Add(errBuff.ToString());
+
+                            if (onInvalidAction == "removeTag" || onInvalidAction == "filterTag")
+                            {
+                                return false; // Can't process any more if we remove/filter the tag	
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var errBuff = new StringBuilder()
+                            .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}")
+                            .Append($"</b> attribute of the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons. ")
+                            .Append("This removal should not affect the display of the HTML submitted.");
+
+                        errorMessages.Add(errBuff.ToString());
+                        node.Attributes.Remove(name);
+                        currentAttributeIndex--;
+                    } // End if attribute is or is not found in policy file
+                } // End if style.equals("name") 
+
+                currentAttributeIndex++;
+            } // End while loop through attributes 
+
+            return true;
+        }
+
+        private void ProcessChildren(HtmlNode node)
+        {
+            int childNodeIndex = 0;
+            while (childNodeIndex < node.ChildNodes.Count)
+            {
+                HtmlNode tmp = node.ChildNodes[childNodeIndex];
+                // This node can hold other nodes, so recursively validate
+                RecursiveValidateTag(tmp);
+                if (tmp.ParentNode != null)
+                {
+                    childNodeIndex++;
+                }
+            }
         }
 
         private void PromoteChildren(HtmlNode node)
@@ -421,6 +429,12 @@ namespace OWASP.AntiSamy.Html.Scan
             }
 
             return cleanText.ToString();
+        }
+
+        // TODO: Use in future refactor or delete, its purpose is to build errors from constants and parameters.
+        private void AddError(string errorKey, object[] objs)
+        {
+            errorMessages.Add(errorKey); // Here, ErrorMessageUtil would be used with errorKey and obj.
         }
     }
 }
