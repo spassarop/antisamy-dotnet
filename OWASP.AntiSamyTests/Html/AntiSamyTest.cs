@@ -1,4 +1,4 @@
-﻿/*
+/*
 * Copyright (c) 2009-2020, Arshan Dabirsiaghi
 * 
 * All rights reserved.
@@ -115,7 +115,9 @@ namespace AntiSamyTests
             antisamy.Scan("<!--\n<A href=\n- --><a href=javascript:alert:document.domain>test-->", policy).GetCleanHtml().Should().NotContain("javascript");
             antisamy.Scan("<a></a style=\"\"xx:expr/**/ession(document.appendChild(document.createElement('script')).src='http://h4k.in/i.js')\">", policy).GetCleanHtml()
                 .Should().NotContain("document");
-            antisamy.Scan("<dIv sTyLe='background-image: url(sheep.png), url(betweengrassandsky.png), linear-gradient(#e66465, #9198e5);'></dIv>", policy).GetCleanHtml();
+            antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"javascript:alert('XSS')\");'></dIv>", policy).GetCleanHtml().Should().Contain("style=''");
+            antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"https://safe.com/kitten.jpg\");'></dIv>", policy).GetCleanHtml()
+                .Should().ContainAll("sheep.png", "kitten.jpg");
         }
 
         [Test(Description = "Test CSS protections.")]
