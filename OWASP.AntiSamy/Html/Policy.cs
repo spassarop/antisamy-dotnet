@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Xml;
 using OWASP.AntiSamy.Exceptions;
@@ -40,61 +41,111 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     public class Policy
     {
-        internal static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
-        internal static readonly string ACTION_FILTER = "filter";
-        internal static readonly string ACTION_VALIDATE = "validate";
-        internal static readonly string ACTION_TRUNCATE = "truncate";
-        private const string DEFAULT_POLICY_URI = "Resources/antisamy.xml";
-        private const string DEFAULT_ONINVALID = "removeAttribute";
+        private readonly Dictionary<string, string> commonRegularExpressions;
+        private readonly Dictionary<string, Attribute> commonAttributes;
+        private readonly Dictionary<string, Tag> tagRules;
+        private readonly Dictionary<string, Property> cssRules;
+        private readonly Dictionary<string, string> directives;
+        private readonly Dictionary<string, Attribute> globalAttributes;
+        private readonly Dictionary<string, Attribute> dynamicAttributes;
+        private readonly TagMatcher allowedEmptyTagsMatcher;
+        private readonly TagMatcher requireClosingTagsMatcher;
 
-        private Dictionary<string, string> commonRegularExpressions;
-        private Dictionary<string, Attribute> commonAttributes;
-        private Dictionary<string, Tag> tagRules;
-        private Dictionary<string, Property> cssRules;
-        private Dictionary<string, string> directives;
-        private Dictionary<string, Attribute> globalAttributes;
-        private TagMatcher allowedEmptyTagsMatcher;
+        internal protected int MaxInputSize { get; set; }
+        internal protected bool DoesNotFollowAnchors { get; protected set; }
+        internal protected bool ValidatesParamAsEmbed { get; set; }
+        internal protected bool FormatsOutput { get; set; }
+        internal protected bool PreservesSpace { get; set; }
+        internal protected bool OmitsXmlDeclaration { get; set; }
+        internal protected bool OmitsDoctypeDeclaration { get; set; }
+        internal protected bool EntityEncodesIntlCharacters { get; set; }
+        internal protected bool UsesXhtml { get; set; }
+        internal protected Tag EmbedTag { get; set; }
+        internal protected Tag StyleTag { get; set; }
+        internal protected string OnUnknownTag { get; set; }
+        internal protected bool PreservesComments { get; set; }
+        internal protected bool EmbedsStyleSheets { get; set; }
+        internal protected bool EncodesUnknownTag { get; set; }
+        internal protected bool AllowsDynamicAttributes { get; set; }
 
-        /// <summary> Load the policy from an XML file.</summary>
-        /// <param name="file">Load a policy from the File object.</param>
-        /// <exception cref="PolicyException"></exception>
-        private Policy(FileInfo file)
-            : this(file.FullName)
+        protected Policy(ParseContext parseContext)
         {
+            commonAttributes = parseContext.commonAttributes;
+            commonRegularExpressions = parseContext.commonRegularExpressions;
+            cssRules = parseContext.cssRules;
+            directives = parseContext.directives;
+            dynamicAttributes = parseContext.dynamicAttributes;
+            globalAttributes = parseContext.globalAttributes;
+            tagRules = parseContext.tagRules;
+            allowedEmptyTagsMatcher = new TagMatcher(parseContext.allowedEmptyTags);
+            requireClosingTagsMatcher = new TagMatcher(parseContext.requireClosingTags);
         }
 
-        /// <summary> Load the policy from an XML file.</summary>
-        /// <param name="filename">Load a policy from the specified filename.</param>
-        /// <exception cref="PolicyException"></exception>
-        private Policy(string filename) => ParsePolicy(GetXmlDocumentFromFile(filename));
-
-        /// <summary> Load the policy from an XML file.</summary>
-        /// <param name="stream">Load a policy from the specified stream.</param>
-        /// <exception cref="PolicyException"></exception>
-        private Policy(Stream stream) => ParsePolicy(GetXmlDocumentFromStream(stream));
+        protected Policy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
+        {
+            commonAttributes = old.commonAttributes;
+            commonRegularExpressions = old.commonRegularExpressions;
+            cssRules = old.cssRules;
+            this.directives = directives;
+            dynamicAttributes = old.dynamicAttributes;
+            globalAttributes = old.globalAttributes;
+            this.tagRules = tagRules;
+            allowedEmptyTagsMatcher = old.allowedEmptyTagsMatcher;
+            requireClosingTagsMatcher = old.requireClosingTagsMatcher;
+        }
 
         /// <summary> This retrieves a policy based on a default location ("Resources/antisamy.xml")</summary>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the default location.</returns>
         /// <exception cref="PolicyException"></exception>
-        public static Policy GetInstance() => new Policy(DEFAULT_POLICY_URI);
+        public static Policy GetInstance() => GetInternalPolicyFromFile(Constants.DEFAULT_POLICY_URI);
 
         /// <summary> This retrieves a policy based on the file name passed in</summary>
         /// <param name="filename">The path to the XML policy file.</param>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the location passed in.</returns>
         /// <exception cref="PolicyException"></exception>
-        public static Policy GetInstance(string filename) => new Policy(filename);
+        public static Policy GetInstance(string filename) => GetInternalPolicyFromFile(filename);
 
         /// <summary> This retrieves a policy based on the file object passed in</summary>
         /// <param name="file">A <see cref="FileInfo"/> object which contains the XML policy information.</param>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file pointed to by the <c>file</c> parameter.</returns>
         /// <exception cref="PolicyException"></exception>
-        public static Policy GetInstance(FileInfo file) => new Policy(file);
+        public static Policy GetInstance(FileInfo file) => GetInternalPolicyFromFile(file.FullName);
 
         /// <summary> This retrieves a policy based on the <see cref="Stream"/> object passed in</summary>
         /// <param name="file">A <see cref="Stream"/> object which contains the XML policy information.</param>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file pointed to by the <c>file</c> parameter.</returns>
         /// <exception cref="PolicyException"></exception>
-        public static Policy GetInstance(Stream stream) => new Policy(stream);
+        public static Policy GetInstance(Stream stream) => GetInternalPolicyFromStream(stream);
+
+        private static InternalPolicy GetInternalPolicyFromFile(string filename)
+        {
+            return new InternalPolicy(GetParseContext(GetXmlDocumentFromFile(filename)));
+        }
+
+        private static InternalPolicy GetInternalPolicyFromStream(Stream stream)
+        {
+            return new InternalPolicy(GetParseContext(GetXmlDocumentFromStream(stream)));
+        }
+
+        /// <summary>Creates a copy of this policy with an added/changed directive.</summary>
+        /// <param name="name">The directive to add/modify.</param>
+        /// <param name="value">The new directive value.</param>
+        /// <returns>A clone of the policy with the updated directive</returns>
+        public Policy CloneWithDirective(string name, string value)
+        {
+            var newDirectives = new Dictionary<string, string>(directives);
+
+            if (newDirectives.ContainsKey(name))
+            {
+                newDirectives[name] = value;
+            }
+            else
+            {
+                newDirectives.Add(name, value);
+            }
+
+            return new InternalPolicy(this, newDirectives, tagRules);
+        }
 
         /// <summary>A simple method for returning one of the <common-regexp> entries by name.</summary>
         /// <param name="name">The name of the common-regexp we want to look up.</param>
@@ -130,23 +181,21 @@ namespace OWASP.AntiSamy.Html
         /// <returns> A <see cref="TagMatcher"/> with all the allowed empty tags configured in the policy.</returns>
         internal TagMatcher GetAllowedEmptyTags() => allowedEmptyTagsMatcher;
 
-        internal int GetMaximumInputSize()
+        private static ParseContext GetParseContext(XmlDocument document)
         {
-            // Grab the size specified in the config file
-            if (!int.TryParse(GetDirectiveByName("maxInputSize"), out int maxInputSize))
-            {
-                // Holds the maximum input size for the incoming fragment
-                maxInputSize = DEFAULT_MAX_INPUT_SIZE;
-            }
+            var parseContext = new ParseContext();
 
-            return maxInputSize;
+            // TODO: Here there was supposed to be a check for <include> tags with href attribute to "merge" policies.
+            
+            ParsePolicy(document, parseContext);
+            return parseContext;
         }
 
         /// <summary>Generates a <see cref="XmlDocument"/> by loading it from a file.</summary>
         /// <param name="filename">The name of the file which contains the policy XML.</param>
         /// <returns>The loaded <see cref="XmlDocument"/>.</returns>
         /// <exception cref="PolicyException"/>
-        private XmlDocument GetXmlDocumentFromFile(string filename)
+        private static XmlDocument GetXmlDocumentFromFile(string filename)
         {
             try
             {
@@ -168,7 +217,7 @@ namespace OWASP.AntiSamy.Html
         /// <param name="stream">The <see cref="Stream"/> which contains the policy XML.</param>
         /// <returns>The loaded <see cref="XmlDocument"/>.</returns>
         /// <exception cref="PolicyException"/>
-        private XmlDocument GetXmlDocumentFromStream(Stream stream)
+        private static XmlDocument GetXmlDocumentFromStream(Stream stream)
         {
             try
             {
@@ -188,30 +237,22 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary>Parse the policy from the provided <see cref="XmlDocument"/>.</summary>
         /// <param name="document">The policy XML.</param>
-        private void ParsePolicy(XmlDocument document)
+        /// <param name="parseContext">The <see cref="ParseContext"/> to fill from the policy.</param>
+        private static void ParsePolicy(XmlDocument document, ParseContext parseContext)
         {
+            parseContext.ResetParametersWhereLastConfigurationWins();
+
             try
             {
-                XmlNode commonRegularExpressionListNode = document.GetElementsByTagName("common-regexps")[0];
-                commonRegularExpressions = ParseCommonRegExps(commonRegularExpressionListNode);
-
-                XmlNode directiveListNode = document.GetElementsByTagName("directives")[0];
-                directives = ParseDirectives(directiveListNode);
-
-                XmlNode commonAttributeListNode = document.GetElementsByTagName("common-attributes")[0];
-                commonAttributes = ParseCommonAttributes(commonAttributeListNode);
-
-                XmlNode globalAttributesListNode = document.GetElementsByTagName("global-tag-attributes")[0];
-                globalAttributes = ParseGlobalAttributes(globalAttributesListNode);
-
-                XmlNode tagListNode = document.GetElementsByTagName("tag-rules")[0];
-                tagRules = ParseTagRules(tagListNode);
-
-                XmlNode cssListNode = document.GetElementsByTagName("css-rules")[0];
-                cssRules = ParseCssRules(cssListNode);
-
-                XmlNode allowedEmptyTagListNode = document.GetElementsByTagName("allowed-empty-tags")[0];
-                allowedEmptyTagsMatcher = new TagMatcher(ParseAllowedEmptyTags(allowedEmptyTagListNode));
+                ParseCommonRegExps(document.GetElementsByTagName("common-regexps").Item(0), parseContext);
+                ParseDirectives(document.GetElementsByTagName("directives").Item(0), parseContext);
+                ParseCommonAttributes(document.GetElementsByTagName("common-attributes").Item(0), parseContext);
+                ParseGlobalAttributes(document.GetElementsByTagName("global-tag-attributes").Item(0), parseContext);
+                ParseDynamicAttributes(document.GetElementsByTagName("dynamic-tag-attributes").Item(0), parseContext);
+                ParseTagRules(document.GetElementsByTagName("tag-rules").Item(0), parseContext);
+                ParseCssRules(document.GetElementsByTagName("css-rules").Item(0), parseContext);
+                ParseAllowedEmptyTags(document.GetElementsByTagName("allowed-empty-tags").Item(0), parseContext);
+                ParseRequireClosingTags(document.GetElementsByTagName("require-closing-tags").Item(0), parseContext);
             }
             catch (Exception ex)
             {
@@ -228,75 +269,81 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary> Go through <directives> section of the policy file.</summary>
         /// <param name="directiveListNode">Top level of <directives></param>
-        /// <returns> A Dictionary of directives for validation behavior.</returns>
-        private Dictionary<string, string> ParseDirectives(XmlNode directiveListNode)
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the directives dictionary to fill.</param>
+        private static void ParseDirectives(XmlNode directiveListNode, ParseContext parseContext)
         {
-            var directivesDictionary = new Dictionary<string, string>();
-
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(directiveListNode, "directive"))
             {
                 string name = XmlUtil.GetAttributeValue(node, "name");
-                if (!directivesDictionary.ContainsKey(name))
+                if (!parseContext.directives.ContainsKey(name))
                 {
                     string value = XmlUtil.GetAttributeValue(node, "value");
-                    directivesDictionary.Add(name, value);
+                    parseContext.directives.Add(name, value);
                 }
             }
-
-            return directivesDictionary;
         }
 
         /// <summary> Go through <global-tag-attributes> section of the policy file.</summary>
         /// <param name="globalAttributeListNode">Top level of <global-tag-attributes></param>
-        /// <returns> A Dictionary of global Attributes that need validation for every tag.</returns>
-        private Dictionary<string, Attribute> ParseGlobalAttributes(XmlNode globalAttributeListNode)
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the global attributes dictionary to fill.</param>
+        private static void ParseGlobalAttributes(XmlNode globalAttributeListNode, ParseContext parseContext)
         {
-            var globalAttributesDictionary = new Dictionary<string, Attribute>();
-
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(globalAttributeListNode, "attribute"))
             {
                 string name = XmlUtil.GetAttributeValue(node, "name");
-                Attribute toAdd = GetCommonAttributeByName(name);
+                Attribute toAdd = parseContext.commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
                 if (toAdd != null)
                 {
-                    globalAttributesDictionary.Add(name.ToLowerInvariant(), toAdd);
+                    parseContext.globalAttributes.Add(name.ToLowerInvariant(), toAdd);
                 }
                 else
                 {
                     throw new PolicyException($"Global attribute '{name}' was not defined in <common-attributes>");
                 }
             }
+        }
 
-            return globalAttributesDictionary;
+        /// <summary> Go through <dynamic-tag-attributes> section of the policy file.</summary>
+        /// <param name="dynamicAttributeListNode">Top level of <dynamic-tag-attributes></param>
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the dynamic attributes dictionary to fill.</param>
+        private static void ParseDynamicAttributes(XmlNode dynamicAttributeListNode, ParseContext parseContext)
+        {
+            foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(dynamicAttributeListNode, "attribute"))
+            {
+                string name = XmlUtil.GetAttributeValue(node, "name");
+                Attribute toAdd = parseContext.commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
+                if (toAdd != null)
+                {
+                    parseContext.globalAttributes.Add(name.ToLowerInvariant(), toAdd);
+                }
+                else
+                {
+                    throw new PolicyException($"Dynamic attribute '{name}' was not defined in <common-attributes>");
+                }
+            }
         }
 
         /// <summary> Go through the <common-regexps> section of the policy file.</summary>
-        /// <param name="commonRegularExpressionListNode">Top level of <common-regexps></param>
-        /// <returns> A List of AntiSamyPattern objects.</returns>
-        private Dictionary<string, string> ParseCommonRegExps(XmlNode commonRegularExpressionListNode)
+        /// <param name="commonRegularExpressionListNode">Top level of <common-regexps>.</param>
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the common regular expressions dictionary to fill.</param>
+        private static void ParseCommonRegExps(XmlNode commonRegularExpressionListNode, ParseContext parseContext)
         {
-            var commonRegularExpressionsDictionary = new Dictionary<string, string>();
-
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(commonRegularExpressionListNode, "regexp"))
             {
                 string name = XmlUtil.GetAttributeValue(node, "name");
-                if (!commonRegularExpressionsDictionary.ContainsKey(name))
+                if (!parseContext.commonRegularExpressions.ContainsKey(name))
                 {
                     string value = XmlUtil.GetAttributeValue(node, "value");
-                    commonRegularExpressionsDictionary.Add(name, value);
+                    parseContext.commonRegularExpressions.Add(name, value);
                 }
             }
-
-            return commonRegularExpressionsDictionary;
         }
 
         /// <summary> Go through the <common-attributes> section of the policy file.</summary>
         /// <param name="commonAttributeListNode">Top level of <common-attributes>.</param>
-        /// <returns> A List of Attribute objects.</returns>
-        private Dictionary<string, Attribute> ParseCommonAttributes(XmlNode commonAttributeListNode)
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the common attributes dictionary to fill.</param>
+        private static void ParseCommonAttributes(XmlNode commonAttributeListNode, ParseContext parseContext)
         {
-            var commonAttributesDictionary = new Dictionary<string, Attribute>();
-
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(commonAttributeListNode, "attribute"))
             {
                 // TODO: DEFAULT_ONINVALID seems to have been removed from common attributes. Do we need this code?
@@ -304,42 +351,46 @@ namespace OWASP.AntiSamy.Html
                 string name = XmlUtil.GetAttributeValue(node, "name");
                 var attribute = new Attribute(name)
                 {
-                    AllowedRegExp = GetAllowedRegexpsForCommonAttributes(node),
+                    AllowedRegExp = GetAllowedRegexpsForCommonAttributes(node, parseContext),
                     AllowedValues = PolicyParserUtil.GetAttributeOrValueFromGrandchildren(node, "literal-list", "literal", "value"),
                     Description = XmlUtil.GetAttributeValue(node, "description"),
-                    OnInvalid = string.IsNullOrEmpty(onInvalid) ? DEFAULT_ONINVALID : onInvalid,
+                    OnInvalid = string.IsNullOrEmpty(onInvalid) ? Constants.DEFAULT_ONINVALID : onInvalid,
                 };
 
-                commonAttributesDictionary.Add(name.ToLowerInvariant(), attribute);
+                parseContext.commonAttributes.Add(name.ToLowerInvariant(), attribute);
             }
-
-            return commonAttributesDictionary;
         }
 
         /// <summary>Get the allowed regular expressions defined in the provided <see cref="XmlElement"/>.</summary>
         /// <param name="node">The node to retrieve the values from.</param>
+        /// <param name="parseContext">The parse context.</param>
         /// <returns>A list with the allowed regular expressions.</returns>
-        private List<string> GetAllowedRegexpsForCommonAttributes(XmlElement node)
+        private static List<string> GetAllowedRegexpsForCommonAttributes(XmlElement node, ParseContext parseContext)
         {
             var allowedList = new List<string>();
             foreach (XmlElement regExNode in PolicyParserUtil.GetGrandchildrenByTagNames(node, "regexp-list", "regexp"))
             {
                 string regExName = XmlUtil.GetAttributeValue(regExNode, "name");
                 string value = XmlUtil.GetAttributeValue(regExNode, "value");
-                string allowedRegEx = string.IsNullOrEmpty(regExName) ? value : GetCommonRegularExpressionByName(regExName);
+                string allowedRegEx;
+                if (string.IsNullOrEmpty(regExName))
+                {
+                    allowedRegEx = value;
+                }
+                else
+                {
+                    allowedRegEx = regExName == null ? null : parseContext.commonRegularExpressions.GetValueOrDefault(regExName);
+                }
                 allowedList.Add(allowedRegEx);
             }
             return allowedList;
         }
 
         /// <summary> Private method for parsing the <tag-rules> from the XML file.</summary>
-        /// <param name="root">The root element for <tag-rules></param>
-        /// <returns> A Dictionary<string, Tag> containing the rules.</returns>
-        /// <exception cref="PolicyException"></exception>
-        private Dictionary<string, Tag> ParseTagRules(XmlNode tagAttributeListNode)
+        /// <param name="tagAttributeListNode">The top level of <tag-rules></param>
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the tag rules dictionary to fill.</param>
+        private static void ParseTagRules(XmlNode tagAttributeListNode, ParseContext parseContext)
         {
-            var tagRulesDictionary = new Dictionary<string, Tag>();
-
             foreach (XmlElement tagNode in PolicyParserUtil.GetChildrenByTagName(tagAttributeListNode, "tag"))
             {
                 string tagName = XmlUtil.GetAttributeValue(tagNode, "name");
@@ -347,20 +398,19 @@ namespace OWASP.AntiSamy.Html
                 var tag = new Tag(tagName)
                 {
                     Action = XmlUtil.GetAttributeValue(tagNode, "action"),
-                    AllowedAttributes = GetTagAllowedAttributes(tagNode, tagName)
+                    AllowedAttributes = GetTagAllowedAttributes(tagNode, tagName, parseContext)
                 };
 
-                tagRulesDictionary.Add(tagName.ToLowerInvariant(), tag);
+                parseContext.tagRules.Add(tagName.ToLowerInvariant(), tag);
             }
-
-            return tagRulesDictionary;
         }
 
         /// <summary>Get the allowed attributes defined in the provided tag <see cref="XmlElement"/>.</summary>
         /// <param name="tagNode">The node to retrieve the values from.</param>
         /// <param name="tagName">The name of the tag which has attributes defined.</param>
+        /// <param name="parseContext">The parse context.</param>
         /// <returns>A dictionary with the allowed attributes.</returns>
-        private Dictionary<string, Attribute> GetTagAllowedAttributes(XmlElement tagNode, string tagName)
+        private static Dictionary<string, Attribute> GetTagAllowedAttributes(XmlElement tagNode, string tagName, ParseContext parseContext)
         {
             var allowedAttributes = new Dictionary<string, Attribute>();
 
@@ -370,7 +420,7 @@ namespace OWASP.AntiSamy.Html
                 if (!attributeNode.HasChildNodes)
                 {
                     /* All they provided was the name, so they must want a common attribute. */
-                    Attribute attribute = GetCommonAttributeByName(attributeName);
+                    Attribute attribute = parseContext.commonAttributes.GetValueOrDefault(attributeName.ToLowerInvariant());
 
                     if (attribute != null)
                     {
@@ -400,7 +450,7 @@ namespace OWASP.AntiSamy.Html
                     var attribute = new Attribute(XmlUtil.GetAttributeValue(attributeNode, "name"))
                     {
                         AllowedValues = PolicyParserUtil.GetAttributeOrValueFromGrandchildren(attributeNode, "literal-list", "literal", "value"),
-                        AllowedRegExp = GetAllowedRegexpsForRules(attributeNode, tagName),
+                        AllowedRegExp = GetAllowedRegexpsForRules(attributeNode, tagName, parseContext),
                         Description = XmlUtil.GetAttributeValue(attributeNode, "description"),
                         OnInvalid = XmlUtil.GetAttributeValue(attributeNode, "onInvalid")
                     };
@@ -415,8 +465,9 @@ namespace OWASP.AntiSamy.Html
         /// <summary>Get the allowed regular expressions defined in the provided <see cref="XmlElement"/>. Used for tag rules or CSS rules.</summary>
         /// <param name="node">The node to retrieve the values from.</param>
         /// <param name="elementName">The name of the element which has regular expressions defined.</param>
+        /// <param name="parseContext">The parse context.</param>
         /// <returns>A list with the allowed regular expressions.</returns>
-        private List<string> GetAllowedRegexpsForRules(XmlElement node, string elementName)
+        private static List<string> GetAllowedRegexpsForRules(XmlElement node, string elementName, ParseContext parseContext)
         {
             var allowedList = new List<string>();
             foreach (XmlElement regExNode in PolicyParserUtil.GetGrandchildrenByTagNames(node, "regexp-list", "regexp"))
@@ -431,7 +482,7 @@ namespace OWASP.AntiSamy.Html
                 */
                 if (!string.IsNullOrEmpty(regExName))
                 {
-                    string pattern = GetCommonRegularExpressionByName(regExName);
+                    string pattern = regExName == null ? null : parseContext.commonRegularExpressions.GetValueOrDefault(regExName);
                     if (pattern != null)
                     {
                         allowedList.Add(pattern);
@@ -452,11 +503,9 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary> Go through the <css-rules> section of the policy file.</summary>
         /// <param name="cssNodeList">Top level of <css-rules>.</param>
-        /// <returns> A dictionary of <see cref="Property"/> objects.</returns>
-        private Dictionary<string, Property> ParseCssRules(XmlNode cssNodeList)
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the CSS rules dictionary to fill.</param>
+        private static void ParseCssRules(XmlNode cssNodeList, ParseContext parseContext)
         {
-            var cssRulesDictionary = new Dictionary<string, Property>();
-
             foreach (XmlElement propertyNode in PolicyParserUtil.GetChildrenByTagName(cssNodeList, "property"))
             {
                 string name = XmlUtil.GetAttributeValue(propertyNode, "name");
@@ -466,41 +515,49 @@ namespace OWASP.AntiSamy.Html
                 var property = new Property(name)
                 {
                     Description = description,
-                    OnInvalid = string.IsNullOrEmpty(onInvalid) ? DEFAULT_ONINVALID : onInvalid,
-                    AllowedRegExp = GetAllowedRegexpsForRules(propertyNode, name),
+                    OnInvalid = string.IsNullOrEmpty(onInvalid) ? Constants.DEFAULT_ONINVALID : onInvalid,
+                    AllowedRegExp = GetAllowedRegexpsForRules(propertyNode, name, parseContext),
                     AllowedValues = PolicyParserUtil.GetAttributeOrValueFromGrandchildren(propertyNode, "literal-list", "literal", "value"),
                     ShorthandRefs = PolicyParserUtil.GetAttributeOrValueFromGrandchildren(propertyNode, "shorthand-list", "shorthand", "name"),
                 };
 
-                cssRulesDictionary.Add(name.ToLowerInvariant(), property);
+                parseContext.cssRules.Add(name.ToLowerInvariant(), property);
             }
-
-            return cssRulesDictionary;
         }
 
         /// <summary> Go through the <allowed-empty-tags> section of the policy file.</summary>
         /// <param name="allowedEmptyTagListNode">Top level of <allowed-empty-tags>.</param>
-        /// <returns> A list of strings containing the allowed empty tag names.</returns>
-        private List<string> ParseAllowedEmptyTags(XmlNode allowedEmptyTagListNode)
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the allowed empty tags list to fill.</param>
+        private static void ParseAllowedEmptyTags(XmlNode allowedEmptyTagListNode, ParseContext parseContext)
         {
-            var allowedEmptyTags = new List<string>();
-            if (allowedEmptyTagListNode != null)
+            ParseTagListWithLiterals(allowedEmptyTagListNode, parseContext.allowedEmptyTags, Constants.DEFAULT_ALLOWED_EMPTY_TAGS);
+        }
+
+        /// <summary> Go through the <require-closing-tags> section of the policy file.</summary>
+        /// <param name="requireClosingTagListNode">Top level of <require-closing-tags>.</param>
+        /// <param name="parseContext">The <see cref="ParseContext"/> containing the require closing tags list to fill.</param>
+        private static void ParseRequireClosingTags(XmlNode requireClosingTagListNode, ParseContext parseContext)
+        {
+            ParseTagListWithLiterals(requireClosingTagListNode, parseContext.requireClosingTags, Constants.DEFAULT_REQUIRE_CLOSING_TAGS);
+        }
+
+        private static void ParseTagListWithLiterals(XmlNode nodeList, List<string> tagListToFill, ImmutableList<string> defaultTagsList)
+        {
+            if (nodeList != null)
             {
-                foreach (XmlElement element in PolicyParserUtil.GetGrandchildrenByTagNames(allowedEmptyTagListNode as XmlElement, "literal-list", "literal"))
+                foreach (XmlElement element in PolicyParserUtil.GetGrandchildrenByTagNames(nodeList as XmlElement, "literal-list", "literal"))
                 {
                     string value = XmlUtil.GetAttributeValue(element, "value");
                     if (!string.IsNullOrEmpty(value))
                     {
-                        allowedEmptyTags.Add(value);
+                        tagListToFill.Add(value);
                     }
                 }
             }
             else
             {
-                allowedEmptyTags.AddRange(Constants.DEFAULT_ALLOWED_EMPTY_TAGS);
+                tagListToFill.AddRange(defaultTagsList);
             }
-
-            return allowedEmptyTags;
         }
     }
 }

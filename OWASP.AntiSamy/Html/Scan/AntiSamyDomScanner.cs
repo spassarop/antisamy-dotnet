@@ -42,6 +42,7 @@ namespace OWASP.AntiSamy.Html.Scan
     internal class AntiSamyDomScanner
     {
         private const string EMPTY_CSS_COMMENT = "/* */";
+        private readonly Regex CONDITIONAL_DIRECTIVES = new Regex(@"<?!?\[\s*(?:end)?if[^]]*\]>?", RegexOptions.Compiled);
 
         // Will hold the results of the scan
         public CleanResults Results { get; set; }
@@ -53,7 +54,6 @@ namespace OWASP.AntiSamy.Html.Scan
         private readonly XmlDocument document = new XmlDocument();
         // Needed to represent the parsed version of the input
         private XmlDocumentFragment dom;
-
         public AntiSamyDomScanner(Policy policy)
         {
             InitBlock();
@@ -70,7 +70,7 @@ namespace OWASP.AntiSamy.Html.Scan
         /// <param name="html">A string whose contents we want to scan.</param>
         /// <returns> A <see cref="CleanResults"/> object with an <see cref="XmlDocumentFragment"/>
         ///  object and its string representation, as well as some scan statistics.</returns>
-        /// <exception cref="ScanException">  ScanException </exception>
+        /// <exception cref="ScanException"/>
         public virtual CleanResults Scan(string html) 
         {
             if (html == null)
@@ -78,7 +78,7 @@ namespace OWASP.AntiSamy.Html.Scan
                 throw new ScanException("No input (null)");
             }
 
-            int maxInputSize = policy.GetMaximumInputSize();
+            int maxInputSize = policy.MaxInputSize;
 
             // Ensure our input is less than the max
             if (maxInputSize < html.Length)
@@ -86,14 +86,13 @@ namespace OWASP.AntiSamy.Html.Scan
                 throw new ScanException($"File size [{html.Length}] is larger than maximum [{maxInputSize}]");
             }
 
-            if (dom != null)
+            if (Results != null)
             {
                 InitBlock(); // There was a scan before on the same instance
             }
 
             // Had problems with the &nbsp; getting double encoded, so this converts it to a literal space. This may need to be changed.
             html = html.Replace("&nbsp;", char.Parse("\u00a0").ToString());
-
             // We have to replace any invalid XML characters
             html = StripNonValidXmlCharacters(html);
 
@@ -110,18 +109,17 @@ namespace OWASP.AntiSamy.Html.Scan
             // Let's parse the incoming HTML
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(html);
-
             // Add closing tags
             htmlDocument.OptionAutoCloseOnEnd = true;
-
             // Enforces XML rules, encodes big 5
             htmlDocument.OptionOutputAsXml = true;
+            htmlDocument.OptionXmlForceOriginalComment = true;
 
             // Loop through every node now, and enforce the rules held in the policy object
             ProcessChildren(htmlDocument.DocumentNode);
 
             // All the cleaned HTML
-            string finalCleanHTML = htmlDocument.DocumentNode.InnerHtml;
+            string finalCleanHTML = htmlDocument.DocumentNode.InnerHtml.Trim();
 
             // Grab end time (to be put in the result set along with start time)
             var end = DateTime.Now;
@@ -143,22 +141,28 @@ namespace OWASP.AntiSamy.Html.Scan
             HtmlNode parentNode = node.ParentNode;
             string tagName = node.Name;
 
-            if (node is HtmlTextNode || node is HtmlCommentNode)
+            if (node is HtmlTextNode)
             {
+                return;
+            }
+
+            if (node is HtmlCommentNode commentNode)
+            {
+                ProcessCommentNode(commentNode);
                 return;
             }
 
             Tag tag = policy.GetTagByName(tagName.ToLowerInvariant());
             
-            if (tag == null || tag.Action == Policy.ACTION_FILTER)
+            if (tag == null || tag.Action == Constants.ACTION_FILTER)
             {
                 FilterTag(node, tagName);
             }
-            else if (tag.Action == Policy.ACTION_VALIDATE)
+            else if (tag.Action == Constants.ACTION_VALIDATE)
             {
                 ValidateTag(node, parentNode, tagName, tag);
             }
-            else if (tag.Action == Policy.ACTION_TRUNCATE)
+            else if (tag.Action == Constants.ACTION_TRUNCATE)
             {
                 TruncateTag(node, tagName);
             }
@@ -167,6 +171,23 @@ namespace OWASP.AntiSamy.Html.Scan
                 // If we reached this it means the tag's action is "remove", which means to remove the tag (including its contents).
                 parentNode.RemoveChild(node);
                 errorMessages.Add($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons.");
+            }
+        }
+
+        private void ProcessCommentNode(HtmlCommentNode node)
+        {
+            if (!policy.PreservesComments)
+            {
+                node.ParentNode.RemoveChild(node);
+            }
+            else
+            {
+                string value = node.Comment;
+                // Strip conditional directives regardless of the PRESERVE_COMMENTS setting.
+                if (value != null)
+                {
+                    node.Comment = CONDITIONAL_DIRECTIVES.Replace(value, string.Empty);
+                }
             }
         }
 

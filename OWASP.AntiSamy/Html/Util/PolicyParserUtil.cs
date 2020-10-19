@@ -56,6 +56,11 @@ namespace OWASP.AntiSamy.Html.Util
         /// <returns></returns>
         public static List<XmlElement> GetChildrenByTagName(XmlNode parent, string childrenName)
         {
+            if (parent == null)
+            {
+                return new List<XmlElement>();
+            }
+
             XmlNodeList childrenNodes = parent.SelectNodes(childrenName);
             return XmlUtil.IsXmlNodeListNullOrEmpty(childrenNodes) ? 
                 new List<XmlElement>() : new List<XmlElement>(childrenNodes.Cast<XmlElement>());
