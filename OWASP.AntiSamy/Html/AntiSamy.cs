@@ -22,6 +22,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System.IO;
 using OWASP.AntiSamy.Html.Scan;
 
 namespace OWASP.AntiSamy.Html
@@ -53,6 +54,22 @@ namespace OWASP.AntiSamy.Html
         /// <exception cref="Exceptions.ScanException"/> 
         /// <exception cref="Exceptions.PolicyException"/>
         public CleanResults Scan(string taintedHTML, string filename) => Scan(taintedHTML, Policy.GetInstance(filename));
+
+        /// <summary> This method wraps <c>Scan()</c> using the <see cref="Policy"/> in the specified file.</summary>
+        /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
+        /// <param name="file"><see cref="FileInfo"/> object which contains the policy.</param>
+        /// <returns> A <see cref="CleanResults"/> object which contains information about the scan (including the results).</returns>
+        /// <exception cref="Exceptions.ScanException"/> 
+        /// <exception cref="Exceptions.PolicyException"/>
+        public CleanResults Scan(string taintedHTML, FileInfo file) => Scan(taintedHTML, Policy.GetInstance(file));
+
+        /// <summary> This method wraps <c>Scan()</c> using the <see cref="Policy"/> in the specified file.</summary>
+        /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
+        /// <param name="file"><see cref="Stream"/> object which contains the policy.</param>
+        /// <returns> A <see cref="CleanResults"/> object which contains information about the scan (including the results).</returns>
+        /// <exception cref="Exceptions.ScanException"/> 
+        /// <exception cref="Exceptions.PolicyException"/>
+        public CleanResults Scan(string taintedHTML, Stream stream) => Scan(taintedHTML, Policy.GetInstance(stream));
 
         /// <summary> This method wraps the actual <c>Scan()</c> using the <see cref="Policy"/> object passed in.</summary>
         /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
