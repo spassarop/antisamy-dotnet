@@ -187,7 +187,6 @@ namespace AntiSamyTests
                 .CloneWithDirective(Constants.FORMAT_OUTPUT, "false");
 
             // These make sure the regular comments are kept alive and that conditional comments are ripped out.
-            // Note: A space was added after "comment" because HtmlAgilityPack adds it on document's inner HTML (bug).
             antisamy.Scan("<div>text <!-- comment --></div>", revised2).GetCleanHtml().Should().Be("<div>text <!-- comment --></div>");
             antisamy.Scan("<div>text <!--[if IE]> comment <[endif]--></div>", revised2).GetCleanHtml().Should().Be("<div>text <!-- comment --></div>");
 
@@ -225,7 +224,7 @@ namespace AntiSamyTests
             stringBuilder.Append("<![endif]>");
 
             string builtAttack = stringBuilder.ToString();
-            antisamy.Scan(builtAttack, revised2).GetCleanHtml().Should().NotContain("<script");
+            antisamy.Scan(builtAttack, revised2).GetCleanHtml().Should().NotContain("<script"); // This one leaves <script> but HTML-encoded
         }
     }
 }

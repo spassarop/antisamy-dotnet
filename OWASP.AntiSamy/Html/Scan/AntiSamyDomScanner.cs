@@ -152,6 +152,11 @@ namespace OWASP.AntiSamy.Html.Scan
                 return;
             }
 
+            if (!node.ChildNodes.Any() && RemoveDisallowedEmpty(node)) 
+            { 
+                return;
+            }
+
             Tag tag = policy.GetTagByName(tagName.ToLowerInvariant());
             
             if (tag == null || tag.Action == Constants.ACTION_FILTER)
@@ -169,10 +174,37 @@ namespace OWASP.AntiSamy.Html.Scan
             else
             {
                 // If we reached this it means the tag's action is "remove", which means to remove the tag (including its contents).
-                parentNode.RemoveChild(node);
+                RemoveNode(node);
                 errorMessages.Add($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons.");
             }
         }
+
+        private bool RemoveDisallowedEmpty(HtmlNode node)
+        {
+            if (!IsAllowedEmptyTag(node.Name))
+            {
+                // Wasn't in the list of allowed elements, so we'll nuke it.
+                errorMessages.Add($"The {HtmlEntityEncoder.HtmlEntityEncode(node.Name)} tag was empty, and therefore we could not process it. The rest of the message is intact, and its removal should not have any side effects.");
+                RemoveNode(node);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void RemoveNode(HtmlNode node)
+        {
+            HtmlNode parent = node.ParentNode;
+            // Remove node
+            parent.RemoveChild(node);
+            // If parent is empty and is not allowed to be, remove it.
+            if (parent.NodeType == HtmlNodeType.Element && !parent.ChildNodes.Any() && !IsAllowedEmptyTag(parent.Name))
+            {
+                RemoveNode(parent);
+            }
+        }
+
+        private bool IsAllowedEmptyTag(string tagName) => tagName == "head" || policy.GetAllowedEmptyTags().Matches(tagName);
 
         private void ProcessCommentNode(HtmlCommentNode node)
         {
@@ -352,7 +384,7 @@ namespace OWASP.AntiSamy.Html.Scan
                             string onInvalidAction = attribute.OnInvalid;
                             if (onInvalidAction == "removeTag")
                             {
-                                parentNode.RemoveChild(node);
+                                RemoveNode(node);
                                 errBuff.Append($"remove the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and its contents in order to process this input. ");
                             }
                             else if (onInvalidAction == "filterTag")
@@ -422,7 +454,7 @@ namespace OWASP.AntiSamy.Html.Scan
                 parent.InsertBefore(removeNode, node);
             }
 
-            parent.RemoveChild(node);
+            RemoveNode(node);
         }
         
         private string StripNonValidXmlCharacters(string textToClean)
