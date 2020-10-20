@@ -65,6 +65,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string ACTION_FILTER = "filter";
         public static readonly string ACTION_VALIDATE = "validate";
         public static readonly string ACTION_TRUNCATE = "truncate";
+        public static readonly string ACTION_ENCODE = "encode";
 
         public static readonly string DEFAULT_POLICY_URI = "Resources/antisamy.xml";
         public static readonly string DEFAULT_ONINVALID = "removeAttribute";

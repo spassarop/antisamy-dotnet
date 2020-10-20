@@ -181,6 +181,23 @@ namespace OWASP.AntiSamy.Html
         /// <returns> A <see cref="TagMatcher"/> with all the allowed empty tags configured in the policy.</returns>
         internal TagMatcher GetAllowedEmptyTags() => allowedEmptyTagsMatcher;
 
+        internal Policy MutateTag(Tag tag)
+        {
+            var newTagRules = new Dictionary<string, Tag>(tagRules);
+            string tagNameToLower = tag.Name.ToLowerInvariant();
+
+            if (newTagRules.ContainsKey(tagNameToLower))
+            {
+                newTagRules[tagNameToLower] = tag;
+            }
+            else
+            {
+                newTagRules.Add(tagNameToLower, tag);
+            }
+
+            return new InternalPolicy(this, directives, newTagRules);
+        }
+
         private static ParseContext GetParseContext(XmlDocument document)
         {
             var parseContext = new ParseContext();

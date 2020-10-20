@@ -27,6 +27,7 @@ using System.Text.RegularExpressions;
 using FluentAssertions;
 using NUnit.Framework;
 using OWASP.AntiSamy.Html;
+using OWASP.AntiSamy.Html.Model;
 using Constants = OWASP.AntiSamy.Html.Scan.Constants;
 
 namespace AntiSamyTests
@@ -120,6 +121,7 @@ namespace AntiSamyTests
             antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"javascript:alert('XSS')\");'></dIv>", policy).GetCleanHtml().Should().Contain("style=''");
             antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"https://safe.com/kitten.jpg\");'></dIv>", policy).GetCleanHtml()
                 .Should().ContainAll("sheep.png", "kitten.jpg");
+            antisamy.Scan("<a href=\"http://example.com\"&amp;/onclick=alert(9)>foo</a>", policy).GetCleanHtml().Should().Be("<a href=\"http://example.com\" rel=\"nofollow\">foo</a>");
         }
 
         [Test(Description = "Test CSS protections.")]
@@ -174,6 +176,19 @@ namespace AntiSamyTests
             antisamy.Scan(html, policy).GetCleanHtml().Should().Be(html);
         }
 
+        [Test(Description = "Tests issue #31 from owaspantisamy Google Code Archive.")]
+        public void TestUnknownTagEncoding()
+        {
+            const string html = "<b><u><g>foo</g></u></b>";
+
+            Policy revised = policy.CloneWithDirective("onUnknownTag", "encode");
+            antisamy.Scan(html, revised).GetCleanHtml().Should().ContainAll("&lt;g&gt;", "&lt;/g&gt;");
+
+            Tag tag = policy.GetTagByName("b").MutateAction("encode");
+            Policy revised2 = policy.MutateTag(tag);
+            antisamy.Scan(html, revised2).GetCleanHtml().Should().ContainAll("&lt;b&gt;", "&lt;/b&gt;");
+        }
+
         [Test(Description = "Tests issue #41 from owaspantisamy Google Code Archive.")]
         public void TestCommentProcessing()
         {
@@ -210,8 +225,8 @@ namespace AntiSamyTests
             antisamy.Scan("<div>text <![ if !IE]> comment <![endif]></div>", revised2).GetCleanHtml()
                 .Should().Be("<div>text  comment </div>");
 
-            string attack = "[if lte 8]<script>";
-            string spacer = "<![if IE]>";
+            const string attack = "[if lte 8]<script>";
+            const string spacer = "<![if IE]>";
 
             var stringBuilder = new StringBuilder();
 
@@ -225,6 +240,12 @@ namespace AntiSamyTests
 
             string builtAttack = stringBuilder.ToString();
             antisamy.Scan(builtAttack, revised2).GetCleanHtml().Should().NotContain("<script"); // This one leaves <script> but HTML-encoded
+        }
+
+        [Test(Description = "Tests issue #10 from nahsra/antisamy on GitHub.")]
+        public void TestHtml5Colon()
+        {
+            antisamy.Scan("<a href=\"javascript&colon;alert&lpar;1&rpar;\">X</a>", policy).GetCleanHtml().Should().NotContain("javascript");
         }
     }
 }

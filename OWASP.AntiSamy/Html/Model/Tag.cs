@@ -103,5 +103,10 @@ namespace OWASP.AntiSamy.Html.Model
             }
             return toReturn;
         }
+
+        /// <summary> Creates a new Tag based on this one, but changing the action.</summary>
+        /// <param name="action">The new action for the new <see cref="Tag"/>.</param>
+        /// <returns>The duplicated <see cref="Tag"/> with the provided action.</returns>
+        internal Tag MutateAction(string action) => new Tag(Name, action, AllowedAttributes);
     }
 }

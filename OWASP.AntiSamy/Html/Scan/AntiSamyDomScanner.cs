@@ -159,7 +159,11 @@ namespace OWASP.AntiSamy.Html.Scan
 
             Tag tag = policy.GetTagByName(tagName.ToLowerInvariant());
             
-            if (tag == null || tag.Action == Constants.ACTION_FILTER)
+            if (tag == null && policy.EncodesUnknownTag || tag != null && tag.Action == Constants.ACTION_ENCODE)
+            {
+                EncodeTag(node, tagName);
+            }
+            else if (tag == null || tag.Action == Constants.ACTION_FILTER)
             {
                 FilterTag(node, tagName);
             }
@@ -177,6 +181,35 @@ namespace OWASP.AntiSamy.Html.Scan
                 RemoveNode(node);
                 errorMessages.Add($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons.");
             }
+        }
+
+        private void EncodeTag(HtmlNode node, string tagName)
+        {
+            errorMessages.Add($"The {HtmlEntityEncoder.HtmlEntityEncode(tagName)} tag has been encoded for security reasons. The contents of the tag will remain in place");
+
+            ProcessChildren(node);
+            /*
+            * Transform the tag to text, HTML-encode it and promote the
+            * children. The tag will be kept in the fragment as one or two text
+            * Nodes located before and after the children; representing how the
+            * tag used to wrap them.
+            */
+            EncodeAndPromoteChildren(node);
+        }
+
+        private void EncodeAndPromoteChildren(HtmlNode node)
+        {
+            HtmlNode parent = node.ParentNode;
+            HtmlTextNode openingTag = parent.OwnerDocument.CreateTextNode(NodeToString(node));
+            parent.InsertBefore(openingTag, node);
+
+            if (node.HasChildNodes)
+            {
+                HtmlTextNode closingTag = parent.OwnerDocument.CreateTextNode("</" + node.Name + ">");
+                parent.InsertBefore(closingTag, node.NextSibling);
+            }
+
+            PromoteChildren(node);
         }
 
         private bool RemoveDisallowedEmpty(HtmlNode node)
@@ -253,6 +286,11 @@ namespace OWASP.AntiSamy.Html.Scan
             if (!ProcessAttributes(node, parentNode, tag))
             {
                 return;
+            }
+
+            if (policy.DoesNotFollowAnchors && tagName.ToLowerInvariant() == "a")
+            {
+                node.SetAttributeValue("rel", "nofollow");
             }
 
             ProcessChildren(node);
@@ -482,6 +520,30 @@ namespace OWASP.AntiSamy.Html.Scan
             }
 
             return cleanText.ToString();
+        }
+
+        private string NodeToString(HtmlNode node)
+        {
+            var nodeToString = new StringBuilder("<" + node.Name);
+
+            foreach (HtmlAttribute attribute in node.GetAttributes())
+            {
+                nodeToString
+                    .Append(" ")
+                    .Append(HtmlEntityEncoder.HtmlEntityEncode(attribute.Name))
+                    .Append("=\"")
+                    .Append(HtmlEntityEncoder.HtmlEntityEncode(attribute.Value))
+                    .Append("\"");
+            }
+            if (node.HasChildNodes)
+            {
+                nodeToString.Append(">");
+            }
+            else
+            {
+                nodeToString.Append("/>");
+            }
+            return nodeToString.ToString();
         }
 
         // TODO: Use in future refactor or delete, its purpose is to build errors from constants and parameters.
