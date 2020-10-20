@@ -32,21 +32,21 @@ namespace OWASP.AntiSamy.Html.Model
     /// <summary> A model for HTML "tags" and the rules dictating their validation/filtration. Also contains 
     /// information about their allowed attributes. There is also some experimental (unused) code in here for
     /// generating a valid regular expression according to a policy file on a per-tag basis.</summary>
-    internal class Tag
+    public class Tag
     {
-        public string Action { get; set; }
-        public string Name { get; set; }
-        public Dictionary<string, Attribute> AllowedAttributes { get; set; } = new Dictionary<string, Attribute>();
+        internal string Action { get; set; }
+        internal string Name { get; set; }
+        internal Dictionary<string, Attribute> AllowedAttributes { get; set; } = new Dictionary<string, Attribute>();
 
         /// <summary> Constructor.</summary>
         /// <param name="name">The name of the tag, such as "b" for &lt;b&gt; tags.</param>
-        public Tag(string name) => Name = name;
+        internal Tag(string name) => Name = name;
 
         /// <summary> Constructor.</summary>
         /// <param name="name">The name of the tag, such as "b" for &lt;b&gt; tags.</param>
         /// <param name="action">The action to take with the tag, like <c>"remove"</c>.</param>
         /// <param name="allowedAttributes">The allowed attributes dictionary for the tag.</param>
-        public Tag(string name, string action, Dictionary<string, Attribute> allowedAttributes) 
+        internal Tag(string name, string action, Dictionary<string, Attribute> allowedAttributes) 
         {
             Name = name;
             Action = action;
@@ -55,7 +55,7 @@ namespace OWASP.AntiSamy.Html.Model
 
         /// <summary> Adds a fully-built <see cref="Attribute"/> to the list of attributes allowed for this tag.</summary>
         /// <param name="attribute">The <see cref="Attribute"/> to add to the list of allowed attributes.</param>
-        public void AddAttribute(Attribute attribute)
+        internal void AddAttribute(Attribute attribute)
         {
             AllowedAttributes[attribute.Name] = attribute;
         }
@@ -63,9 +63,9 @@ namespace OWASP.AntiSamy.Html.Model
         /// <summary> Returns an <see cref="Attribute"/> associated with a lookup name.</summary>
         /// <param name="name">The name of the allowed attribute by name.</param>
         /// <returns> The <see cref="Attribute"/> object associated with the name.</returns>
-        public Attribute GetAttributeByName(string name) => AllowedAttributes.GetValueOrDefault(name);
+        internal Attribute GetAttributeByName(string name) => AllowedAttributes.GetValueOrDefault(name);
 
-        public string GetRegularExpression()
+        internal string GetRegularExpression()
         {
             // For such tags as <b>, <i>, <u>
             if (!AllowedAttributes.Any())
@@ -90,7 +90,7 @@ namespace OWASP.AntiSamy.Html.Model
             return regExp.ToString();
         }
 
-        public static string EscapeRegularExpressionCharacters(string allowedValue)
+        internal static string EscapeRegularExpressionCharacters(string allowedValue)
         {
             string toReturn = allowedValue;
             if (toReturn == null)

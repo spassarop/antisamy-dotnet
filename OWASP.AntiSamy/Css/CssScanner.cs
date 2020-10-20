@@ -302,12 +302,9 @@ namespace OWASP.AntiSamy.Css
             foreach (string shortHandRef in allowedCssProperty.ShorthandRefs)
             {
                 Property shorthand = policy.GetPropertyByName(shortHandRef);
-                if (shorthand != null)
+                if (shorthand != null && IsValidValue(shorthand, cssProperty, value, removingProperties))
                 {
-                    if (IsValidValue(shorthand, cssProperty, value, removingProperties))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 

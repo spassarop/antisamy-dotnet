@@ -34,6 +34,10 @@ namespace OWASP.AntiSamy.Html.Scan
             "base", "param", "meta", "input", "textarea", "embed", "basefont", "col"
         }.ToImmutableList();
 
+        public static readonly ImmutableList<string> DEFAULT_REQUIRE_CLOSING_TAGS = new List<string> {
+            "iframe", "script", "link"
+        }.ToImmutableList();
+
         // For Tag regular expression building
         public static readonly string REGEXP_CHARACTERS = "\\(){}.*?$^-+";
         public static readonly string ANY_NORMAL_WHITESPACES = "(\\s)*";
@@ -42,5 +46,27 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string CLOSE_ATTRIBUTE = ")";
         public static readonly string OPEN_TAG_ATTRIBUTES = ANY_NORMAL_WHITESPACES + OPEN_ATTRIBUTE;
         public static readonly string CLOSE_TAG_ATTRIBUTES = CLOSE_ATTRIBUTE + "*";
+
+        // Policy
+        public static readonly string OMIT_XML_DECLARATION = "omitXmlDeclaration";
+        public static readonly string OMIT_DOCTYPE_DECLARATION = "omitDoctypeDeclaration";
+        public static readonly string USE_XHTML = "useXHTML";
+        public static readonly string FORMAT_OUTPUT = "formatOutput";
+        public static readonly string EMBED_STYLESHEETS = "embedStyleSheets";
+        public static readonly string CONNECTION_TIMEOUT = "connectionTimeout";
+        public static readonly string ANCHORS_NOFOLLOW = "nofollowAnchors";
+        public static readonly string VALIDATE_PARAM_AS_EMBED = "validateParamAsEmbed";
+        public static readonly string PRESERVE_SPACE = "preserveSpace";
+        public static readonly string PRESERVE_COMMENTS = "preserveComments";
+        public static readonly string ENTITY_ENCODE_INTL_CHARS = "entityEncodeIntlChars";
+        public static readonly string ALLOW_DYNAMIC_ATTRIBUTES = "allowDynamicAttributes";
+        public static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
+
+        public static readonly string ACTION_FILTER = "filter";
+        public static readonly string ACTION_VALIDATE = "validate";
+        public static readonly string ACTION_TRUNCATE = "truncate";
+
+        public static readonly string DEFAULT_POLICY_URI = "Resources/antisamy.xml";
+        public static readonly string DEFAULT_ONINVALID = "removeAttribute";
     }
 }

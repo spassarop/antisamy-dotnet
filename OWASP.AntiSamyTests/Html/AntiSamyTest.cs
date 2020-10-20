@@ -22,10 +22,12 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System.Text;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using NUnit.Framework;
 using OWASP.AntiSamy.Html;
+using Constants = OWASP.AntiSamy.Html.Scan.Constants;
 
 namespace AntiSamyTests
 {
@@ -170,6 +172,59 @@ namespace AntiSamyTests
         {
             const string html = "<style type=\"text/css\"><![CDATA[P {\n	font-family: \"Arial Unicode MS\";\n}\n]]></style>";
             antisamy.Scan(html, policy).GetCleanHtml().Should().Be(html);
+        }
+
+        [Test(Description = "Tests issue #41 from owaspantisamy Google Code Archive.")]
+        public void TestCommentProcessing()
+        {
+            Policy revised = policy.CloneWithDirective(Constants.PRESERVE_SPACE, "true");
+
+            antisamy.Scan("text <!-- comment -->", revised).GetCleanHtml().Should().Be("text");
+
+            Policy revised2 = policy
+                .CloneWithDirective(Constants.PRESERVE_COMMENTS, "true")
+                .CloneWithDirective(Constants.PRESERVE_SPACE, "true")
+                .CloneWithDirective(Constants.FORMAT_OUTPUT, "false");
+
+            // These make sure the regular comments are kept alive and that conditional comments are ripped out.
+            antisamy.Scan("<div>text <!-- comment --></div>", revised2).GetCleanHtml().Should().Be("<div>text <!-- comment --></div>");
+            antisamy.Scan("<div>text <!--[if IE]> comment <[endif]--></div>", revised2).GetCleanHtml().Should().Be("<div>text <!-- comment --></div>");
+
+            /*
+            * Check to see how nested conditional comments are handled. This is
+            * not very clean but the main goal is to avoid any tags. Not sure
+            * on encodings allowed in comments.
+            */
+            antisamy.Scan("<div>text <!--[if IE]> <!--[if gte 6]> comment <[endif]--><[endif]--></div>", revised2).GetCleanHtml()
+                .Should().Be("<div>text <!-- <!-- comment -->&lt;[endif]--&gt;</div>");
+
+            // Regular comment nested inside conditional comment. Test makes sure.
+            antisamy.Scan("<div>text <!--[if IE]> <!-- IE specific --> comment <[endif]--></div>", revised2).GetCleanHtml()
+                .Should().Be("<div>text <!-- <!-- IE specific --> comment &lt;[endif]--&gt;</div>");
+
+            // These play with whitespace and have invalid comment syntax.
+            antisamy.Scan("<div>text <!-- [ if lte 6 ]>\ncomment <[ endif\n]--></div>", revised2).GetCleanHtml()
+                .Should().Be("<div>text <!-- \ncomment --></div>");
+            antisamy.Scan("<div>text <![if !IE]> comment <![endif]></div>", revised2).GetCleanHtml()
+                .Should().Be("<div>text  comment </div>");
+            antisamy.Scan("<div>text <![ if !IE]> comment <![endif]></div>", revised2).GetCleanHtml()
+                .Should().Be("<div>text  comment </div>");
+
+            string attack = "[if lte 8]<script>";
+            string spacer = "<![if IE]>";
+
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.Append("<div>text<!");
+            for (int i = 0; i < attack.Length; i++)
+            {
+                stringBuilder.Append(attack[i]);
+                stringBuilder.Append(spacer);
+            }
+            stringBuilder.Append("<![endif]>");
+
+            string builtAttack = stringBuilder.ToString();
+            antisamy.Scan(builtAttack, revised2).GetCleanHtml().Should().NotContain("<script"); // This one leaves <script> but HTML-encoded
         }
     }
 }
