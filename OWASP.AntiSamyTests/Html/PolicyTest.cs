@@ -127,5 +127,32 @@ namespace AntiSamyTests
 
             policy.Should().NotBeNull();
         }
+
+        [Test(Description = "Tests issue #37 from owaspantisamy Google Code Archive.")]
+        public void TestDoesNotBlowUpWithAllPolicies([ValueSource("AllPolicyFilePaths")] string policyFile)
+        {
+            const string html = "<a onblur=\"try {parent.deselectBloggerImageGracefully();}" + "catch(e) {}\""
+                + "href=\"http://www.charityadvantage.com/ChildrensmuseumEaston/images/BookswithBill.jpg\"><img" + "style=\"FLOAT: right; MARGIN: 0px 0px 10px 10px; WIDTH: 150px; CURSOR:"
+                + "hand; HEIGHT: 100px\" alt=\"\"" + "src=\"http://www.charityadvantage.com/ChildrensmuseumEaston/images/BookswithBill.jpg\""
+                + "border=\"0\" /></a><br />Poor Bill, couldn't make it to the Museum's <span" + "class=\"blsp-spelling-corrected\" id=\"SPELLING_ERROR_0\">story time</span>"
+                + "today, he was so busy shoveling! Well, we sure missed you Bill! So since" + "ou were busy moving snow we read books about snow. We found a clue in one"
+                + "book which revealed a snowplow at the end of the story - we wish it had" + "driven to your driveway Bill. We also read a story which shared fourteen"
+                + "<em>Names For Snow. </em>We'll catch up with you next week....wonder which" + "hat Bill will wear?<br />Jane"; ;
+
+            Policy testPolicy = null;
+            string result = null;
+            try
+            {
+                testPolicy = Policy.GetInstance(policyFile);
+                result = new AntiSamy().Scan(html, testPolicy).GetCleanHtml();
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+
+            testPolicy.Should().NotBeNull();
+            result.Should().NotBeNull();
+        }
     }
 }
