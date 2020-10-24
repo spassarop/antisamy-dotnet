@@ -22,6 +22,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+using System;
 using System.Text;
 using System.Text.RegularExpressions;
 using FluentAssertions;
@@ -187,6 +188,49 @@ namespace AntiSamyTests
             Tag tag = policy.GetTagByName("b").MutateAction("encode");
             Policy revised2 = policy.MutateTag(tag);
             antisamy.Scan(html, revised2).GetCleanHtml().Should().ContainAll("&lt;b&gt;", "&lt;/b&gt;");
+        }
+
+        [Test(Description = "Tests issue #38 from owaspantisamy Google Code Archive.")]
+        public void TestColorProcessing()
+        {
+            antisamy.Scan("<font color=\"#fff\">Test</font>", policy).GetCleanHtml().Should().Be("<font color=\"#fff\">Test</font>");
+            // AngleSharp replaces the CSS color hex value into rgba instead of rgb, expected results are expanded in case the library changes.
+            antisamy.Scan("<div style=\"color: #fff\">Test 3 letter code</div>").GetCleanHtml().Should().ContainAny(
+                "color: rgba(255, 255, 255, 1)",
+                "color: rgba(255,255,255,1)",
+                "color: rgb(255, 255, 255)",
+                "color: rgb(255,255,255)");
+            antisamy.Scan("<font color=\"red\">Test</font>").GetCleanHtml().Should().Be("<font color=\"red\">Test</font>");
+            antisamy.Scan("<font color=\"neonpink\">Test</font>").GetCleanHtml().Should().Be("<font>Test</font>");
+            antisamy.Scan("<font color=\"#0000\">Test</font>").GetCleanHtml().Should().Be("<font>Test</font>");
+            // This gets interpreted by AngleSharp as #0 = #00, so it's valid RGBA (0,0,0,0)
+            antisamy.Scan("<div style=\"color: #0000\">Test</div>").GetCleanHtml().Should().ContainAny(
+                "color: rgba(0, 0, 0, 0)",
+                "color: rgba(0,0,0,0)",
+                "color: rgb(0, 0, 0)",
+                "color: rgb(0,0,0)");
+            // This assertion is added to make the previous case invalid as in the original Java test
+            antisamy.Scan("<div style=\"color: #00000\">Test</div>").GetCleanHtml().Should().Be("<div style=\"\">Test</div>");
+            antisamy.Scan("<font color=\"#000000\">Test</font>").GetCleanHtml().Should().Be("<font color=\"#000000\">Test</font>");
+            // Also AngleSharp asumes 1 in alpha value if the last hex are not present
+            antisamy.Scan("<div style=\"color: #000000\">Test</div>").GetCleanHtml().Should().ContainAny(
+                "color: rgba(0, 0, 0, 1)",
+                "color: rgba(0,0,0,1)",
+                "color: rgb(0, 0, 0)",
+                "color: rgb(0,0,0)");
+
+            // Testing an error that came up on a dependency from the Java version
+            string result = null;
+            try
+            {
+                result = antisamy.Scan("<b><u>foo<style><script>alert(1)</script></style>@import 'x';</u>bar").GetCleanHtml();
+            }
+            catch (Exception)
+            {
+                // To comply with try/catch
+            }
+
+            result.Should().NotBeNull();
         }
 
         [Test(Description = "Tests issue #41 from owaspantisamy Google Code Archive.")]

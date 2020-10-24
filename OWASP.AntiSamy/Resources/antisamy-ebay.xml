@@ -108,8 +108,9 @@ http://www.w3.org/TR/html401/struct/global.html
 		<regexp name="absolute-size" value="(xx-small|x-small|small|medium|large|x-large|xx-large)"/>
 		<regexp name="relative-size" value="(larger|smaller)"/>
 
-		<!-- Used for CSS Color specifications (complex regexp expresses integer values of 0-255) -->
+		<!-- Used for CSS Color specifications (complex regexps expresses integer values of 0-255 and decimals from 0 to 1 with two decimal places for RGBA) -->
 		<regexp name="rgbCode" value="rgb\(([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\)"/>
+		<regexp name="rgbaCode" value="rgba\(([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),\s*([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),\s*([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),\s*(1|0(\.[0-9][0-9]?)?)\)"/>
 
 		<!-- CSS2 Allowed System Color Values -->
 		<regexp name="systemColor" value="(activeborder|activecaption|appworkspace|background|buttonface|buttonhighlight|buttonshadow|buttontext|captiontext|graytext|highlight|highlighttext|inactiveborder|inactivecaption|inactivecaptiontext|infobackground|infotext|menu|menutext|scrollbar|threeddarkshadow|threedface|threedhighlight|threedlightshadow|threedshadow|window|windowframe|windowtext)"/>
@@ -878,6 +879,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
@@ -942,6 +944,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
@@ -956,6 +959,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
@@ -970,6 +974,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
@@ -984,6 +989,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
@@ -998,6 +1004,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
@@ -1049,6 +1056,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
@@ -1428,6 +1436,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 		</property>
@@ -2087,6 +2096,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
@@ -2105,6 +2115,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
@@ -2123,6 +2134,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
@@ -2141,6 +2153,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
@@ -2159,6 +2172,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 			</regexp-list>
 			<shorthand-list>
@@ -2321,6 +2335,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<regexp name="colorName"/>
 				<regexp name="colorCode"/>
 				<regexp name="rgbCode"/>
+				<regexp name="rgbaCode"/>
 				<regexp name="systemColor"/>
 				<regexp name="length"/>
 			</regexp-list>

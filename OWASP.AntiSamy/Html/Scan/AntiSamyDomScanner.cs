@@ -189,10 +189,9 @@ namespace OWASP.AntiSamy.Html.Scan
 
             ProcessChildren(node);
             /*
-            * Transform the tag to text, HTML-encode it and promote the
-            * children. The tag will be kept in the fragment as one or two text
-            * Nodes located before and after the children; representing how the
-            * tag used to wrap them.
+            * Transform the tag to text, HTML-encode it and promote the children. 
+            * The tag will be kept in the fragment as one or two text Nodes located 
+            * before and after the children; representing how the tag used to wrap them.
             */
             EncodeAndPromoteChildren(node);
         }
