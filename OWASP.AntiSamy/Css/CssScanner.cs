@@ -132,7 +132,7 @@ namespace OWASP.AntiSamy.Css
                 }
 
                 string result = ScanStyleSheet(styleSheet, errorMessages);
-                cleanStylesheet = isInlineCss ? CleanDummyWrapper(result) : result;
+                cleanStylesheet = (isInlineCss ? CleanDummyWrapper(result) : result).Trim();
             }
             catch (Exception ex)
             {
@@ -148,7 +148,7 @@ namespace OWASP.AntiSamy.Css
 
             if (isCdata && !policy.UsesXhtml)
             {
-                cleanStylesheet = $"<![CDATA[[{cleanStylesheet.Trim()}]]>";
+                cleanStylesheet = $"<![CDATA[[{cleanStylesheet}]]>";
             }
 
             return new CleanResults(startOfScan, new DateTime(), cleanStylesheet, null, errorMessages);
