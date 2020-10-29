@@ -47,7 +47,7 @@ namespace OWASP.AntiSamy.Html.Scan
         // Will hold the results of the scan
         public CleanResults Results { get; set; }
         // Policy holds the parsed attributes from the XML config file
-        private readonly Policy policy;
+        public Policy Policy { private get; set; }
         // All error messages live in here
         private readonly List<string> errorMessages = new List<string>();
         // Needed to parse input
@@ -57,13 +57,13 @@ namespace OWASP.AntiSamy.Html.Scan
         public AntiSamyDomScanner(Policy policy)
         {
             InitBlock();
-            this.policy = policy;
+            this.Policy = policy;
         }
 
         public AntiSamyDomScanner()
         {
             InitBlock();
-            policy = Policy.GetInstance();
+            Policy = Policy.GetInstance();
         }
 
         /// <summary> Main parsing engine </summary>
@@ -71,14 +71,14 @@ namespace OWASP.AntiSamy.Html.Scan
         /// <returns> A <see cref="CleanResults"/> object with an <see cref="XmlDocumentFragment"/>
         ///  object and its string representation, as well as some scan statistics.</returns>
         /// <exception cref="ScanException"/>
-        public virtual CleanResults Scan(string html) 
+        public CleanResults Scan(string html) 
         {
             if (html == null)
             {
                 throw new ScanException("No input (null)");
             }
 
-            int maxInputSize = policy.MaxInputSize;
+            int maxInputSize = Policy.MaxInputSize;
 
             // Ensure our input is less than the max
             if (maxInputSize < html.Length)
@@ -119,7 +119,7 @@ namespace OWASP.AntiSamy.Html.Scan
             ProcessChildren(htmlDocument.DocumentNode);
 
             // All the cleaned HTML
-            string finalCleanHTML = htmlDocument.DocumentNode.InnerHtml.Trim();
+            string finalCleanHTML = Policy.PreservesSpace ? htmlDocument.DocumentNode.InnerHtml : htmlDocument.DocumentNode.InnerHtml.Trim();
 
             // Grab end time (to be put in the result set along with start time)
             var end = DateTime.Now;
@@ -157,9 +157,9 @@ namespace OWASP.AntiSamy.Html.Scan
                 return;
             }
 
-            Tag tag = policy.GetTagByName(tagName.ToLowerInvariant());
+            Tag tag = Policy.GetTagByName(tagName.ToLowerInvariant());
             
-            if (tag == null && policy.EncodesUnknownTag || tag != null && tag.Action == Constants.ACTION_ENCODE)
+            if (tag == null && Policy.EncodesUnknownTag || tag != null && tag.Action == Constants.ACTION_ENCODE)
             {
                 EncodeTag(node, tagName);
             }
@@ -236,11 +236,11 @@ namespace OWASP.AntiSamy.Html.Scan
             }
         }
 
-        private bool IsAllowedEmptyTag(string tagName) => tagName == "head" || policy.GetAllowedEmptyTags().Matches(tagName);
+        private bool IsAllowedEmptyTag(string tagName) => tagName == "head" || Policy.GetAllowedEmptyTags().Matches(tagName);
 
         private void ProcessCommentNode(HtmlCommentNode node)
         {
-            if (!policy.PreservesComments)
+            if (!Policy.PreservesComments)
             {
                 node.ParentNode.RemoveChild(node);
             }
@@ -273,7 +273,7 @@ namespace OWASP.AntiSamy.Html.Scan
             * Check to see if it's a <style> tag. We have to special case this
             * tag so we can hand it off to the custom style sheet validating parser.
             */
-            if (tagName.ToLowerInvariant() == "style" && policy.GetTagByName("style") != null && !ProcessStyleTag(node, parentNode))
+            if (tagName.ToLowerInvariant() == "style" && Policy.GetTagByName("style") != null && !ProcessStyleTag(node, parentNode))
             {
                 return;
             }
@@ -287,7 +287,7 @@ namespace OWASP.AntiSamy.Html.Scan
                 return;
             }
 
-            if (policy.DoesNotFollowAnchors && tagName.ToLowerInvariant() == "a")
+            if (Policy.DoesNotFollowAnchors && tagName.ToLowerInvariant() == "a")
             {
                 node.SetAttributeValue("rel", "nofollow");
             }
@@ -334,7 +334,7 @@ namespace OWASP.AntiSamy.Html.Scan
         /// <returns><see langword="true"/> if processing ended with no exceptions.</returns>
         private bool ProcessStyleTag(HtmlNode node, HtmlNode parentNode)
         {
-            var styleScanner = new CssScanner(policy);
+            var styleScanner = new CssScanner(Policy);
             try
             {
                 CleanResults cleanStyleSheet = styleScanner.ScanStyleSheet(node.FirstChild.InnerHtml);
@@ -374,14 +374,14 @@ namespace OWASP.AntiSamy.Html.Scan
 
                 if (attribute == null)
                 {
-                    attribute = policy.GetGlobalAttributeByName(name);
+                    attribute = Policy.GetGlobalAttributeByName(name);
                 }
 
                 bool isAttributeValid = false;
 
                 if (name.ToLowerInvariant() == "style" && attribute != null)
                 {
-                    var styleScanner = new CssScanner(policy);
+                    var styleScanner = new CssScanner(Policy);
 
                     try
                     {

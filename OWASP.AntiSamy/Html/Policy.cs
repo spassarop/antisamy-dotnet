@@ -60,9 +60,6 @@ namespace OWASP.AntiSamy.Html
         internal protected bool OmitsDoctypeDeclaration { get; set; }
         internal protected bool EntityEncodesIntlCharacters { get; set; }
         internal protected bool UsesXhtml { get; set; }
-        internal protected Tag EmbedTag { get; set; }
-        internal protected Tag StyleTag { get; set; }
-        internal protected string OnUnknownTag { get; set; }
         internal protected bool PreservesComments { get; set; }
         internal protected bool EmbedsStyleSheets { get; set; }
         internal protected bool EncodesUnknownTag { get; set; }

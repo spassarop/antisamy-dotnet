@@ -169,12 +169,17 @@ namespace AntiSamyTests
             antisamy.Scan("<div style=\"font-family: Geneva, Arial, courier new, sans-serif\">Test</div>", policy).GetCleanHtml().Should().Contain("font-family");
         }
        
-        [Test(Description = "Tests issue #29 from owaspantisamy Google Code Archive>: 'missing quotes around properties with spaces'")]
-        [Ignore("CDATA is not well-handled by HtmlAgilityPack. Use this test when a solution comes up.")]
-        public void TesCsstPropertiesWithSpaces()
+        [Test(Description = "Tests issue #30 from owaspantisamy Google Code Archive>: 'missing quotes around properties with spaces'")]
+        [Ignore("CDATA is not handled by HtmlAgilityPack the same way than the Java version. The code works but the formats is just different.")]
+        public void TestCssPropertiesWithMultilineAndCdata()
         {
+            // The current result in Windows and with HtmlAgilityPack is: 
+            // "<style type=\"text/css\">\r\n//<![CDATA[\r\nP { font-family: &quot;Arial Unicode MS&quot; }\r\n//]]>//\r\n</style>"
             const string html = "<style type=\"text/css\"><![CDATA[P {\n	font-family: \"Arial Unicode MS\";\n}\n]]></style>";
             antisamy.Scan(html, policy).GetCleanHtml().Should().Be(html);
+
+            antisamy.Scan("<style type=\"text/css\"><![CDATA[\r\nP {\r\n margin-bottom: 0.08in;\r\n}\r\n]]></style>", policy).GetCleanHtml()
+                .Should().Be("<style type=\"text/css\"><![CDATA[P {\n\tmargin-bottom: 0.08in;\n}\n]]></style>");
         }
 
         [Test(Description = "Tests issue #31 from owaspantisamy Google Code Archive.")]
@@ -233,12 +238,19 @@ namespace AntiSamyTests
             result.Should().NotBeNull();
         }
 
+        [Test(Description = "Tests issue #40 from owaspantisamy Google Code Archive.")]
+        public void TestMediaAttributeHandling()
+        {
+            antisamy.Scan("<style media=\"print, projection, screen\"> P { margin: 1em; }</style>", policy).GetCleanHtml()
+                .Should().Contain("print, projection, screen");
+        }
+
         [Test(Description = "Tests issue #41 from owaspantisamy Google Code Archive.")]
         public void TestCommentProcessing()
         {
             Policy revised = policy.CloneWithDirective(Constants.PRESERVE_SPACE, "true");
 
-            antisamy.Scan("text <!-- comment -->", revised).GetCleanHtml().Should().Be("text");
+            antisamy.Scan("text <!-- comment -->", revised).GetCleanHtml().Should().Be("text ");
 
             Policy revised2 = policy
                 .CloneWithDirective(Constants.PRESERVE_COMMENTS, "true")
@@ -284,6 +296,32 @@ namespace AntiSamyTests
 
             string builtAttack = stringBuilder.ToString();
             antisamy.Scan(builtAttack, revised2).GetCleanHtml().Should().NotContain("<script"); // This one leaves <script> but HTML-encoded
+        }
+
+        [Test(Description = "Tests issue #44 from owaspantisamy Google Code Archive.")]
+        public void TestErrorsOnChildlessNodesOfNonAllowedElements()
+        {
+            const int expectedErrorNumber = 3;
+            antisamy.Scan("<iframe src='http://foo.com/'></iframe><script src=''></script><link href='/foo.css'>", policy).GetNumberOfErrors()
+                .Should().Be(expectedErrorNumber);
+        }
+
+        [Test(Description = "Tests issue #51 from owaspantisamy Google Code Archive.")]
+        public void TestParenthesesInUrl()
+        {
+            const int expectedErrorNumber = 0;
+            const string html = "<a href='http://subdomain.domain/(S(ke0lpq54bw0fvp53a10e1a45))/MyPage.aspx'>test</a>";
+            CleanResults result = antisamy.Scan(html, policy);
+            result.GetNumberOfErrors().Should().Be(expectedErrorNumber);
+            result.GetCleanHtml().Should().Contain("href='http://subdomain.domain/(S(ke0lpq54bw0fvp53a10e1a45))/MyPage.aspx'");
+        }
+
+        [Test(Description = "Tests issue #56 from owaspantisamy Google Code Archive.")]
+        public void TestNoSpacesAreAdded()
+        {
+            // HtmlAgilityPack preverves single quotes and removes last semicolon occurrence
+            antisamy.Scan("<SPAN style='font-weight: bold;'>Hello World!</SPAN>", policy).GetCleanHtml()
+                .Should().Contain("<span style='font-weight: bold'>Hello World!</span>");
         }
 
         [Test(Description = "Tests issue #10 from nahsra/antisamy on GitHub.")]

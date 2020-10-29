@@ -34,6 +34,8 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     public class AntiSamy
     {
+        private AntiSamyDomScanner Scanner { get; set; }
+
         /// <remarks> 
         /// The meat and potatoes. The <c>Scan()</c> family of methods are the
         /// only methods the outside world should be calling to invoke AntiSamy.
@@ -81,7 +83,16 @@ namespace OWASP.AntiSamy.Html
             /*
             * Go get 'em!
             */
-            return new AntiSamyDomScanner(policy).Scan(taintedHTML);
+            if (Scanner == null)
+            {
+                Scanner = new AntiSamyDomScanner(policy);
+            }
+            else
+            {
+                Scanner.Policy = policy;
+            }
+
+            return Scanner.Scan(taintedHTML);
         }
     }
 }

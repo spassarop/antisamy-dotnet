@@ -50,8 +50,9 @@ namespace OWASP.AntiSamy.Css
     internal class CssScanner
     {
         private const string DUMMY_SELECTOR_BEGIN = ".dummySelector {";
-        private const string DUMMY_SELECTOR_END = " }";
+        private const string DUMMY_SELECTOR_END = "}";
 
+        private readonly Regex CDATA_REGEX = new Regex(@"^\s*<!\[CDATA\[(.*)\]\]>\s*$", RegexOptions.Compiled | RegexOptions.Singleline);
         private readonly Regex CSS_UNICODE_ESCAPES_REGEX = new Regex(@"\\([0-9a-fA-F]{1,6})\s?|\\([^\r\n\f0-9a-fA-F'""{};:()#*])", RegexOptions.Compiled);
         private readonly Regex CSS_COMMENTS_REGEX = new Regex(@"/\*.*?\*/", RegexOptions.Compiled);
         private readonly Regex DANGEROUS_CSS_EXPRESSION_REGEX = new Regex(
@@ -110,6 +111,14 @@ namespace OWASP.AntiSamy.Css
             var errorMessages = new List<string>();
             string cleanStylesheet;
 
+            // Check to see if the text starts with (\s)*<![CDATA[ and ends with ]]> (\s)*.
+            var match = CDATA_REGEX.Match(taintedCss);
+            bool isCdata = match.Success;
+            if (isCdata)
+            {
+                taintedCss = match.Groups[1].Value;
+            }
+
             try
             {
                 ICssStyleSheet styleSheet;
@@ -135,6 +144,11 @@ namespace OWASP.AntiSamy.Css
                 {
                     throw new ScanException($"An error occured while scanning CSS: {ex.Message}", ex);
                 }
+            }
+
+            if (isCdata && !policy.UsesXhtml)
+            {
+                cleanStylesheet = $"<![CDATA[[{cleanStylesheet.Trim()}]]>";
             }
 
             return new CleanResults(startOfScan, new DateTime(), cleanStylesheet, null, errorMessages);

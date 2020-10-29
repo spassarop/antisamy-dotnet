@@ -47,11 +47,8 @@ namespace OWASP.AntiSamy.Html
             OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
             EntityEncodesIntlCharacters = IsTrue(Constants.ENTITY_ENCODE_INTL_CHARS);
             UsesXhtml = IsTrue(Constants.USE_XHTML);
-            EmbedTag = GetTagByName("embed");
-            OnUnknownTag = GetDirectiveByName("onUnknownTag");
-            EncodesUnknownTag = OnUnknownTag == "encode";
+            EncodesUnknownTag = GetDirectiveByName("onUnknownTag") == "encode";
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
-            StyleTag = GetTagByName("style");
             EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
             AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
         }
@@ -68,11 +65,8 @@ namespace OWASP.AntiSamy.Html
             OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
             EntityEncodesIntlCharacters = IsTrue(Constants.ENTITY_ENCODE_INTL_CHARS);
             UsesXhtml = IsTrue(Constants.USE_XHTML);
-            EmbedTag = GetTagByName("embed");
-            OnUnknownTag = GetDirectiveByName("onUnknownTag");
-            EncodesUnknownTag = OnUnknownTag == "encode";
+            EncodesUnknownTag = GetDirectiveByName("onUnknownTag") == "encode";
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
-            StyleTag = GetTagByName("style");
             EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
             AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
         }
