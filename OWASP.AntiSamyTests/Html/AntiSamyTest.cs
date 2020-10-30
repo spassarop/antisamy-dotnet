@@ -324,6 +324,30 @@ namespace AntiSamyTests
                 .Should().Contain("<span style='font-weight: bold'>Hello World!</span>");
         }
 
+        [Test(Description = "Tests issue #58 from owaspantisamy Google Code Archive.")]
+        public void TestNotAllowedInputTag()
+        {
+            antisamy.Scan("tgdan <input/> g  h", policy).GetNumberOfErrors()
+                .Should().Be(0);
+        }
+
+        [Test(Description = "Tests issue #61 from owaspantisamy Google Code Archive.")]
+        public void TestPreventNewLineAtEndOfLastValidTag()
+        {
+            const string dirtyInput = "blah <b>blah</b>.";
+            antisamy.Scan(dirtyInput, policy).GetCleanHtml().Should().Be(dirtyInput);
+        }
+
+        [Test(Description = "Tests issue #69 from owaspantisamy Google Code Archive.")]
+        public void TestCharAttribute()
+        {
+            antisamy.Scan("<table><tr><td char='.'>test</td></tr></table>", policy).GetCleanHtml().Should().Contain("char");
+            antisamy.Scan("<table><tr><td char='..'>test</td></tr></table>", policy).GetCleanHtml().Should().NotContain("char");
+            antisamy.Scan("<table><tr><td char='&quot;'>test</td></tr></table>", policy).GetCleanHtml().Should().Contain("char");
+            antisamy.Scan("<table><tr><td char='&quot;a'>test</td></tr></table>", policy).GetCleanHtml().Should().NotContain("char");
+            antisamy.Scan("<table><tr><td char='&quot;&amp;'>test</td></tr></table>", policy).GetCleanHtml().Should().NotContain("char");
+        }
+
         [Test(Description = "Tests issue #10 from nahsra/antisamy on GitHub.")]
         public void TestHtml5Colon()
         {
