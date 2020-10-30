@@ -143,6 +143,10 @@ namespace OWASP.AntiSamy.Html.Scan
 
             if (node is HtmlTextNode)
             {
+                if (HtmlNode.IsCDataElement(node.Name))
+                {
+                    StripCData(node);
+                }
                 return;
             }
 
@@ -152,7 +156,7 @@ namespace OWASP.AntiSamy.Html.Scan
                 return;
             }
 
-            if (!node.ChildNodes.Any() && RemoveDisallowedEmpty(node)) 
+            if (node.NodeType == HtmlNodeType.Element && !node.ChildNodes.Any() && RemoveDisallowedEmpty(node)) 
             { 
                 return;
             }
@@ -181,6 +185,16 @@ namespace OWASP.AntiSamy.Html.Scan
                 RemoveNode(node);
                 errorMessages.Add($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons.");
             }
+        }
+
+        private void StripCData(HtmlNode node)
+        {
+            errorMessages.Add($"A CDATA section was found, which is not allowed. The rest of the message is intact, and its removal should not have any side effects. " +
+                $"The contents of the CDATA was \"{HtmlEntityEncoder.HtmlEntityEncode(node.InnerText)}\"");
+            HtmlNode parent = node.ParentNode;
+            HtmlTextNode textNode = parent.OwnerDocument.CreateTextNode(node.InnerText);
+            parent.InsertBefore(textNode, node);
+            parent.RemoveChild(node);
         }
 
         private void EncodeTag(HtmlNode node, string tagName)

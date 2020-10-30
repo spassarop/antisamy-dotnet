@@ -171,7 +171,7 @@ namespace AntiSamyTests
        
         [Test(Description = "Tests issue #30 from owaspantisamy Google Code Archive>: 'missing quotes around properties with spaces'")]
         [Ignore("CDATA is not handled by HtmlAgilityPack the same way than the Java version. The code works but the formats is just different.")]
-        public void TestCssPropertiesWithMultilineAndCdata()
+        public void TestCssPropertiesWithMultilineAndCData()
         {
             // The current result in Windows and with HtmlAgilityPack is: 
             // "<style type=\"text/css\">\r\n//<![CDATA[\r\nP { font-family: &quot;Arial Unicode MS&quot; }\r\n//]]>//\r\n</style>"
@@ -328,6 +328,23 @@ namespace AntiSamyTests
         public void TestHtml5Colon()
         {
             antisamy.Scan("<a href=\"javascript&colon;alert&lpar;1&rpar;\">X</a>", policy).GetCleanHtml().Should().NotContain("javascript");
+        }
+
+        [Test]
+        [Ignore("HtmlAgilityPack does not parse CDATA tags very well. This in particular, is wrong.")]
+        public void TestCDataBypass()
+        {
+            CleanResults result = antisamy.Scan("<![CDATA[]><script>alert(1)</script>]]>", policy);
+            result.GetNumberOfErrors().Should().BeGreaterThan(0);
+            result.GetCleanHtml().Should().Contain("&lt;script").And.NotContain("<script");
+        }
+
+        [Test]
+        [Ignore("HtmlAgilityPack does not parse CDATA tags very well. This in particular, is wrong.")]
+        public void TestNestedCDataAttack()
+        {
+            antisamy.Scan("<![CDATA[]><script>alert(1)</script><![CDATA[]>]]><script>alert(2)</script>>]]>", policy).GetCleanHtml().
+                Should().NotContain("<script>");
         }
     }
 }

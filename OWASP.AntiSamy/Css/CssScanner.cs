@@ -113,8 +113,8 @@ namespace OWASP.AntiSamy.Css
 
             // Check to see if the text starts with (\s)*<![CDATA[ and ends with ]]> (\s)*.
             var match = CDATA_REGEX.Match(taintedCss);
-            bool isCdata = match.Success;
-            if (isCdata)
+            bool isCData = match.Success;
+            if (isCData)
             {
                 taintedCss = match.Groups[1].Value;
             }
@@ -146,7 +146,7 @@ namespace OWASP.AntiSamy.Css
                 }
             }
 
-            if (isCdata && !policy.UsesXhtml)
+            if (isCData && !policy.UsesXhtml)
             {
                 cleanStylesheet = $"<![CDATA[[{cleanStylesheet}]]>";
             }
