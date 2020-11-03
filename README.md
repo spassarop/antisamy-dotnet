@@ -112,7 +112,7 @@ dotnet test OWASP.AntiSamy.sln
 Core:
 -   AngleSharp (v0.14.0)
 -   AngleSharp.Css (v0.14.2)
--   HtmlAgilityPack (v1.11.25)
+-   HtmlAgilityPack (v1.11.26)
 
 Tests:
 -   FluentAssertions (v5.10.3)
