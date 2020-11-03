@@ -96,9 +96,6 @@ namespace OWASP.AntiSamy.Html.Scan
             // We have to replace any invalid XML characters
             html = StripNonValidXmlCharacters(html);
 
-            // Grab start time (to be put in the result set along with end time)
-            var start = DateTime.Now;
-
             // Fixes some weirdness in HTML agility
             if (!HtmlNode.ElementsFlags.ContainsKey("iframe"))
             {
@@ -106,21 +103,39 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             HtmlNode.ElementsFlags.Remove("form");
 
-            // Let's parse the incoming HTML
-            var htmlDocument = new HtmlDocument();
-            htmlDocument.LoadHtml(html);
-            // Add closing tags
-            htmlDocument.OptionAutoCloseOnEnd = true;
-            // Enforces XML rules, encodes big 5
-            htmlDocument.OptionOutputAsXml = true;
-            htmlDocument.OptionXmlForceOriginalComment = true;
+            var htmlDocument = new HtmlDocument
+            {
+                OptionAutoCloseOnEnd = true, // Add closing tags
+                OptionMaxNestedChildNodes = Constants.MAX_NESTED_TAGS, // TODO: Add directive for this like in MaxInputSize?
+                OptionOutputAsXml = true, // Enforces XML rules, encodes big 5
+                OptionXmlForceOriginalComment = true // Fix provided by the library for weird added spaces in HTML comments
+            };
 
-            // Loop through every node now, and enforce the rules held in the policy object
-            ProcessChildren(htmlDocument.DocumentNode);
+            // Grab start time (to be put in the result set along with end time)
+            var start = DateTime.Now;
+
+            try
+            {
+                // Let's parse the incoming HTML
+                htmlDocument.LoadHtml(html);
+                // Loop through every node now, and enforce the rules held in the policy object
+                ProcessChildren(htmlDocument.DocumentNode);
+            }
+            catch (Exception exc)
+            {
+                if (!(exc is ScanException))
+                {
+                    throw new ScanException("There was an error while performing the scan.", exc);
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             // All the cleaned HTML
             string finalCleanHTML = Policy.PreservesSpace ? htmlDocument.DocumentNode.InnerHtml : htmlDocument.DocumentNode.InnerHtml.Trim();
-
+            
             // Grab end time (to be put in the result set along with start time)
             var end = DateTime.Now;
             Results = new CleanResults(start, end, finalCleanHTML, dom, errorMessages);
@@ -316,9 +331,9 @@ namespace OWASP.AntiSamy.Html.Scan
             while (attributes.Count > 0)
             {
                 var errBuff = new StringBuilder()
-                    .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name)}")
-                    .Append($"</b> attribute of the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons. ")
-                    .Append("This removal should not affect the display of the HTML submitted.");
+                    .Append($"The {HtmlEntityEncoder.HtmlEntityEncode(tagName)} tag contained an attribute that we could not process. ")
+                    .Append($"The {HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name)} attribute has been filtered out, but the tag is still in place. ")
+                    .Append($"The value of the attribute was \"{HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Value)}\".");
 
                 node.Attributes.Remove(attributes[0].Name);
                 errorMessages.Add(errBuff.ToString());
@@ -331,7 +346,7 @@ namespace OWASP.AntiSamy.Html.Scan
             for (int i = 0; i < length; i++)
             {
                 HtmlNode nodeToRemove = childNodes[j];
-                if (nodeToRemove.NodeType != HtmlNodeType.Text && nodeToRemove.NodeType != HtmlNodeType.Comment)
+                if (nodeToRemove.NodeType != HtmlNodeType.Text)
                 {
                     node.RemoveChild(nodeToRemove);
                 }

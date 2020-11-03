@@ -348,6 +348,81 @@ namespace AntiSamyTests
             antisamy.Scan("<table><tr><td char='&quot;&amp;'>test</td></tr></table>", policy).GetCleanHtml().Should().NotContain("char");
         }
 
+        [Test]
+        public void TestLiteralLists()
+        {
+            CleanResults result = antisamy.Scan("hello<p align='invalid'>world</p>", policy);
+            result.GetCleanHtml().Should().NotContain("invalid");
+            result.GetNumberOfErrors().Should().Be(1);
+            
+            antisamy.Scan("hello<p align='left'>world</p>", policy).GetCleanHtml().Should().Contain("left");
+        }
+
+        [Test]
+        public void TestStackExhaustion()
+        {
+            // This test was to measure how much it can be pushed with nesting
+            var sb = new StringBuilder();
+            for (int i = 0; i < Constants.MAX_NESTED_TAGS; i++)
+            {
+                sb.Append("<div>");
+            }
+            antisamy.Scan(sb.ToString(), policy).GetCleanHtml().Should().NotBeNullOrEmpty();
+
+            // Add one more tag to push the limit
+            sb.Append("<div>");
+            string result = null;
+            try
+            {
+                result = antisamy.Scan(sb.ToString()).GetCleanHtml();
+            }
+            catch (OWASP.AntiSamy.Exceptions.ScanException)
+            {
+                // To comply with try/catch
+            }
+
+            result.Should().BeNull();
+        }
+
+        [Test(Description = "Tests issue #107 from owaspantisamy Google Code Archive.")]
+        public void TestErroneousNewLinesAppearing()
+        {
+            var sb = new StringBuilder();
+            const string nl = "\n";
+            const string header = "<h1>Header</h1>";
+            const string para = "<p>Paragraph</p>";
+            sb.Append(header);
+            sb.Append(nl);
+            sb.Append(para);
+
+            string html = sb.ToString();
+            string result = antisamy.Scan(html, policy).GetCleanHtml();
+            result.IndexOf(nl).Should().Be(result.LastIndexOf(nl));
+
+            int expectedLocation = header.Length;
+            int actualLocation = result.IndexOf(nl);
+            actualLocation.Should().BeInRange(expectedLocation - 1, expectedLocation, 
+                because: "According to Java project: 'account for line separator length difference across OSes'");
+        }
+
+        [Test(Description = "Tests issue #112 from owaspantisamy Google Code Archive.")]
+        public void TestEmptyTagSelfClosing()
+        {
+            Policy revised = policy
+                .CloneWithDirective(Constants.PRESERVE_COMMENTS, "true")
+                .CloneWithDirective(Constants.PRESERVE_SPACE, "true")
+                .CloneWithDirective(Constants.FORMAT_OUTPUT, "false");
+
+            antisamy.Scan("text <strong></strong> text <strong><em></em></strong> text", revised).GetCleanHtml()
+                .Should().NotContainAll("<strong />", "<strong/>");
+
+            Policy revised2 = revised.CloneWithDirective(Constants.USE_XHTML, "true");
+
+            // Due to CDATA handling on title tag, test result is not equality checking.
+            antisamy.Scan("<html><head><title>foobar</title></head><body><img src=\"http://foobar.com/pic.gif\" /></body></html>", revised2).GetCleanHtml().Should()
+                .ContainAll("<title>", "foobar", "</title>", "<body><img src=\"http://foobar.com/pic.gif\" /></body>");
+        }
+
         [Test(Description = "Tests issue #10 from nahsra/antisamy on GitHub.")]
         public void TestHtml5Colon()
         {

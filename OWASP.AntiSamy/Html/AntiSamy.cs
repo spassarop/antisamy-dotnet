@@ -42,8 +42,6 @@ namespace OWASP.AntiSamy.Html
         /// </remarks>
         /// <summary>This method calls the actual scan using the default policy document (antisamy.xml).</summary>
         /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
-        /// <param name="inputEncoding">The encoding of the input.</param>
-        /// <param name="outputEncoding">The encoding that the output should be in.</param>
         /// <returns> A <see cref="CleanResults"/> object which contains information about the scan (including the results).</returns>
         /// <exception cref="Exceptions.ScanException"/> 
         /// <exception cref="Exceptions.PolicyException"/>
