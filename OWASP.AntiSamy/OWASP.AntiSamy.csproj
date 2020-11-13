@@ -4,6 +4,10 @@
     <StartupObject></StartupObject>
     <OldToolsVersion>3.5</OldToolsVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PackageProjectUrl>https://owasp.org/www-project-antisamy/</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/spassarop/antisamy-dotnet</RepositoryUrl>
+    <PackageTags>owasp, xss-filter, security, html, dotnet-core</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.14.0" />
@@ -34,6 +38,10 @@
     </None>
     <None Update="Resources\antisamy.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
     </None>
   </ItemGroup>
 </Project>

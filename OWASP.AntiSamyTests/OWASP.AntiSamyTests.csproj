@@ -4,6 +4,12 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <Copyright>Copyright © 2020 - Arshan Dabirsiaghi, Sebastián Passaro</Copyright>
+
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+
+    <Description>Tests project for OWASP AntiSamy .NET.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,6 +50,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
     <None Include="..\OWASP.AntiSamy\Resources\antisamy.xsd" Link="Resources\antisamy.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
