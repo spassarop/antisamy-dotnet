@@ -445,5 +445,12 @@ namespace AntiSamyTests
             antisamy.Scan("<![CDATA[]><script>alert(1)</script><![CDATA[]>]]><script>alert(2)</script>>]]>", policy).GetCleanHtml().
                 Should().NotContain("<script>");
         }
+
+        [Test]
+        public void TestProcessingInstructionRemoval()
+        {
+            antisamy.Scan("<div><?foo note=\"I am XML processing instruction. I wish to be excluded\" ?></div>", policy).GetCleanHtml().Should().Be("<div></div>");
+            antisamy.Scan("<?xml-stylesheet type=\"text/css\" href=\"style.css\"?>", policy).GetCleanHtml().Should().BeEmpty();
+        }
     }
 }

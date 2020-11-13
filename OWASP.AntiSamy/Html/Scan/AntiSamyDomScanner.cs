@@ -43,6 +43,7 @@ namespace OWASP.AntiSamy.Html.Scan
     {
         private const string EMPTY_CSS_COMMENT = "/* */";
         private readonly Regex CONDITIONAL_DIRECTIVES = new Regex(@"<?!?\[\s*(?:end)?if[^]]*\]>?", RegexOptions.Compiled);
+        private readonly Regex PROCESSING_INSTRUCTION_REGEX = new Regex(@"^<\?\s*.*?\s*\?>$", RegexOptions.Compiled);
 
         // Will hold the results of the scan
         public CleanResults Results { get; set; }
@@ -165,6 +166,12 @@ namespace OWASP.AntiSamy.Html.Scan
                 return;
             }
 
+            if (IsProcessingInstruction(node))
+            {
+                RemoveProcessingInstruction(node);
+                return;
+            }
+
             if (node is HtmlCommentNode commentNode)
             {
                 ProcessCommentNode(commentNode);
@@ -266,6 +273,22 @@ namespace OWASP.AntiSamy.Html.Scan
         }
 
         private bool IsAllowedEmptyTag(string tagName) => tagName == "head" || Policy.GetAllowedEmptyTags().Matches(tagName);
+        
+        private bool IsProcessingInstruction(HtmlNode node)
+        {
+            // HtmlAgilityPack treats processing instructions as comment nodes. 
+            // Also it does not provide a way to identify the specific node type.
+            return node is HtmlCommentNode commentNode && PROCESSING_INSTRUCTION_REGEX.IsMatch(commentNode.OuterHtml);
+        }
+
+        private void RemoveProcessingInstruction(HtmlNode node)
+        {
+            errorMessages.Add($"An XML processing instruction was found, which is not allowed. " +
+                $"The rest of the message is intact, and its removal should not have any side effects. " +
+                $"The contents of the instruction was \"{HtmlEntityEncoder.HtmlEntityEncode(node.InnerHtml)}\"");
+
+            RemoveNode(node);
+        }
 
         private void ProcessCommentNode(HtmlCommentNode node)
         {
