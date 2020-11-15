@@ -44,6 +44,10 @@ namespace OWASP.AntiSamy.Html.Scan
         private const string EMPTY_CSS_COMMENT = "/* */";
         private readonly Regex CONDITIONAL_DIRECTIVES = new Regex(@"<?!?\[\s*(?:end)?if[^]]*\]>?", RegexOptions.Compiled);
         private readonly Regex PROCESSING_INSTRUCTION_REGEX = new Regex(@"^<\?\s*.*?\s*\?>$", RegexOptions.Compiled);
+        private readonly Tag BASIC_EMBED_TAG = new Tag("param", Constants.ACTION_VALIDATE, new Dictionary<string, Attribute> {
+                    { "name", new Attribute("name", null, null, new List<string>{ ".*"}, new List<string>()) },
+                    { "value", new Attribute("value", null, null, new List<string>{ ".*"}, new List<string>()) }
+                });
 
         // Will hold the results of the scan
         public CleanResults Results { get; set; }
@@ -190,7 +194,17 @@ namespace OWASP.AntiSamy.Html.Scan
             }
 
             Tag tag = Policy.GetTagByName(tagName.ToLowerInvariant());
-            
+
+            /*
+             * If <param> and no policy and ValidatesParamAsEmbed and policy in place for <embed> and <embed> 
+             * policy is to validate, use custom policy to get the tag through to the validator.
+             */
+            bool isMasqueradingParam = IsMasqueradingParam(tag, Policy.GetTagByName("embed"), tagName.ToLowerInvariant());
+            if (isMasqueradingParam)
+            {
+                tag = BASIC_EMBED_TAG;
+            }
+
             if (tag == null && Policy.EncodesUnknownTag || tag != null && tag.Action == Constants.ACTION_ENCODE)
             {
                 EncodeTag(node, tagName);
@@ -201,7 +215,7 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             else if (tag.Action == Constants.ACTION_VALIDATE)
             {
-                ValidateTag(node, parentNode, tagName, tag);
+                ValidateTag(node, parentNode, tagName, tag, isMasqueradingParam);
             }
             else if (tag.Action == Constants.ACTION_TRUNCATE)
             {
@@ -213,6 +227,12 @@ namespace OWASP.AntiSamy.Html.Scan
                 RemoveNode(node);
                 errorMessages.Add($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons.");
             }
+        }
+
+        private bool IsMasqueradingParam(Tag tag, Tag embedTag, string tagName)
+        {
+            return tag == null && Policy.ValidatesParamAsEmbed && tagName.ToLowerInvariant() == "param"
+                && embedTag != null && embedTag.Action == Constants.ACTION_VALIDATE;
         }
 
         private void StripCData(HtmlNode node)
@@ -325,8 +345,23 @@ namespace OWASP.AntiSamy.Html.Scan
             PromoteChildren(node);
         }
 
-        private void ValidateTag(HtmlNode node, HtmlNode parentNode, string tagName, Tag tag)
+        private void ValidateTag(HtmlNode node, HtmlNode parentNode, string tagName, Tag tag, bool isMasqueradingParam)
         {
+            // If doing <param> as <embed>, now is the time to convert it.
+            string nameAttributeValue = null;
+            if (isMasqueradingParam)
+            {
+                nameAttributeValue = node.Attributes["name"]?.Value;
+                if (!string.IsNullOrEmpty(nameAttributeValue))
+                {
+                    string valueAttributeValue = node.Attributes["value"]?.Value;
+                    node.SetAttributeValue(nameAttributeValue, valueAttributeValue);
+                    node.SetAttributeValue("name", null);
+                    node.SetAttributeValue("value", null);
+                    tag = Policy.GetTagByName("embed");
+                }
+            }
+
             /*
             * Check to see if it's a <style> tag. We have to special case this
             * tag so we can hand it off to the custom style sheet validating parser.
@@ -351,6 +386,20 @@ namespace OWASP.AntiSamy.Html.Scan
             }
 
             ProcessChildren(node);
+
+            // If we have been dealing with a <param> that has been converted to an <embed>, convert it back.
+            if (isMasqueradingParam && !string.IsNullOrEmpty(nameAttributeValue))
+            {
+                string valueAttributeValue = node.Attributes[nameAttributeValue]?.Value;
+                node.SetAttributeValue("name", nameAttributeValue);
+                node.SetAttributeValue("value", string.IsNullOrEmpty(valueAttributeValue) ? string.Empty : valueAttributeValue);
+                
+                // Original attribute may have been removed already by the validation
+                if (node.Attributes[nameAttributeValue] != null)
+                {
+                    node.Attributes.Remove(node.Attributes[nameAttributeValue]);
+                }
+            }
         }
 
         private void TruncateTag(HtmlNode node, string tagName)
