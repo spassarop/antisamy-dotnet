@@ -136,7 +136,13 @@ namespace OWASP.AntiSamy.Html.Scan
 
             // All the cleaned HTML
             string finalCleanHTML = Policy.PreservesSpace ? htmlDocument.DocumentNode.InnerHtml : htmlDocument.DocumentNode.InnerHtml.Trim();
-            
+
+            // Encode special/international characters if stated by policy
+            if (Policy.EntityEncodesInternationalCharacters)
+            {
+                finalCleanHTML = SpecialCharactersEncoder.Encode(finalCleanHTML);
+            }
+
             // Grab end time (to be put in the result set along with start time)
             var end = DateTime.Now;
             Results = new CleanResults(start, end, finalCleanHTML, dom, errorMessages);
@@ -456,7 +462,6 @@ namespace OWASP.AntiSamy.Html.Scan
                 {
                     if (attribute != null)
                     {
-                        // TODO: Try to find out how robust this is - do I need to do this in a loop?
                         value = HtmlEntity.DeEntitize(value);
                         string lowerCaseValue = value.ToLowerInvariant();
 
@@ -478,7 +483,7 @@ namespace OWASP.AntiSamy.Html.Scan
                             }
                             else if (onInvalidAction == "filterTag")
                             {
-                                // Remove the attribute and keep the rest of the tag.
+                                // Remove the attribute and keep the rest of the tag
                                 ProcessChildren(node);
                                 PromoteChildren(node);
                                 errBuff.Append($"filter the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and leave its contents in place so that we could process this input.");
@@ -508,11 +513,11 @@ namespace OWASP.AntiSamy.Html.Scan
                         errorMessages.Add(errBuff.ToString());
                         node.Attributes.Remove(name);
                         currentAttributeIndex--;
-                    } // End if attribute is or is not found in policy file
-                } // End if style.equals("name") 
+                    }
+                }
 
                 currentAttributeIndex++;
-            } // End while loop through attributes 
+            }
 
             return true;
         }

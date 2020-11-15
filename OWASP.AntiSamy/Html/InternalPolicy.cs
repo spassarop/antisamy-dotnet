@@ -45,7 +45,7 @@ namespace OWASP.AntiSamy.Html
             PreservesSpace = IsTrue(Constants.PRESERVE_SPACE);
             OmitsXmlDeclaration = IsTrue(Constants.OMIT_XML_DECLARATION);
             OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
-            EntityEncodesIntlCharacters = IsTrue(Constants.ENTITY_ENCODE_INTL_CHARS);
+            EntityEncodesInternationalCharacters = IsTrue(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS);
             UsesXhtml = IsTrue(Constants.USE_XHTML);
             EncodesUnknownTag = GetDirectiveByName("onUnknownTag") == "encode";
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
@@ -63,7 +63,7 @@ namespace OWASP.AntiSamy.Html
             PreservesSpace = IsTrue(Constants.PRESERVE_SPACE);
             OmitsXmlDeclaration = IsTrue(Constants.OMIT_XML_DECLARATION);
             OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
-            EntityEncodesIntlCharacters = IsTrue(Constants.ENTITY_ENCODE_INTL_CHARS);
+            EntityEncodesInternationalCharacters = IsTrue(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS);
             UsesXhtml = IsTrue(Constants.USE_XHTML);
             EncodesUnknownTag = GetDirectiveByName("onUnknownTag") == "encode";
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);

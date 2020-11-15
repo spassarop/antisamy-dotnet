@@ -58,7 +58,7 @@ namespace OWASP.AntiSamy.Html
         internal protected bool PreservesSpace { get; set; }
         internal protected bool OmitsXmlDeclaration { get; set; }
         internal protected bool OmitsDoctypeDeclaration { get; set; }
-        internal protected bool EntityEncodesIntlCharacters { get; set; }
+        internal protected bool EntityEncodesInternationalCharacters { get; set; }
         internal protected bool UsesXhtml { get; set; }
         internal protected bool PreservesComments { get; set; }
         internal protected bool EmbedsStyleSheets { get; set; }

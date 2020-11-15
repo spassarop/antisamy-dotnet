@@ -170,7 +170,7 @@ namespace AntiSamyTests
         }
        
         [Test(Description = "Tests issue #30 from owaspantisamy Google Code Archive>: 'missing quotes around properties with spaces'")]
-        [Ignore("CDATA is not handled by HtmlAgilityPack the same way than the Java version. The code works but the formats is just different.")]
+        [Ignore("CDATA is not handled by HtmlAgilityPack the same way than the Java version. The code works but the format is just different.")]
         public void TestCssPropertiesWithMultilineAndCData()
         {
             // The current result in Windows and with HtmlAgilityPack is: 
@@ -444,6 +444,26 @@ namespace AntiSamyTests
         {
             antisamy.Scan("<![CDATA[]><script>alert(1)</script><![CDATA[]>]]><script>alert(2)</script>>]]>", policy).GetCleanHtml().
                 Should().NotContain("<script>");
+        }
+
+        [Test(Description = "Tests issue #112 from owaspantisamy Google Code Archive.")]
+        public void TestInternationalCharacterSupport()
+        {
+            const string html = "<b>letter 'a' with umlaut: \u00e4";
+
+            Policy revised = policy.CloneWithDirective(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS, "false");
+            antisamy.Scan(html, revised).GetCleanHtml().Should().Contain("\u00e4");
+
+            Policy revised2 = policy.CloneWithDirective(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS, "true")
+                .CloneWithDirective(Constants.USE_XHTML, "false");
+            antisamy.Scan(html, revised2).GetCleanHtml().Should().Contain("&auml;").And.NotContain("\u00e4");
+
+            Policy revised3 = policy.CloneWithDirective(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS, "true")
+                .CloneWithDirective(Constants.USE_XHTML, "true");
+            antisamy.Scan(html, revised3).GetCleanHtml().Should().Contain("&auml;").And.NotContain("\u00e4");
+
+            antisamy.Scan("<span id=\"my-span\" class='my-class'>More special characters: ɢ♠♤á</span>", revised2).GetCleanHtml().Should()
+                .Be("<span id=\"my-span\" class='my-class'>More special characters: &#610;&spades;&#9828;&aacute;</span>");
         }
 
         [Test]
