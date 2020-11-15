@@ -49,9 +49,9 @@ namespace OWASP.AntiSamy.Html.Util
                 int codePoint = (int)m.Value[0];
                 if (CodePointsToEntities.ContainsKey(codePoint))
                 {
-                    return "&" + CodePointsToEntities[codePoint] + ";";//$"&{CodePointsToEntities[codePoint]};";
+                    return "&" + CodePointsToEntities[codePoint] + ";";
                 }
-                return "&#"+codePoint+";";
+                return "&#" + codePoint + ";";
             });
         }
 
@@ -95,7 +95,7 @@ namespace OWASP.AntiSamy.Html.Util
         {
             if (EntitiesToCodePoints == null || CodePointsToEntities == null)
             {
-                EntitiesToCodePoints = new Dictionary<string, int>() {
+                EntitiesToCodePoints = new Dictionary<string, int> {
                     { "nbsp", 160 },
                     { "iexcl", 161 },
                     { "cent", 162 },
@@ -345,7 +345,7 @@ namespace OWASP.AntiSamy.Html.Util
                     { "hearts", 9829 },
                     { "diams", 9830 }
                 };
-                CodePointsToEntities = new Dictionary<int, string>()
+                CodePointsToEntities = new Dictionary<int, string>
                 {
                     { 160, "nbsp" },
                     { 161, "iexcl" },

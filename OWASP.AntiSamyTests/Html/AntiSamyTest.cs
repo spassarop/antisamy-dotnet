@@ -23,6 +23,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using FluentAssertions;
@@ -446,7 +447,7 @@ namespace AntiSamyTests
                 Should().NotContain("<script>");
         }
 
-        [Test(Description = "Tests issue #112 from owaspantisamy Google Code Archive.")]
+        [Test(Description = "Tests issue #101 from owaspantisamy Google Code Archive.")]
         public void TestInternationalCharacterSupport()
         {
             const string html = "<b>letter 'a' with umlaut: \u00e4";
@@ -464,6 +465,36 @@ namespace AntiSamyTests
 
             antisamy.Scan("<span id=\"my-span\" class='my-class'>More special characters: ɢ♠♤á</span>", revised2).GetCleanHtml().Should()
                 .Be("<span id=\"my-span\" class='my-class'>More special characters: &#610;&spades;&#9828;&aacute;</span>");
+        }
+
+        [Test]
+        [Ignore("Current result is <iframe />, more inspection is needed.")]
+        public void TestIframeValidation()
+        {
+            var tag = new Tag("iframe", Constants.ACTION_VALIDATE, new Dictionary<string, OWASP.AntiSamy.Html.Model.Attribute>());
+            Policy revised = policy.MutateTag(tag);
+
+            antisamy.Scan("<iframe></iframe>", revised).GetCleanHtml().Should().Be("<iframe></iframe>");
+        }
+
+        [Test]
+        public void TestNoFollowAnchors()
+        {
+            // If we have activated nofollowAnchors
+            Policy revised = policy.CloneWithDirective(Constants.ANCHORS_NOFOLLOW, "true");
+
+            // Adds when not present
+            antisamy.Scan("<a href=\"blah\">link</a>", revised).GetCleanHtml().Should().Be("<a href=\"blah\" rel=\"nofollow\">link</a>");
+            // Adds properly even with bad attr
+            antisamy.Scan("<a href=\"blah\" bad=\"true\">link</a>", revised).GetCleanHtml().Should().Be("<a href=\"blah\" rel=\"nofollow\">link</a>");
+            // rel with bad value gets corrected
+            antisamy.Scan("<a href=\"blah\" rel=\"blh\">link</a>", revised).GetCleanHtml().Should().Be("<a href=\"blah\" rel=\"nofollow\">link</a>");
+            // Correct attribute doesn't get messed with
+            antisamy.Scan("<a href=\"blah\" rel=\"nofollow\">link</a>", revised).GetCleanHtml().Should().Be("<a href=\"blah\" rel=\"nofollow\">link</a>");
+            // If two correct attributes, only one remaining after scan
+            antisamy.Scan("<a href=\"blah\" rel=\"nofollow\" rel=\"nofollow\">link</a>", revised).GetCleanHtml().Should().Be("<a href=\"blah\" rel=\"nofollow\">link</a>");
+            // Test if value is off - does it add?
+            antisamy.Scan("a href=\"blah\">link</a>", revised).GetCleanHtml().Should().NotContain("nofollow");
         }
 
         [Test]
