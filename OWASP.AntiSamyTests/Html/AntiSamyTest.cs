@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2009-2020, Arshan Dabirsiaghi, Sebastián Passaro
  * 
  * All rights reserved.
@@ -424,12 +424,6 @@ namespace AntiSamyTests
                 .ContainAll("<title>", "foobar", "</title>", "<body><img src=\"http://foobar.com/pic.gif\" /></body>");
         }
 
-        [Test(Description = "Tests issue #10 from nahsra/antisamy on GitHub.")]
-        public void TestHtml5Colon()
-        {
-            antisamy.Scan("<a href=\"javascript&colon;alert&lpar;1&rpar;\">X</a>", policy).GetCleanHtml().Should().NotContain("javascript");
-        }
-
         [Test]
         [Ignore("HtmlAgilityPack does not parse CDATA tags very well. This in particular, is wrong.")]
         public void TestCDataBypass()
@@ -477,6 +471,10 @@ namespace AntiSamyTests
             antisamy.Scan("<iframe></iframe>", revised).GetCleanHtml().Should().Be("<iframe></iframe>");
         }
 
+        /*
+	     * Tests cases dealing with nofollowAnchors directive. Assumes anchor tags
+	     * have an action set to "validate" (may be implicit) in the policy file.
+	     */
         [Test]
         public void TestNoFollowAnchors()
         {
@@ -516,6 +514,54 @@ namespace AntiSamyTests
             input = "<object width=\"560\" height=\"340\"><param name=\"movie\" value=\"http://www.youtube.com/v/IyAyd4WnvhU&hl=en&fs=1&\"></param><param name=\"allowFullScreen\" value=\"true\"></param><param name=\"allowscriptaccess\" value=\"always\"></param><embed src=\"http://hereswhereikeepbadcode.com/ohnoscary.swf\" type=\"application/x-shockwave-flash\" allowscriptaccess=\"always\" allowfullscreen=\"true\" width=\"560\" height=\"340\"></embed></object>";
             expectedOutput = "<object width=\"560\" height=\"340\"><param name=\"movie\" value=\"http://www.youtube.com/v/IyAyd4WnvhU&amp;hl=en&amp;fs=1&amp;\" /><param name=\"allowFullScreen\" value=\"true\" /><param name=\"allowscriptaccess\" value=\"always\" /></object>";
             antisamy.Scan(input, revised).GetCleanHtml().Should().Contain(expectedOutput);
+        }
+
+        [Test]
+        public void TestOnsiteRegex()
+        {
+            antisamy.Scan("<a href=\"foo\">X</a>", policy).GetCleanHtml().Should().Contain("href=\"");
+            antisamy.Scan("<a href=\"/foo/bar\">X</a>", policy).GetCleanHtml().Should().Contain("href=\"");
+            antisamy.Scan("<a href=\"../../di.cgi?foo&amp;3D~\">X</a>", policy).GetCleanHtml().Should().Contain("href=\"");
+            antisamy.Scan("<a href=\"/foo/bar/1/sdf;jsessiond=1f1f12312_123123\">X</a>", policy).GetCleanHtml().Should().Contain("href=\"");
+        }
+
+        [Test(Description = "Tests issue #10 from nahsra/antisamy on GitHub.")]
+        public void TestHtml5Colon()
+        {
+            antisamy.Scan("<a href=\"javascript&colon;alert&lpar;1&rpar;\">X</a>", policy).GetCleanHtml().Should().NotContain("javascript");
+        }
+
+        [Test(Description = "Tests issue #144 from owaspantisamy Google Code Archive.")]
+        public void TestPinataString ()
+        {
+            antisamy.Scan("pi\u00f1ata", policy).GetCleanHtml().Should().Be("pi\u00f1ata");
+        }
+
+        [Test]
+        public void TestXSSOnMouseOver()
+        {
+            antisamy.Scan("<bogus>whatever</bogus><img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" onmouseover=\"alert('xss')\">", policy).GetCleanHtml()
+                .Should().Be("whatever<img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" />");
+        }
+
+        [Test]
+        public void TestObfuscationOnclickXSSBypass()
+        {
+            antisamy.Scan("<a href=\"http://example.com\"&amp;/onclick=alert(9)>foo</a>", policy).GetCleanHtml()
+                .Should().Be("<a href=\"http://example.com\" rel=\"nofollow\">foo</a>");
+        }
+
+        [Test(Description = "Tests issue #10 from nahsra/antisamy on GitHub.")]
+        public void TestOnloadXSSOnStyleTag()
+        {
+            antisamy.Scan("<style onload=alert(1)>h1 {color:red;}</style>", policy).GetCleanHtml().Should().NotContain("alert");
+        }
+
+        [Test]
+        public void TestUnknownTags()
+        {
+            // Original comment: Mailing list user sent this in. Didn't work, but good test to leave in.
+            antisamy.Scan("<%/onmouseover=prompt(1)>", policy).GetCleanHtml().Should().NotContain("<%/");
         }
 
         [Test]

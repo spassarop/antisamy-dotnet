@@ -154,5 +154,43 @@ namespace AntiSamyTests
             testPolicy.Should().NotBeNull();
             result.Should().NotBeNull();
         }
+
+        [Test(Description = "Tests issue #147 from owaspantisamy Google Code Archive.")]
+        public void TestDoesNotBlowUpOnEmptyTableWithAllPolicies([ValueSource("AllPolicyFilePaths")] string policyFile)
+        {
+            Policy testPolicy = null;
+            string result = null;
+            try
+            {
+                testPolicy = Policy.GetInstance(policyFile);
+                result = new AntiSamy().Scan("<table><tr><td></td></tr></table>", testPolicy).GetCleanHtml();
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+
+            testPolicy.Should().NotBeNull();
+            result.Should().NotBeNull();
+        }
+
+        [Test(Description = "Tests issue #75 from owaspantisamy Google Code Archive.")]
+        public void TestDoesNotBlowUpShortScriptTagWithAllPolicies([ValueSource("AllPolicyFilePaths")] string policyFile)
+        {
+            Policy testPolicy = null;
+            string result = null;
+            try
+            {
+                testPolicy = Policy.GetInstance(policyFile);
+                result = new AntiSamy().Scan("<script src=\"<. \">\"></script>", testPolicy).GetCleanHtml();
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+
+            testPolicy.Should().NotBeNull();
+            result.Should().NotBeNull();
+        }
     }
 }

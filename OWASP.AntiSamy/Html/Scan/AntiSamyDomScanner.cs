@@ -290,11 +290,14 @@ namespace OWASP.AntiSamy.Html.Scan
         {
             HtmlNode parent = node.ParentNode;
             // Remove node
-            parent.RemoveChild(node);
-            // If parent is empty and is not allowed to be, remove it.
-            if (parent.NodeType == HtmlNodeType.Element && !parent.ChildNodes.Any() && !IsAllowedEmptyTag(parent.Name))
+            if (parent != null)
             {
-                RemoveNode(parent);
+                parent.RemoveChild(node);
+                // If parent is empty and is not allowed to be, remove it.
+                if (parent.NodeType == HtmlNodeType.Element && !parent.ChildNodes.Any() && !IsAllowedEmptyTag(parent.Name))
+                {
+                    RemoveNode(parent);
+                }
             }
         }
 
