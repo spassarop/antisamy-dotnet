@@ -61,7 +61,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string ENTITY_ENCODE_INERNATIONAL_CHARS = "entityEncodeIntlChars";
         public static readonly string ALLOW_DYNAMIC_ATTRIBUTES = "allowDynamicAttributes";
         public static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
-        public static readonly int MAX_NESTED_TAGS = 2200;
+        public static readonly int MAX_NESTED_TAGS = 1450;
 
         public static readonly string ACTION_FILTER = "filter";
         public static readonly string ACTION_VALIDATE = "validate";
