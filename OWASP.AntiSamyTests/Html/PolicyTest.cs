@@ -36,8 +36,7 @@ namespace AntiSamyTests
     {
         private static string[] AllPolicyFilePaths = { 
             TestConstants.DEFAULT_POLICY_PATH, TestConstants.ANYTHINGGOES_POLICY_PATH, TestConstants.EBAY_POLICY_PATH, 
-            TestConstants.MYSPACE_POLICY_PATH, TestConstants.SLASHDOT_POLICY_PATH, TestConstants.TEST_POLICY_PATH, 
-            TestConstants.TINYMCE_POLICY_PATH 
+            TestConstants.MYSPACE_POLICY_PATH, TestConstants.SLASHDOT_POLICY_PATH, TestConstants.TINYMCE_POLICY_PATH 
         };
 
         private string AssembleFile(string allowedEmptyTagsSection)

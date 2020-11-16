@@ -31,7 +31,6 @@ namespace AntiSamyTests
         public static readonly string EBAY_POLICY_PATH = "Resources/antisamy-ebay.xml";
         public static readonly string MYSPACE_POLICY_PATH = "Resources/antisamy-myspace.xml";
         public static readonly string SLASHDOT_POLICY_PATH = "Resources/antisamy-slashdot.xml";
-        public static readonly string TEST_POLICY_PATH = "Resources/antisamy-test.xml";
         public static readonly string TINYMCE_POLICY_PATH = "Resources/antisamy-tinymce.xml";
         public static readonly string POLICY_HEADER = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
                                          "<anti-samy-rules xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
