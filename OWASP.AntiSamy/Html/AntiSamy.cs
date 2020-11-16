@@ -92,5 +92,37 @@ namespace OWASP.AntiSamy.Html
 
             return Scanner.Scan(taintedHTML);
         }
+
+        /// <summary>Use this method if caller has Streams rather than Strings for I/O.
+        /// Useful for cases where the response is very large and we don't validate,
+        /// simply encode as bytes are consumed from the stream.</summary>
+        /// <param name="reader"><see cref="StreamReader"/>Reader that produces the input, possibly a little at a time.</param>
+        /// <param name="writer"><see cref="StreamWriter"/>Writer that receives the cleaned output, possibly a little at a time.</param>
+        /// <param name="policy"><see cref="Policy"/> that directs the scan.</param>
+        /// <returns><see cref="CleanResults"/> where the cleanHtml is null. If caller wants the clean HTML, it
+        /// must capture the writer's contents. When using Streams, caller generally
+        /// doesn't want to create a single string containing clean HTML.</returns>
+        /// <exception cref="Exceptions.ScanException"/> 
+        /// <exception cref="Exceptions.PolicyException"/>
+        /// <exception cref="IOException"/>
+        /// <exception cref="System.OutOfMemoryException"/>
+        /// <exception cref="System.ObjectDisposedException"/>
+        /// <exception cref="System.NotSupportedException"/>
+        /// <exception cref="System.Text.EncoderFallbackException"/>
+        public CleanResults Scan(StreamReader reader, StreamWriter writer, Policy policy)
+        {
+            CleanResults results = Scan(reader.ReadToEnd(), policy);
+            reader.Close();
+
+            foreach (char c in results.GetCleanHtml())
+            {
+                writer.Write(c);
+            }
+            writer.Flush();
+            writer.BaseStream.Position = 0; // To read from the start later
+
+            results.SetCleanHtml(null);
+            return results;
+        }
     }
 }

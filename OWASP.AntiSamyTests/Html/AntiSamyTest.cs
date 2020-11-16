@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2009-2020, Arshan Dabirsiaghi, Sebastián Passaro
  * 
  * All rights reserved.
@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using FluentAssertions;
@@ -538,21 +539,21 @@ namespace AntiSamyTests
         }
 
         [Test]
-        public void TestXSSOnMouseOver()
+        public void TestXssOnMouseOver()
         {
             antisamy.Scan("<bogus>whatever</bogus><img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" onmouseover=\"alert('xss')\">", policy).GetCleanHtml()
                 .Should().Be("whatever<img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" />");
         }
 
         [Test]
-        public void TestObfuscationOnclickXSSBypass()
+        public void TestObfuscationOnclickXssBypass()
         {
             antisamy.Scan("<a href=\"http://example.com\"&amp;/onclick=alert(9)>foo</a>", policy).GetCleanHtml()
                 .Should().Be("<a href=\"http://example.com\" rel=\"nofollow\">foo</a>");
         }
 
         [Test(Description = "Tests issue #10 from nahsra/antisamy on GitHub.")]
-        public void TestOnloadXSSOnStyleTag()
+        public void TestOnloadXssOnStyleTag()
         {
             antisamy.Scan("<style onload=alert(1)>h1 {color:red;}</style>", policy).GetCleanHtml().Should().NotContain("alert");
         }
@@ -562,6 +563,19 @@ namespace AntiSamyTests
         {
             // Original comment: Mailing list user sent this in. Didn't work, but good test to leave in.
             antisamy.Scan("<%/onmouseover=prompt(1)>", policy).GetCleanHtml().Should().NotContain("<%/");
+        }
+
+        [Test]
+        public void TestStreamScan()
+        {
+            const string testImgSrcUrl = "<img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" ";
+            using var reader = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes($"<bogus>whatever</bogus>{testImgSrcUrl}onmouseover=\"alert('xss')\">")));
+            using var writer = new StreamWriter(new MemoryStream());
+
+            antisamy.Scan(reader, writer, policy).GetCleanHtml().Should().BeNull();
+
+            using var resultReader = new StreamReader(writer.BaseStream);
+            resultReader.ReadToEnd().Should().Be($"whatever{testImgSrcUrl}/>");
         }
 
         [Test]
