@@ -173,6 +173,7 @@ namespace OWASP.AntiSamy.Html.Scan
                 {
                     StripCData(node);
                 }
+                node.InnerHtml = System.Web.HttpUtility.HtmlDecode(node.InnerHtml);
                 return;
             }
 
