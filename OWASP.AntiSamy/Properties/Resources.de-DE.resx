@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Error.Size.TooLarge" xml:space="preserve">
+    <value>Zu lange Eingaben. Es wurden {0} Bytes übertragen - das erlaubte Maximum liegt aber bei {1} Bytes.</value>
+  </data>
+  <data name="Error.Comment.Removed" xml:space="preserve">
+    <value>Der Kommentar wurde aus Gründen der Sicherheit entfernt. Der angegebene Kommentar lautete {0}.</value>
+  </data>
+  <data name="Error.Tag.NotFound" xml:space="preserve">
+    <value>Der {0} Tag wurde aus Gründen der Sicherheit entfernt. Die Inhalte des Tags wurden erhalten.</value>
+  </data>
+  <data name="Error.Tag.Removed" xml:space="preserve">
+    <value>Der {0} Tag wurde aus Gründen der Sicherheit entfernt. Das Entfernen sollte keinen Einfluss auf die Darstellung haben.</value>
+  </data>
+  <data name="Error.Tag.Filtered" xml:space="preserve">
+    <value>Der {0} Tag wurde aus Gründen der Sicherheit entfernt. Die Inhalte des Tags wurden erhalten.</value>
+  </data>
+  <data name="Error.Tag.Encoded" xml:space="preserve">
+    <value>Der {0} Tag has been encoded for security reasons. The contents of the tag will remain in place.</value>
+  </data>
+  <data name="Error.Tag.Empty" xml:space="preserve">
+    <value>Der {0} Tag leer war, und daher konnten wir nicht verarbeiten. Der Rest der Nachricht intakt ist, und ihre Entfernung sollte keine Nebenwirkungen.</value>
+  </data>
+  <data name="Error.CData.Found" xml:space="preserve">
+    <value>Ein CDATA-Teil wurde gefunden, der nicht gestattet ist.  Der Rest der Nachricht ist intakt, und Entfernung dieses Teil soll keine Nebenwirkungen haben. Der Inhalt des CDATA war \ "{0} \".</value>
+  </data>
+  <data name="Error.Pi.Found" xml:space="preserve">
+    <value>Ein XML-Befehl wurde gefunden, der nicht gestattet ist. Der Rest der Nachricht ist intakt, und Entfernung dieses Befehl soll keine Nebenwirkungen haben. Der Inhalt der Befehl war \ "{0} \".</value>
+  </data>
+  <data name="Error.Attribute.NotFound" xml:space="preserve">
+    <value>Der {0} Tag enthält nicht erlaubte Attribute. Das {1} Attribut wurde erfolgreich herausgefiltert.</value>
+  </data>
+  <data name="Error.Attribute.Invalid" xml:space="preserve">
+    <value>Der {0} Tag enthält nicht erlaubte Attribute. Das {1} Attribut hat folgenden Wert: "{2}". Das Attribut wurde entfernt - der Tag und seine Inhalte wurden belassen.</value>
+  </data>
+  <data name="Error.Attribute.Invalid.Filtered" xml:space="preserve">
+    <value>Der {0} Tag enthält nicht erlaubte Attribute. Das {1} Attribut hat folgenden Wert: "{2}". Das Attribut wurde entfernt - der Tag {0} und seine Inhalte wurden gefiltert.</value>
+  </data>
+  <data name="Error.Attribute.Invalid.Removed" xml:space="preserve">
+    <value>Der {0} Tag enthält nicht erlaubte Attribute. Das {1} Attribut hat folgenden Wert: "{2}". Das Attribut wurde entfernt - der Tag {0} und seine Inhalte wurden entfernt.</value>
+  </data>
+  <data name="Error.Css.Tag.Malformed" xml:space="preserve">
+    <value>The stylesheet code "{0}" could not be parsed.</value>
+  </data>
+  <data name="Error.Css.Attribute.Malformed" xml:space="preserve">
+    <value>The style attribute code "{0}" on the tag {1} could not be parsed.</value>
+  </data>
+  <data name="Error.Css.Import.Disabled" xml:space="preserve">
+    <value>Stylesheet-Import ist nicht aktiviert.</value>
+  </data>
+  <data name="Error.Css.Import.Exceeded" xml:space="preserve">
+    <value>Das Stylesheet {0} übersteigt die maximal erlaubte Anzahl an Stylesheets. Es dürfen maximal {1} Stylesheets importiert werden.</value>
+  </data>
+  <data name="Error.Css.Import.Failure" xml:space="preserve">
+    <value>Das verlinkte Stylesheet {0} konnte nicht geladen werden. Der entsprechende Server scheint nicht erreichbar zu sein.</value>
+  </data>
+  <data name="Error.Css.Import.TooLarge" xml:space="preserve">
+    <value>Das Stylesheet {0} führt zu unerlaubt großem Input. Erlaubt sind maximal {1} Bytes.</value>
+  </data>
+  <data name="Error.Css.Import.Url.Invalid" xml:space="preserve">
+    <value>Die URL zum Stylesheet ({0}) konnte aus Gründen der Sicherheit nicht verwendet werden.</value>
+  </data>
+  <data name="Error.Css.Stylesheet.Relative" xml:space="preserve">
+    <value>Das Stylesheet versucht ein anderes Stylesheet von "{0}" nachzuladen. Die Datei kann aber nicht gefunden werden.</value>
+  </data>
+  <data name="Error.Css.Tag.Relative" xml:space="preserve">
+    <value>Das Style-Attribut des {0} Tags versucht ein anderes Stylesheet von "{1}" nachzuladen. Die Datei kann aber nicht gefunden werden.</value>
+  </data>
+  <data name="Error.Css.Stylesheet.Rule.NotFound" xml:space="preserve">
+    <value>Das Stylesheet nutzt die Regel "{0}". Diese wurde aus Gründen der Sicherheit entfernt.</value>
+  </data>
+  <data name="Error.Css.Tag.Rule.NotFound" xml:space="preserve">
+    <value>Das Style-Attribut des {0} Tags nutzt die Regel "{1}". Diese wurde aus Gründen der Sicherheit entfernt.</value>
+  </data>
+  <data name="Error.Css.Stylesheet.Selector.NotFound" xml:space="preserve">
+    <value>Das Stylesheet nutzt den Selektor "{0}". Dieser wurde aus Gründen der Sicherheit entfernt.</value>
+  </data>
+  <data name="Error.Css.Tag.Selector.NotFound" xml:space="preserve">
+    <value>Das Style-Attribut des {0} Tags nutzt den Selektor "{1}". Dieser wurde aus Gründen der Sicherheit entfernt.</value>
+  </data>
+  <data name="Error.Css.Stylesheet.Selector.Disallowed" xml:space="preserve">
+    <value>Das Stylesheet verfügte über nicht erlaubte Selektoren: "{0}".</value>
+  </data>
+  <data name="Error.Css.Tag.Selector.Disallowed" xml:space="preserve">
+    <value>Der {0} Tag verfügt über nicht erlaubte Selektoren im Style-Attribut: "{1}".</value>
+  </data>
+  <data name="Error.Css.Stylesheet.Property.Invalid" xml:space="preserve">
+    <value>Die CSS Eigenschaft "{0}" ist aus Gründen der Sicherheit nicht erlaubt.</value>
+  </data>
+  <data name="Error.Css.Tag.Property.Invalid" xml:space="preserve">
+    <value>Der {0} Tag verfügt über nicht erlaubte Eigenschaften im Style-Attribut: "{1}".</value>
+  </data>
+  <data name="Error.Culture.NotSupported" xml:space="preserve">
+    <value>Culture not supported by AntiSamy. Available cultures are: {0}.</value>
+  </data>
+</root>
