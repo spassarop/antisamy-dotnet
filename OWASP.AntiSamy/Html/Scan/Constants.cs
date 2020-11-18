@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2020, Jerry Hoff, Sebastián Passaro
+ * Copyright (c) 2008-2020, Jerry Hoff, Sebastiï¿½n Passaro
  * 
  * All rights reserved.
  * 
@@ -61,7 +61,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string ENTITY_ENCODE_INERNATIONAL_CHARS = "entityEncodeIntlChars";
         public static readonly string ALLOW_DYNAMIC_ATTRIBUTES = "allowDynamicAttributes";
         public static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
-        public static readonly int MAX_NESTED_TAGS = 1450;
+        public static readonly int MAX_NESTED_TAGS = 1000;
 
         public static readonly string ACTION_FILTER = "filter";
         public static readonly string ACTION_VALIDATE = "validate";
@@ -70,5 +70,45 @@ namespace OWASP.AntiSamy.Html.Scan
 
         public static readonly string DEFAULT_POLICY_URI = "Resources/antisamy.xml";
         public static readonly string DEFAULT_ONINVALID = "removeAttribute";
+
+        // Error message keys
+        public static readonly string ERROR_CULTURE_NOTSUPPORTED = "Error.Culture.NotSupported";
+        public static readonly string ERROR_SIZE_TOOLARGE = "Error.Size.TooLarge";
+        public static readonly string ERROR_COMMENT_REMOVED = "Error.Comment.Removed";
+        public static readonly string ERROR_TAG_NOT_IN_POLICY = "Error.Tag.NotFound";
+        public static readonly string ERROR_TAG_DISALLOWED = "Error.Tag.Removed";
+        public static readonly string ERROR_TAG_FILTERED = "Error.Tag.Filtered";
+        public static readonly string ERROR_TAG_ENCODED = "Error.Tag.Encoded";
+        public static readonly string ERROR_TAG_EMPTY = "Error.Tag.Empty";
+        public static readonly string ERROR_CDATA_FOUND = "Error.CData.Found";
+        public static readonly string ERROR_PI_FOUND = "Error.Pi.Found";
+        public static readonly string ERROR_ATTRIBUTE_NOT_IN_POLICY = "Error.Attribute.NotFound";
+        public static readonly string ERROR_ATTRIBUTE_INVALID = "Error.Attribute.Invalid";
+        public static readonly string ERROR_ATTRIBUTE_CAUSE_FILTER = "Error.Attribute.Invalid.Filtered";
+        public static readonly string ERROR_ATTRIBUTE_CAUSE_ENCODE = "Error.Attribute.Invalid.Encoded";
+        public static readonly string ERROR_ATTRIBUTE_INVALID_REMOVED = "Error.Attribute.Invalid.Removed";
+        public static readonly string ERROR_CSS_TAG_MALFORMED = "Error.Css.Tag.Malformed";
+        public static readonly string ERROR_CSS_ATTRIBUTE_MALFORMED = "Error.Css.Attribute.Malformed";
+        public static readonly string ERROR_CSS_IMPORT_DISABLED = "Error.Css.Import.Disabled";
+        public static readonly string ERROR_CSS_IMPORT_EXCEEDED = "Error.Css.Import.Exceeded";
+        public static readonly string ERROR_CSS_IMPORT_FAILURE = "Error.Css.Import.Failure";
+        public static readonly string ERROR_CSS_IMPORT_TOOLARGE = "Error.Css.Import.TooLarge";
+        public static readonly string ERROR_CSS_IMPORT_URL_INVALID = "Error.Css.Import.Url.Invalid";
+        public static readonly string ERROR_CSS_STYLESHEET_RELATIVE = "Error.Css.Stylesheet.Relative";
+        public static readonly string ERROR_CSS_TAG_RELATIVE = "Error.Css.Tag.Relative";
+        public static readonly string ERROR_CSS_STYLESHEET_RULE_NOTFOUND = "Error.Css.Stylesheet.Rule.NotFound";
+        public static readonly string ERROR_CSS_TAG_RULE_NOTFOUND = "Error.Css.Tag.Rule.NotFound";
+        public static readonly string ERROR_CSS_STYLESHEET_SELECTOR_NOTFOUND = "Error.Css.Stylesheet.Selector.NotFound";
+        public static readonly string ERROR_CSS_TAG_SELECTOR_NOTFOUND = "Error.Css.Tag.Selector.NotFound";
+        public static readonly string ERROR_CSS_STYLESHEET_SELECTOR_DISALLOWED = "Error.Css.Stylesheet.Selector.Disallowed";
+        public static readonly string ERROR_CSS_TAG_SELECTOR_DISALLOWED = "Error.Css.Tag.Selector.Disallowed";
+        public static readonly string ERROR_CSS_STYLESHEET_PROPERTY_INVALID = "Error.Css.Stylesheet.Property.Invalid";
+        public static readonly string ERROR_CSS_TAG_PROPERTY_INVALID = "Error.Css.Tag.Property.Invalid";
+
+        // Supported languages
+        public static readonly List<string> SUPPORTED_LANGUAGES = new List<string> {
+            "de-DE", "en-AU", "en-CA", "en-GB", "en-US", "es-MX", 
+            "it-IT", "no-NB", "pt-BR", "pt-PT", "ru-RU", "zh-CN"
+        };
     }
 }

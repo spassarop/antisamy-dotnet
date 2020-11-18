@@ -80,20 +80,19 @@ namespace OWASP.AntiSamy.Html.Scan
         {
             if (html == null)
             {
-                throw new ScanException("No input (null)");
-            }
-
-            int maxInputSize = Policy.MaxInputSize;
-
-            // Ensure our input is less than the max
-            if (maxInputSize < html.Length)
-            {
-                throw new ScanException($"File size [{html.Length}] is larger than maximum [{maxInputSize}]");
+                throw new ScanException("No input (null).");
             }
 
             if (Results != null)
             {
                 InitBlock(); // There was a scan before on the same instance
+            }
+
+            // Ensure our input is less than the max
+            if (Policy.MaxInputSize < html.Length)
+            {
+                AddError(Constants.ERROR_SIZE_TOOLARGE, new object[] { html.Length, Policy.MaxInputSize });
+                throw new ScanException(errorMessages.First());
             }
 
             // Had problems with the &nbsp; getting double encoded, so this converts it to a literal space. This may need to be changed.
@@ -212,7 +211,7 @@ namespace OWASP.AntiSamy.Html.Scan
             }
             else if (tag == null || tag.Action == Constants.ACTION_FILTER)
             {
-                FilterTag(node, tagName);
+                FilterTag(node, tag, tagName);
             }
             else if (tag.Action == Constants.ACTION_VALIDATE)
             {
@@ -225,8 +224,8 @@ namespace OWASP.AntiSamy.Html.Scan
             else
             {
                 // If we reached this it means the tag's action is "remove", which means to remove the tag (including its contents).
+                AddError(Constants.ERROR_TAG_DISALLOWED, new object[] { HtmlEntityEncoder.HtmlEntityEncode(tagName) });
                 RemoveNode(node);
-                errorMessages.Add($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons.");
             }
         }
 
@@ -238,8 +237,8 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void StripCData(HtmlNode node)
         {
-            errorMessages.Add($"A CDATA section was found, which is not allowed. The rest of the message is intact, and its removal should not have any side effects. " +
-                $"The contents of the CDATA was \"{HtmlEntityEncoder.HtmlEntityEncode(node.InnerText)}\"");
+            AddError(Constants.ERROR_CDATA_FOUND, new object[] { HtmlEntityEncoder.HtmlEntityEncode(node.InnerHtml) });
+
             HtmlNode parent = node.ParentNode;
             HtmlTextNode textNode = parent.OwnerDocument.CreateTextNode(node.InnerText);
             parent.InsertBefore(textNode, node);
@@ -248,7 +247,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void EncodeTag(HtmlNode node, string tagName)
         {
-            errorMessages.Add($"The {HtmlEntityEncoder.HtmlEntityEncode(tagName)} tag has been encoded for security reasons. The contents of the tag will remain in place");
+            AddError(Constants.ERROR_TAG_ENCODED, new object[] { HtmlEntityEncoder.HtmlEntityEncode(tagName) });
 
             ProcessChildren(node);
             /*
@@ -279,7 +278,7 @@ namespace OWASP.AntiSamy.Html.Scan
             if (!IsAllowedEmptyTag(node.Name))
             {
                 // Wasn't in the list of allowed elements, so we'll nuke it.
-                errorMessages.Add($"The {HtmlEntityEncoder.HtmlEntityEncode(node.Name)} tag was empty, and therefore we could not process it. The rest of the message is intact, and its removal should not have any side effects.");
+                AddError(Constants.ERROR_TAG_EMPTY, new object[] { HtmlEntityEncoder.HtmlEntityEncode(node.Name) });
                 RemoveNode(node);
                 return true;
             }
@@ -313,10 +312,8 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void RemoveProcessingInstruction(HtmlNode node)
         {
-            errorMessages.Add($"An XML processing instruction was found, which is not allowed. " +
-                $"The rest of the message is intact, and its removal should not have any side effects. " +
-                $"The contents of the instruction was \"{HtmlEntityEncoder.HtmlEntityEncode(node.InnerHtml)}\"");
-
+            // It makes sense to print the outer, inner probably won't have any text.
+            AddError(Constants.ERROR_PI_FOUND, new object[] { HtmlEntityEncoder.HtmlEntityEncode(node.OuterHtml) });
             RemoveNode(node);
         }
 
@@ -337,13 +334,10 @@ namespace OWASP.AntiSamy.Html.Scan
             }
         }
 
-        private void FilterTag(HtmlNode node, string tagName)
+        private void FilterTag(HtmlNode node, Tag tag, string tagName)
         {
-            var errBuff = new StringBuilder();
-            errBuff.Append(string.IsNullOrEmpty(tagName) ?
-                "An unprocessable " : $"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName.ToLowerInvariant())}</b> ");
-            errBuff.Append("tag has been filtered for security reasons. The contents of the tag will remain in place.");
-            errorMessages.Add(errBuff.ToString());
+            AddError(tag == null ? Constants.ERROR_TAG_NOT_IN_POLICY : Constants.ERROR_TAG_FILTERED, 
+                new object[] { HtmlEntityEncoder.HtmlEntityEncode(tagName) });
 
             ProcessChildren(node);
             PromoteChildren(node);
@@ -379,7 +373,7 @@ namespace OWASP.AntiSamy.Html.Scan
             * Go through the attributes in the tainted tag and validate them against the values we have for them.
             * If we don't have a rule for the attribute we remove the attribute.
             */
-            if (!ProcessAttributes(node, parentNode, tag))
+            if (!ProcessAttributes(node, tag))
             {
                 return;
             }
@@ -412,13 +406,11 @@ namespace OWASP.AntiSamy.Html.Scan
 
             while (attributes.Count > 0)
             {
-                var errBuff = new StringBuilder()
-                    .Append($"The {HtmlEntityEncoder.HtmlEntityEncode(tagName)} tag contained an attribute that we could not process. ")
-                    .Append($"The {HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name)} attribute has been filtered out, but the tag is still in place. ")
-                    .Append($"The value of the attribute was \"{HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Value)}\".");
+                AddError(Constants.ERROR_ATTRIBUTE_NOT_IN_POLICY, new object[] { 
+                    HtmlEntityEncoder.HtmlEntityEncode(tagName), 
+                    HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name) });
 
                 node.Attributes.Remove(attributes[0].Name);
-                errorMessages.Add(errBuff.ToString());
             }
 
             HtmlNodeCollection childNodes = node.ChildNodes;
@@ -459,20 +451,26 @@ namespace OWASP.AntiSamy.Html.Scan
                 string cleanHtml = cleanStyleSheet.GetCleanHtml();
                 node.FirstChild.InnerHtml = string.IsNullOrEmpty(cleanHtml) ? EMPTY_CSS_COMMENT : cleanHtml;
             }
-            /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
-             *       catching with "DOMException" or equivalent.       
-             */
-            catch (ScanException)
+            catch (Exception exc)
             {
-                // TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_TAG_MALFORMED
-                parentNode.RemoveChild(node);
-                return false;
+                if (exc is ScanException || exc is ParseException)
+                {
+                    AddError(Constants.ERROR_CSS_TAG_MALFORMED,
+                        new object[] { HtmlEntityEncoder.HtmlEntityEncode(node.FirstChild.InnerHtml) });
+
+                    parentNode.RemoveChild(node);
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
             }
 
             return true;
         }
 
-        private bool ProcessAttributes(HtmlNode node, HtmlNode parentNode, Tag tag)
+        private bool ProcessAttributes(HtmlNode node, Tag tag)
         {
             string tagName = tag.Name;
             int currentAttributeIndex = 0;
@@ -500,15 +498,20 @@ namespace OWASP.AntiSamy.Html.Scan
                         htmlAttribute.Value = cleanInlineStyle.GetCleanHtml();
                         errorMessages.AddRange(cleanInlineStyle.GetErrorMessages());
                     }
-                    /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED
-                     *       catching with "DOMException" or equivalent, using tagName and node.getValue().       
-                     */
-                    catch (ScanException)
+                    catch (Exception exc)
                     {
-                        /* TODO: If encapsulating errors, add this one if needed: ErrorMessageUtil.ERROR_CSS_ATTRIBUTE_MALFORMED,
-                         *       using tagName and node.getValue().       
-                         */
-                        currentAttributeIndex--;
+                        if (exc is ScanException || exc is ParseException)
+                        {
+                            // TODO: Remove attribute?
+                            AddError(Constants.ERROR_CSS_ATTRIBUTE_MALFORMED,
+                                new object[] { HtmlEntityEncoder.HtmlEntityEncode(value), HtmlEntityEncoder.HtmlEntityEncode(tagName) });
+
+                            currentAttributeIndex--;
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
                 }
                 else
@@ -523,32 +526,44 @@ namespace OWASP.AntiSamy.Html.Scan
 
                         if (!isAttributeValid)
                         {
-                            var errBuff = new StringBuilder()
-                                .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag contained an attribute that we couldn't process. ")
-                                .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}</b> attribute had a value of <u>{HtmlEntityEncoder.HtmlEntityEncode(value)}</u>. ")
-                                .Append("This value could not be accepted for security reasons. We have chosen to ");
-
                             string onInvalidAction = attribute.OnInvalid;
                             if (onInvalidAction == "removeTag")
                             {
                                 RemoveNode(node);
-                                errBuff.Append($"remove the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and its contents in order to process this input. ");
+                                AddError(Constants.ERROR_ATTRIBUTE_INVALID_REMOVED, new object[] { 
+                                    HtmlEntityEncoder.HtmlEntityEncode(tagName), 
+                                    HtmlEntityEncoder.HtmlEntityEncode(name), 
+                                    HtmlEntityEncoder.HtmlEntityEncode(value) });
                             }
                             else if (onInvalidAction == "filterTag")
                             {
                                 // Remove the attribute and keep the rest of the tag
                                 ProcessChildren(node);
                                 PromoteChildren(node);
-                                errBuff.Append($"filter the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag and leave its contents in place so that we could process this input.");
+                                AddError(Constants.ERROR_ATTRIBUTE_CAUSE_FILTER, new object[] { 
+                                    HtmlEntityEncoder.HtmlEntityEncode(tagName), 
+                                    HtmlEntityEncoder.HtmlEntityEncode(name), 
+                                    HtmlEntityEncoder.HtmlEntityEncode(value) });
+                            }
+                            else if (onInvalidAction == "encodeTag")
+                            {
+                                // Remove the attribute and keep the rest of the tag
+                                ProcessChildren(node);
+                                EncodeAndPromoteChildren(node); 
+                                AddError(Constants.ERROR_ATTRIBUTE_CAUSE_ENCODE, new object[] { 
+                                    HtmlEntityEncoder.HtmlEntityEncode(tagName), 
+                                    HtmlEntityEncoder.HtmlEntityEncode(name), 
+                                    HtmlEntityEncoder.HtmlEntityEncode(value) });
                             }
                             else
                             {
                                 node.Attributes.Remove(attribute.Name);
                                 currentAttributeIndex--;
-                                errBuff.Append($"remove the <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}</b> attribute from the tag and leave everything else in place so that we could process this input.");
+                                AddError(Constants.ERROR_ATTRIBUTE_INVALID, new object[] { 
+                                    HtmlEntityEncoder.HtmlEntityEncode(tagName), 
+                                    HtmlEntityEncoder.HtmlEntityEncode(name), 
+                                    HtmlEntityEncoder.HtmlEntityEncode(value) });
                             }
-
-                            errorMessages.Add(errBuff.ToString());
 
                             if (onInvalidAction == "removeTag" || onInvalidAction == "filterTag")
                             {
@@ -558,12 +573,10 @@ namespace OWASP.AntiSamy.Html.Scan
                     }
                     else
                     {
-                        var errBuff = new StringBuilder()
-                            .Append($"The <b>{HtmlEntityEncoder.HtmlEntityEncode(name)}")
-                            .Append($"</b> attribute of the <b>{HtmlEntityEncoder.HtmlEntityEncode(tagName)}</b> tag has been removed for security reasons. ")
-                            .Append("This removal should not affect the display of the HTML submitted.");
-
-                        errorMessages.Add(errBuff.ToString());
+                        AddError(Constants.ERROR_ATTRIBUTE_NOT_IN_POLICY, new object[] {
+                            HtmlEntityEncoder.HtmlEntityEncode(tagName), 
+                            HtmlEntityEncoder.HtmlEntityEncode(name), 
+                            HtmlEntityEncoder.HtmlEntityEncode(value) });
                         node.Attributes.Remove(name);
                         currentAttributeIndex--;
                     }
@@ -655,10 +668,9 @@ namespace OWASP.AntiSamy.Html.Scan
             return nodeToString.ToString();
         }
 
-        // TODO: Use in future refactor or delete, its purpose is to build errors from constants and parameters.
-        private void AddError(string errorKey, object[] objs)
+        private void AddError(string errorKey, object[] arguments)
         {
-            errorMessages.Add(errorKey); // Here, ErrorMessageUtil would be used with errorKey and obj.
+            errorMessages.Add(ErrorMessageUtil.GetMessage(errorKey, arguments));
         }
     }
 }
