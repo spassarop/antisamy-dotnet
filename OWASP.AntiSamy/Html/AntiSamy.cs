@@ -124,5 +124,21 @@ namespace OWASP.AntiSamy.Html
             results.SetCleanHtml(null);
             return results;
         }
+
+        /// <summary>Sets the culture for AntiSamy error messages.</summary>
+        /// <remarks>Will throw an exception if the specified culture is not included in the supported ones.</remarks>
+        /// <param name="cultureName">Name of the culture to set. For example: en-US</param>
+        /// <exception cref="System.Globalization.CultureNotFoundException"/>
+        public void SetCulture(string cultureName)
+        {
+            if (Constants.SUPPORTED_LANGUAGES.Contains(cultureName))
+            {
+                Util.ErrorMessageUtil.CurrentCultureName = cultureName;
+            }
+            else
+            {
+                throw new System.Globalization.CultureNotFoundException(string.Format(Constants.ERROR_CULTURE_NOTSUPPORTED, string.Join(", ", Constants.SUPPORTED_LANGUAGES)));
+            }
+        }
     }
 }
