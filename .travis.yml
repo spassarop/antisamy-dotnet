@@ -1,5 +1,5 @@
 language: csharp
-mono: none
+mono: 3.12.0
 dotnet: 3.1
 solution: OWASP.AntiSamy.sln
 install:

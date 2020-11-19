@@ -3,7 +3,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4d5e15cf396e4d5ca659bd9d71f3f57d)](https://app.codacy.com/manual/spassarop/antisamy-dotnet?utm_source=github.com&utm_medium=referral&utm_content=spassarop/antisamy-dotnet&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://api.travis-ci.org/spassarop/antisamy-dotnet.svg?branch=master)](https://travis-ci.org/spassarop/antisamy-dotnet)
 
-A library for performing fast, configurable cleansing of HTML coming from untrusted sources. Refactored from an [old project in .NET framework 2.0](https://wiki.owasp.org/index.php/Category:OWASP_AntiSamy_Project_.NET) to the current version in .NET core 3.1.
+A library for performing fast, configurable cleansing of HTML coming from untrusted sources. Refactored from an [old project in .NET framework 2.0](https://wiki.owasp.org/index.php/Category:OWASP_AntiSamy_Project_.NET) to the current version in .NET core 3.1 and .NET Framework 4.7.2.
 
 Another way of saying that could be: It's an API that helps you make sure that clients don't supply malicious cargo code in the HTML they supply for their profile, comments, etc., that get persisted on the server. The term "malicious code" in regard to web applications usually mean "JavaScript." Mostly, Cascading Stylesheets are only considered malicious when they invoke JavaScript. However, there are many situations where "normal" HTML and CSS can be used in a malicious manner.
 
@@ -12,8 +12,10 @@ This project will be trying to be in sync with the original Java version, its re
 ## How to use
 
 ### 1. Import the dependency
-<!-- TODO: Ways to include in other projects. -->
-Until there is a Nugget package available or official releases, build and reference the OWASP.AntiSamy DLL in your project. 
+Ways to import the project:
+
+1. Import the Nuget package.
+2. Build and reference the OWASP.AntiSamy DLL in your project. 
 
 ### 2. Choosing a base policy file
 Chances are that your site's use case for AntiSamy is at least roughly comparable to one of the predefined policy files. They each represent a "typical" scenario for allowing users to provide HTML (and possibly CSS) formatting information. Let's look into the different policy files:

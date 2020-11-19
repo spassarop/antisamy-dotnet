@@ -9,6 +9,7 @@
     <RepositoryUrl>https://github.com/spassarop/antisamy-dotnet</RepositoryUrl>
     <PackageTags>owasp, xss-filter, security, html, dotnet-core</PackageTags>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Sebastián Passaro</Authors>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.14.0" />
