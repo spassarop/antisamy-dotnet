@@ -502,10 +502,10 @@ namespace OWASP.AntiSamy.Html.Scan
                     {
                         if (exc is ScanException || exc is ParseException)
                         {
-                            // TODO: Remove attribute?
                             AddError(Constants.ERROR_CSS_ATTRIBUTE_MALFORMED,
                                 new object[] { HtmlEntityEncoder.HtmlEntityEncode(value), HtmlEntityEncoder.HtmlEntityEncode(tagName) });
 
+                            node.Attributes.Remove(name);
                             currentAttributeIndex--;
                         }
                         else
