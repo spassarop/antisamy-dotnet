@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OWASP.AntiSamy.Html.Scan;
+using OWASP.AntiSamy.Html.Util;
 
 namespace OWASP.AntiSamy.Html.Model
 {

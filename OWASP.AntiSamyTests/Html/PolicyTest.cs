@@ -117,7 +117,7 @@ namespace AntiSamyTests
             Policy policy = null;
             try
             {
-                policy = Policy.GetInstance(new FileInfo(TestConstants.DEFAULT_POLICY_PATH));
+                policy = Policy.GetInstance(new FileInfo(Policy.GetPolicyAbsolutePathFromFilename(TestConstants.DEFAULT_POLICY_PATH)));
             }
             catch
             {

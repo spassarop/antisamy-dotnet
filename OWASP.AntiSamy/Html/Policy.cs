@@ -24,8 +24,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
+using System.Reflection;
 using System.Xml;
 using OWASP.AntiSamy.Exceptions;
 using OWASP.AntiSamy.Html.Model;
@@ -113,6 +113,20 @@ namespace OWASP.AntiSamy.Html
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file pointed to by the <c>file</c> parameter.</returns>
         /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance(Stream stream) => GetInternalPolicyFromStream(stream);
+
+        internal static string GetPolicyAbsolutePathFromFilename(string filename)
+        {
+            if (Path.IsPathRooted(filename))
+            {
+                return filename;
+            }
+            else
+            {
+                var location = new Uri(Assembly.GetExecutingAssembly().CodeBase);
+                string assemblyDirectory = new FileInfo(location.AbsolutePath).Directory.FullName;
+                return Path.Combine(assemblyDirectory, filename);
+            }
+        }
 
         private static InternalPolicy GetInternalPolicyFromFile(string filename)
         {
@@ -218,7 +232,8 @@ namespace OWASP.AntiSamy.Html
                     // Setting this to NULL disables DTDs - Its NOT null by default.
                     XmlResolver = null
                 };
-                document.Load(filename);
+
+                document.Load(GetPolicyAbsolutePathFromFilename(filename));
                 return document;
             }
             catch (Exception ex)
@@ -555,7 +570,7 @@ namespace OWASP.AntiSamy.Html
             ParseTagListWithLiterals(requireClosingTagListNode, parseContext.requireClosingTags, Constants.DEFAULT_REQUIRE_CLOSING_TAGS);
         }
 
-        private static void ParseTagListWithLiterals(XmlNode nodeList, List<string> tagListToFill, ImmutableList<string> defaultTagsList)
+        private static void ParseTagListWithLiterals(XmlNode nodeList, List<string> tagListToFill, List<string> defaultTagsList)
         {
             if (nodeList != null)
             {
