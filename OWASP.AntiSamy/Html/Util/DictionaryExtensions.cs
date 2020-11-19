@@ -40,15 +40,6 @@ namespace OWASP.AntiSamy.Html.Util
 #endif
         }
 
-//        public static U GetValueOrDefault<T, U>(this Dictionary<T, U> dictionary, T key)
-//        {
-//#if NETCORE
-//            return dictionary.GetValueOrDefault(key)
-//#else
-//            return dictionary.ContainsKey(key) ? dictionary[key] : default;
-//#endif
-//        }
-
         /// <summary>
         /// Returns an existing value U for key T, or creates a new instance of type U using the default constructor, 
         /// adds it to the dictionary and returns it.
