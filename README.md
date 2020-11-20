@@ -1,7 +1,7 @@
 # OWASP AntiSamy .NET
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4d5e15cf396e4d5ca659bd9d71f3f57d)](https://app.codacy.com/manual/spassarop/antisamy-dotnet?utm_source=github.com&utm_medium=referral&utm_content=spassarop/antisamy-dotnet&utm_campaign=Badge_Grade_Dashboard)
-[![Build Status](https://api.travis-ci.org/spassarop/antisamy-dotnet.svg?branch=master)](https://travis-ci.org/spassarop/antisamy-dotnet)
+[![Actions Status](https://github.com/spassarop/antisamy-dotnet/workflows/CI/badge.svg)](https://github.com/spassarop/antisamy-dotnet/actions)
 
 A library for performing fast, configurable cleansing of HTML coming from untrusted sources. Refactored from an [old project in .NET framework 2.0](https://wiki.owasp.org/index.php/Category:OWASP_AntiSamy_Project_.NET) to the current version in .NET core 3.1 and .NET Framework 4.7.2.
 
@@ -14,7 +14,7 @@ This project will be trying to be in sync with the original Java version, its re
 ### 1. Import the dependency
 Ways to import the project:
 
-1. Import the Nuget package.
+1. Import the NuGet package.
 2. Build and reference the OWASP.AntiSamy DLL in your project. 
 
 ### 2. Choosing a base policy file
