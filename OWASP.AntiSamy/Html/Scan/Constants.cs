@@ -103,6 +103,9 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string ERROR_CSS_TAG_SELECTOR_DISALLOWED = "Error.Css.Tag.Selector.Disallowed";
         public static readonly string ERROR_CSS_STYLESHEET_PROPERTY_INVALID = "Error.Css.Stylesheet.Property.Invalid";
         public static readonly string ERROR_CSS_TAG_PROPERTY_INVALID = "Error.Css.Tag.Property.Invalid";
+        public static readonly string ERROR_CSS_RULE_NOTALLOWED = "Error.Css.Rule.NotAllowed";
+        public static readonly string ERROR_CSS_PROPERTY_VALUE_INVALID = "Error.Css.Property.Value.Invalid";
+        public static readonly string ERROR_CSS_PROPERTY_SINGLEVALUE_INVALID = "Error.Css.Property.SingleValue.Invalid";
 
         // Supported languages
         public static readonly List<string> SUPPORTED_LANGUAGES = new List<string> {

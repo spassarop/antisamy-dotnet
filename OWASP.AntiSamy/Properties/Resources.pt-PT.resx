@@ -213,4 +213,13 @@
   <data name="Error.Culture.NotSupported" xml:space="preserve">
     <value>Culture not supported by AntiSamy. Available cultures are: {0}.</value>
   </data>
+  <data name="Error.Css.Rule.NotAllowed" xml:space="preserve">
+    <value>The rule "{0}" is not allowed/supported and will be removed.</value>
+  </data>
+  <data name="Error.Css.Property.Value.Invalid" xml:space="preserve">
+    <value>CSS value "{0}" is not allowed by any criteria.</value>
+  </data>
+  <data name="Error.Css.Property.SingleValue.Invalid" xml:space="preserve">
+    <value>CSS value "{0}" in "{1}" is not allowed by any criteria.</value>
+  </data>
 </root>
