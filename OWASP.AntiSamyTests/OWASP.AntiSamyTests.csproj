@@ -2,13 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
-
     <IsPackable>false</IsPackable>
-
     <Copyright>Copyright © 2020 - Arshan Dabirsiaghi, Sebastián Passaro</Copyright>
-
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <Description>Tests project for OWASP AntiSamy .NET.</Description>
   </PropertyGroup>
   <PropertyGroup>
