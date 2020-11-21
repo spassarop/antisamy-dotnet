@@ -41,7 +41,7 @@ namespace OWASP.AntiSamy.Html.Util
         /// <exception cref="System.InvalidOperationException"/>
         /// <exception cref="MissingManifestResourceException"/>
         /// <exception cref="MissingSatelliteAssemblyException"/>
-        public static string GetMessage(string messageKey, object[] arguments)
+        public static string GetMessage(string messageKey, params object[] arguments)
         {
             string rawMessage = string.IsNullOrEmpty(CurrentCultureName) ? 
                 Properties.Resources.ResourceManager.GetString(messageKey):

@@ -91,7 +91,7 @@ namespace OWASP.AntiSamy.Html.Scan
             // Ensure our input is less than the max
             if (Policy.MaxInputSize < html.Length)
             {
-                AddError(Constants.ERROR_SIZE_TOOLARGE, new object[] { html.Length, Policy.MaxInputSize });
+                AddError(Constants.ERROR_SIZE_TOOLARGE, html.Length, Policy.MaxInputSize);
                 throw new ScanException(errorMessages.First());
             }
 
@@ -224,7 +224,7 @@ namespace OWASP.AntiSamy.Html.Scan
             else
             {
                 // If we reached this it means the tag's action is "remove", which means to remove the tag (including its contents).
-                AddError(Constants.ERROR_TAG_DISALLOWED, new object[] { HtmlEntityEncoder.HtmlEntityEncode(tagName) });
+                AddError(Constants.ERROR_TAG_DISALLOWED, HtmlEntityEncoder.HtmlEntityEncode(tagName));
                 RemoveNode(node);
             }
         }
@@ -237,7 +237,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void StripCData(HtmlNode node)
         {
-            AddError(Constants.ERROR_CDATA_FOUND, new object[] { HtmlEntityEncoder.HtmlEntityEncode(node.InnerHtml) });
+            AddError(Constants.ERROR_CDATA_FOUND, HtmlEntityEncoder.HtmlEntityEncode(node.InnerHtml));
 
             HtmlNode parent = node.ParentNode;
             HtmlTextNode textNode = parent.OwnerDocument.CreateTextNode(node.InnerText);
@@ -247,7 +247,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void EncodeTag(HtmlNode node, string tagName)
         {
-            AddError(Constants.ERROR_TAG_ENCODED, new object[] { HtmlEntityEncoder.HtmlEntityEncode(tagName) });
+            AddError(Constants.ERROR_TAG_ENCODED, HtmlEntityEncoder.HtmlEntityEncode(tagName));
 
             ProcessChildren(node);
             /*
@@ -278,7 +278,7 @@ namespace OWASP.AntiSamy.Html.Scan
             if (!IsAllowedEmptyTag(node.Name))
             {
                 // Wasn't in the list of allowed elements, so we'll nuke it.
-                AddError(Constants.ERROR_TAG_EMPTY, new object[] { HtmlEntityEncoder.HtmlEntityEncode(node.Name) });
+                AddError(Constants.ERROR_TAG_EMPTY, HtmlEntityEncoder.HtmlEntityEncode(node.Name));
                 RemoveNode(node);
                 return true;
             }
@@ -313,7 +313,7 @@ namespace OWASP.AntiSamy.Html.Scan
         private void RemoveProcessingInstruction(HtmlNode node)
         {
             // It makes sense to print the outer, inner probably won't have any text.
-            AddError(Constants.ERROR_PI_FOUND, new object[] { HtmlEntityEncoder.HtmlEntityEncode(node.OuterHtml) });
+            AddError(Constants.ERROR_PI_FOUND, HtmlEntityEncoder.HtmlEntityEncode(node.OuterHtml));
             RemoveNode(node);
         }
 
@@ -336,8 +336,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void FilterTag(HtmlNode node, Tag tag, string tagName)
         {
-            AddError(tag == null ? Constants.ERROR_TAG_NOT_IN_POLICY : Constants.ERROR_TAG_FILTERED, 
-                new object[] { HtmlEntityEncoder.HtmlEntityEncode(tagName) });
+            AddError(tag == null ? Constants.ERROR_TAG_NOT_IN_POLICY : Constants.ERROR_TAG_FILTERED, HtmlEntityEncoder.HtmlEntityEncode(tagName));
 
             ProcessChildren(node);
             PromoteChildren(node);
@@ -406,9 +405,8 @@ namespace OWASP.AntiSamy.Html.Scan
 
             while (attributes.Count > 0)
             {
-                AddError(Constants.ERROR_ATTRIBUTE_NOT_IN_POLICY, new object[] { 
-                    HtmlEntityEncoder.HtmlEntityEncode(tagName), 
-                    HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name) });
+                AddError(Constants.ERROR_ATTRIBUTE_NOT_IN_POLICY,
+                    HtmlEntityEncoder.HtmlEntityEncode(tagName), HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name));
 
                 node.Attributes.Remove(attributes[0].Name);
             }
@@ -455,8 +453,7 @@ namespace OWASP.AntiSamy.Html.Scan
             {
                 if (exc is ScanException || exc is ParseException)
                 {
-                    AddError(Constants.ERROR_CSS_TAG_MALFORMED,
-                        new object[] { HtmlEntityEncoder.HtmlEntityEncode(node.FirstChild.InnerHtml) });
+                    AddError(Constants.ERROR_CSS_TAG_MALFORMED, HtmlEntityEncoder.HtmlEntityEncode(node.FirstChild.InnerHtml));
 
                     parentNode.RemoveChild(node);
                     return false;
@@ -503,7 +500,7 @@ namespace OWASP.AntiSamy.Html.Scan
                         if (exc is ScanException || exc is ParseException)
                         {
                             AddError(Constants.ERROR_CSS_ATTRIBUTE_MALFORMED,
-                                new object[] { HtmlEntityEncoder.HtmlEntityEncode(value), HtmlEntityEncoder.HtmlEntityEncode(tagName) });
+                                HtmlEntityEncoder.HtmlEntityEncode(value), HtmlEntityEncoder.HtmlEntityEncode(tagName));
 
                             node.Attributes.Remove(name);
                             currentAttributeIndex--;
@@ -530,39 +527,39 @@ namespace OWASP.AntiSamy.Html.Scan
                             if (onInvalidAction == "removeTag")
                             {
                                 RemoveNode(node);
-                                AddError(Constants.ERROR_ATTRIBUTE_INVALID_REMOVED, new object[] { 
+                                AddError(Constants.ERROR_ATTRIBUTE_INVALID_REMOVED, 
                                     HtmlEntityEncoder.HtmlEntityEncode(tagName), 
                                     HtmlEntityEncoder.HtmlEntityEncode(name), 
-                                    HtmlEntityEncoder.HtmlEntityEncode(value) });
+                                    HtmlEntityEncoder.HtmlEntityEncode(value));
                             }
                             else if (onInvalidAction == "filterTag")
                             {
                                 // Remove the attribute and keep the rest of the tag
                                 ProcessChildren(node);
                                 PromoteChildren(node);
-                                AddError(Constants.ERROR_ATTRIBUTE_CAUSE_FILTER, new object[] { 
+                                AddError(Constants.ERROR_ATTRIBUTE_CAUSE_FILTER,
                                     HtmlEntityEncoder.HtmlEntityEncode(tagName), 
                                     HtmlEntityEncoder.HtmlEntityEncode(name), 
-                                    HtmlEntityEncoder.HtmlEntityEncode(value) });
+                                    HtmlEntityEncoder.HtmlEntityEncode(value));
                             }
                             else if (onInvalidAction == "encodeTag")
                             {
                                 // Remove the attribute and keep the rest of the tag
                                 ProcessChildren(node);
                                 EncodeAndPromoteChildren(node); 
-                                AddError(Constants.ERROR_ATTRIBUTE_CAUSE_ENCODE, new object[] { 
+                                AddError(Constants.ERROR_ATTRIBUTE_CAUSE_ENCODE,
                                     HtmlEntityEncoder.HtmlEntityEncode(tagName), 
                                     HtmlEntityEncoder.HtmlEntityEncode(name), 
-                                    HtmlEntityEncoder.HtmlEntityEncode(value) });
+                                    HtmlEntityEncoder.HtmlEntityEncode(value));
                             }
                             else
                             {
                                 node.Attributes.Remove(attribute.Name);
                                 currentAttributeIndex--;
-                                AddError(Constants.ERROR_ATTRIBUTE_INVALID, new object[] { 
+                                AddError(Constants.ERROR_ATTRIBUTE_INVALID, 
                                     HtmlEntityEncoder.HtmlEntityEncode(tagName), 
                                     HtmlEntityEncoder.HtmlEntityEncode(name), 
-                                    HtmlEntityEncoder.HtmlEntityEncode(value) });
+                                    HtmlEntityEncoder.HtmlEntityEncode(value));
                             }
 
                             if (onInvalidAction == "removeTag" || onInvalidAction == "filterTag")
@@ -573,10 +570,10 @@ namespace OWASP.AntiSamy.Html.Scan
                     }
                     else
                     {
-                        AddError(Constants.ERROR_ATTRIBUTE_NOT_IN_POLICY, new object[] {
+                        AddError(Constants.ERROR_ATTRIBUTE_NOT_IN_POLICY,
                             HtmlEntityEncoder.HtmlEntityEncode(tagName), 
                             HtmlEntityEncoder.HtmlEntityEncode(name), 
-                            HtmlEntityEncoder.HtmlEntityEncode(value) });
+                            HtmlEntityEncoder.HtmlEntityEncode(value));
                         node.Attributes.Remove(name);
                         currentAttributeIndex--;
                     }
@@ -668,7 +665,7 @@ namespace OWASP.AntiSamy.Html.Scan
             return nodeToString.ToString();
         }
 
-        private void AddError(string errorKey, object[] arguments)
+        private void AddError(string errorKey, params object[] arguments)
         {
             errorMessages.Add(ErrorMessageUtil.GetMessage(errorKey, arguments));
         }

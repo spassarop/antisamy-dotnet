@@ -36,6 +36,8 @@ using AngleSharp.Css.Values;
 using OWASP.AntiSamy.Exceptions;
 using OWASP.AntiSamy.Html;
 using OWASP.AntiSamy.Html.Model;
+using OWASP.AntiSamy.Html.Scan;
+using OWASP.AntiSamy.Html.Util;
 
 namespace OWASP.AntiSamy.Css
 {
@@ -65,6 +67,8 @@ namespace OWASP.AntiSamy.Css
         /// <summary>The policy file to be used in any scanning.</summary>
         private readonly Policy policy;
 
+        private string CurrentTagName { get; set; }
+
         /// <summary> Constructs a scanner based on the given policy.</summary>
         /// <param name="policy">The policy to follow when scanning.</param>
         public CssScanner(Policy policy)
@@ -80,7 +84,7 @@ namespace OWASP.AntiSamy.Css
         /// <exception cref="ParseException"/>
         public CleanResults ScanStyleSheet(string taintedCss)
         {
-            return DoScan(taintedCss, isInlineCss: false);
+            return DoScan(taintedCss, isInlineCss: false, tagName: null);
         }
 
         /// <summary> Scans the contents of an inline style declaration (ex. in the style attribute of an HTML tag) 
@@ -93,7 +97,7 @@ namespace OWASP.AntiSamy.Css
         public CleanResults ScanInlineStyle(string taintedCss, string tagName)
         {
             // TODO: Do something about tagName (probably delete it later)
-            return DoScan(taintedCss, isInlineCss: true);
+            return DoScan(taintedCss, isInlineCss: true, tagName: tagName);
         }
 
         /// <summary> Does the actual scan.</summary>
@@ -101,8 +105,9 @@ namespace OWASP.AntiSamy.Css
         /// <param name="isInlineCss">A boolean specifying if the style to parse is inline.</param>
         /// <exception cref="ScanException"/>
         /// <exception cref="ParseException"/>
-        private CleanResults DoScan(string taintedCss, bool isInlineCss)
+        private CleanResults DoScan(string taintedCss, bool isInlineCss, string tagName)
         {
+            CurrentTagName = tagName;
             var startOfScan = new DateTime();
             var errorMessages = new List<string>();
             string cleanStylesheet;
@@ -178,6 +183,7 @@ namespace OWASP.AntiSamy.Css
                 ICssRule rule = styleSheet.Rules[i];
                 if (!ScanStyleRule(rule, errorMessages))
                 {
+                    errorMessages.Add(ErrorMessageUtil.GetMessage(Constants.ERROR_CSS_RULE_NOTALLOWED, rule.CssText));
                     styleSheet.RemoveAt(i); // Deletes rule in-place (length is dynamic), counter must not be incremented.
                 }
                 else
@@ -224,9 +230,9 @@ namespace OWASP.AntiSamy.Css
             {
                 ScanStyleDeclaration(keyFrameRule.Style, errorMessages);
             }
-            else if (rule is ICssImportRule importRule)
+            else
             {
-                return false; // Don't allow import rules for now
+                return false; // Don't allow any other rules for now
             }
 
             return true;
@@ -246,13 +252,9 @@ namespace OWASP.AntiSamy.Css
                 
                 Property allowedCssProperty = policy.GetPropertyByName(decodedName);
 
-                if (allowedCssProperty == null)
+                if (allowedCssProperty == null || DANGEROUS_CSS_EXPRESSION_REGEX.IsMatch(decodedValue))
                 {
-                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"CSS property \"{decodedName}\" is not allowed"));
-                }
-                else if (DANGEROUS_CSS_EXPRESSION_REGEX.IsMatch(decodedValue))
-                {
-                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{decodedValue}\" is invalid CSS expression"));
+                    removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, GetPropertyErrorMessage(decodedName, decodedValue)));
                 }
                 else
                 {
@@ -279,14 +281,18 @@ namespace OWASP.AntiSamy.Css
                     string decodedSingleValue = DecodeCss(RemoveQuotesIfUrlValue(singleValue));
                     if (!IsValidValue(allowedCssProperty, cssProperty, decodedSingleValue, removingProperties))
                     {
-                        removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{decodedSingleValue}\" in \"{decodedValue}\" is not allowed by any criteria"));
+                        removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty,
+                            ErrorMessageUtil.GetMessage(Constants.ERROR_CSS_PROPERTY_VALUE_INVALID,
+                            HtmlEntityEncoder.HtmlEntityEncode(decodedSingleValue), 
+                            HtmlEntityEncoder.HtmlEntityEncode(decodedValue))));
                         return;
                     }
                 }
             }
             else if (!IsValidValue(allowedCssProperty, cssProperty, decodedValue, removingProperties))
             {
-                removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, $"\"{decodedValue}\" is not allowed by any criteria"));
+                removingProperties.Add(new Tuple<ICssProperty, string>(cssProperty, 
+                    ErrorMessageUtil.GetMessage(Constants.ERROR_CSS_PROPERTY_VALUE_INVALID, HtmlEntityEncoder.HtmlEntityEncode(decodedValue))));
             }
         }
 
@@ -351,6 +357,20 @@ namespace OWASP.AntiSamy.Css
         {
             string valueAsUrl = value.AsUrl();
             return string.IsNullOrEmpty(valueAsUrl) ? value.CssText : $"url({valueAsUrl})";
+        }
+
+        private string GetPropertyErrorMessage(string propertyName, string propertyValue)
+        {
+            if (string.IsNullOrEmpty(CurrentTagName))
+            {
+                return ErrorMessageUtil.GetMessage(Constants.ERROR_CSS_STYLESHEET_PROPERTY_INVALID,
+                    HtmlEntityEncoder.HtmlEntityEncode($"{propertyName}: {propertyValue}"));
+            }
+            else
+            {
+                return ErrorMessageUtil.GetMessage(Constants.ERROR_CSS_TAG_PROPERTY_INVALID,
+                    CurrentTagName, HtmlEntityEncoder.HtmlEntityEncode($"{propertyName}: {propertyValue}"));
+            }
         }
     }
 }
