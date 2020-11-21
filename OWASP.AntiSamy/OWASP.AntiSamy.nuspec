@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">BSD-3-Clause</license>
+    <projectUrl>https://owasp.org/www-project-antisamy/</projectUrl>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+    <tags>owasp xss-filter security html dotnet-core dotnet-framework</tags>
+  </metadata>
+</package>
