@@ -14,8 +14,8 @@ This project will be trying to be in sync with the original Java version, its re
 ### 1. Import the dependency
 Ways to import the project:
 
-1. Import the NuGet package.
-2. Build and reference the OWASP.AntiSamy DLL in your project. 
+1.  Import the NuGet package.
+2.  Build and reference the OWASP.AntiSamy DLL in your project. 
 
 ### 2. Choosing a base policy file
 Chances are that your site's use case for AntiSamy is at least roughly comparable to one of the predefined policy files. They each represent a "typical" scenario for allowing users to provide HTML (and possibly CSS) formatting information. Let's look into the different policy files:
