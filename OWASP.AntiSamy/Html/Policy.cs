@@ -205,32 +205,32 @@ namespace OWASP.AntiSamy.Html
         /// <summary>A simple method for returning one of the &lt;common-regexp&gt; entries by name.</summary>
         /// <param name="name">The name of the common-regexp we want to look up.</param>
         /// <returns> A string associated with the common-regexp lookup name specified.</returns>
-        internal string GetCommonRegularExpressionByName(string name) => name == null ? null : commonRegularExpressions.GetValueOrDefault(name);
+        internal string GetCommonRegularExpressionByName(string name) => name == null ? null : commonRegularExpressions.GetValueOrTypeDefault(name);
 
         /// <summary> A simple method for returning one of the &lt;global-attribute&gt; entries by name.</summary>
         /// <param name="name">The name of the global-attribute we want to look up.</param>
         /// <returns> An Attribute associated with the global-attribute lookup name specified.</returns>
-        internal Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrDefault(name.ToLowerInvariant());
+        internal Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrTypeDefault(name.ToLowerInvariant());
 
         /// <summary> Return a directive value based on a lookup name.</summary>
         /// <param name="name">The name of the Tag to look up.</param>
         /// <returns> A string object containing the directive associated with the lookup name, or null if none is found.</returns>
-        internal string GetDirectiveByName(string name) => directives.GetValueOrDefault(name);
+        internal string GetDirectiveByName(string name) => directives.GetValueOrTypeDefault(name);
 
         /// <summary> Retrieves a Tag from the Policy.</summary>
         /// <param name="name">The name of the Tag to look up.</param>
         /// <returns> The <see cref="Tag"/> associated with the name specified, or null if none is found.</returns>
-        internal Tag GetTagByName(string name) => tagRules.GetValueOrDefault(name.ToLowerInvariant());
+        internal Tag GetTagByName(string name) => tagRules.GetValueOrTypeDefault(name.ToLowerInvariant());
 
         /// <summary> Retrieves a CSS Property from the Policy.</summary>
         /// <param name="name">The name of the CSS Property to look up.</param>
         /// <returns> The CSS <see cref="Property"/> associated with the name specified, or null if none is found.</returns>
-        internal Property GetPropertyByName(string name) => cssRules.GetValueOrDefault(name.ToLowerInvariant());
+        internal Property GetPropertyByName(string name) => cssRules.GetValueOrTypeDefault(name.ToLowerInvariant());
 
         /// <summary> A simple method for returning one of the &lt;common-attribute&gt; entries by name.</summary>
         /// <param name="name">The name of the common-attribute we want to look up.</param>
         /// <returns> An <see cref="Attribute"/> associated with the common-attribute lookup name specified.</returns>
-        internal Attribute GetCommonAttributeByName(string name) => commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
+        internal Attribute GetCommonAttributeByName(string name) => commonAttributes.GetValueOrTypeDefault(name.ToLowerInvariant());
 
         /// <summary> Return all the allowed empty tags configured in the Policy.</summary>
         /// <returns> A <see cref="TagMatcher"/> with all the allowed empty tags configured in the policy.</returns>
@@ -364,7 +364,7 @@ namespace OWASP.AntiSamy.Html
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(globalAttributeListNode, "attribute"))
             {
                 string name = XmlUtil.GetAttributeValue(node, "name");
-                Attribute toAdd = parseContext.commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
+                Attribute toAdd = parseContext.commonAttributes.GetValueOrTypeDefault(name.ToLowerInvariant());
                 if (toAdd != null)
                 {
                     parseContext.globalAttributes.Add(name.ToLowerInvariant(), toAdd);
@@ -384,7 +384,7 @@ namespace OWASP.AntiSamy.Html
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(dynamicAttributeListNode, "attribute"))
             {
                 string name = XmlUtil.GetAttributeValue(node, "name");
-                Attribute toAdd = parseContext.commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
+                Attribute toAdd = parseContext.commonAttributes.GetValueOrTypeDefault(name.ToLowerInvariant());
                 if (toAdd != null)
                 {
                     parseContext.globalAttributes.Add(name.ToLowerInvariant(), toAdd);
@@ -452,7 +452,7 @@ namespace OWASP.AntiSamy.Html
                 }
                 else
                 {
-                    allowedRegEx = regExName == null ? null : parseContext.commonRegularExpressions.GetValueOrDefault(regExName);
+                    allowedRegEx = regExName == null ? null : parseContext.commonRegularExpressions.GetValueOrTypeDefault(regExName);
                 }
                 allowedList.Add(allowedRegEx);
             }
@@ -493,7 +493,7 @@ namespace OWASP.AntiSamy.Html
                 if (!attributeNode.HasChildNodes)
                 {
                     /* All they provided was the name, so they must want a common attribute. */
-                    Attribute attribute = parseContext.commonAttributes.GetValueOrDefault(attributeName.ToLowerInvariant());
+                    Attribute attribute = parseContext.commonAttributes.GetValueOrTypeDefault(attributeName.ToLowerInvariant());
 
                     if (attribute != null)
                     {
@@ -555,7 +555,7 @@ namespace OWASP.AntiSamy.Html
                 */
                 if (!string.IsNullOrEmpty(regExName))
                 {
-                    string pattern = regExName == null ? null : parseContext.commonRegularExpressions.GetValueOrDefault(regExName);
+                    string pattern = regExName == null ? null : parseContext.commonRegularExpressions.GetValueOrTypeDefault(regExName);
                     if (pattern != null)
                     {
                         allowedList.Add(pattern);

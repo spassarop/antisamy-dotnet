@@ -64,7 +64,7 @@ namespace OWASP.AntiSamy.Html.Model
         /// <summary> Returns an <see cref="Attribute"/> associated with a lookup name.</summary>
         /// <param name="name">The name of the allowed attribute by name.</param>
         /// <returns> The <see cref="Attribute"/> object associated with the name.</returns>
-        internal Attribute GetAttributeByName(string name) => AllowedAttributes.GetValueOrDefault(name);
+        internal Attribute GetAttributeByName(string name) => AllowedAttributes.GetValueOrTypeDefault(name);
 
         internal string GetRegularExpression()
         {

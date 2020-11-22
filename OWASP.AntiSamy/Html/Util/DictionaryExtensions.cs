@@ -31,7 +31,7 @@ namespace OWASP.AntiSamy.Html.Util
         /// <summary>
         /// Returns the default value of type U if the key does not exist in the dictionary
         /// </summary>
-        public static U GetValueOrDefault<T, U>(this Dictionary<T, U> dictionary, T key)
+        public static U GetValueOrTypeDefault<T, U>(this Dictionary<T, U> dictionary, T key)
         {
 #if NETCOREAPP
             return dictionary.GetValueOrDefault(key);
