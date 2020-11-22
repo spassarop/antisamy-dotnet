@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2020, Jerry Hoff, Sebastián Passaro
+ * Copyright (c) 2008-2020, Jerry Hoff, Sebastiï¿½n Passaro
  * 
  * All rights reserved.
  * 
@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Xml;
 using OWASP.AntiSamy.Exceptions;
 using OWASP.AntiSamy.Html.Model;
@@ -94,7 +95,30 @@ namespace OWASP.AntiSamy.Html
         /// <summary> This retrieves a policy based on a default location ("Resources/antisamy.xml")</summary>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the default location.</returns>
         /// <exception cref="PolicyException"></exception>
-        public static Policy GetInstance() => GetInternalPolicyFromFile(Constants.DEFAULT_POLICY_URI);
+        public static Policy GetInstance()
+        {
+            try
+            {
+                return GetInternalPolicyFromFile(Constants.DEFAULT_POLICY_URI);
+            }
+            catch
+            {
+                try
+                {
+                    return GetInternalPolicyFromStream(new MemoryStream(
+                        Encoding.UTF8.GetBytes(Properties.Resources.ResourceManager.GetObject(Constants.DEFAULT_POLICY_RESOURCE_KEY) as string)));
+                }
+                catch (Exception ex)
+                {
+                    if (ex is PolicyException)
+                    {
+                        throw;
+                    }
+
+                    throw new PolicyException($"Problem loading policy default XML from stream: {ex.Message}", ex);
+                }
+            }
+        }
 
         /// <summary> This retrieves a policy based on the file name passed in</summary>
         /// <param name="filename">The path to the XML policy file.</param>

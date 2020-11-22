@@ -59,14 +59,5 @@ namespace OWASP.AntiSamy.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to asd.
-        /// </summary>
-        internal static string Error_asd_s {
-            get {
-                return ResourceManager.GetString("Error.asd.s", resourceCulture);
-            }
-        }
     }
 }

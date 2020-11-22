@@ -68,6 +68,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string ACTION_ENCODE = "encode";
 
         public static readonly string DEFAULT_POLICY_URI = "Resources/antisamy.xml";
+        public static readonly string DEFAULT_POLICY_RESOURCE_KEY = "DEFAULT_ANTISAMY_POLICY_XML";
         public static readonly string DEFAULT_ONINVALID = "removeAttribute";
 
         // Error message keys
