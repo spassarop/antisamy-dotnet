@@ -65,7 +65,7 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary> This method wraps <c>Scan()</c> using the <see cref="Policy"/> in the specified file.</summary>
         /// <param name="taintedHTML">Untrusted HTML which may contain malicious code.</param>
-        /// <param name="file"><see cref="Stream"/> object which contains the policy.</param>
+        /// <param name="stream"><see cref="Stream"/> object which contains the policy.</param>
         /// <returns> A <see cref="CleanResults"/> object which contains information about the scan (including the results).</returns>
         /// <exception cref="Exceptions.ScanException"/> 
         /// <exception cref="Exceptions.PolicyException"/>

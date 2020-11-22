@@ -52,20 +52,36 @@ namespace OWASP.AntiSamy.Html
         private readonly TagMatcher allowedEmptyTagsMatcher;
         private readonly TagMatcher requireClosingTagsMatcher;
 
+        /// <summary>Maximum input size for the HTML to read.</summary>
         internal protected int MaxInputSize { get; set; }
+        /// <summary>Determines if adds the attribute "nofollow" on &lt;a&gt; tags.</summary>
         internal protected bool DoesNotFollowAnchors { get; protected set; }
+        /// <summary>Determines if validates the &lt;param&gt; tag as &lt;embed&gt; tag.</summary>
         internal protected bool ValidatesParamAsEmbed { get; set; }
+        /// <remarks>Currently not in use.</remarks>
         internal protected bool FormatsOutput { get; set; }
+        /// <summary>Determines if HTML output gets trimmed.</summary>
         internal protected bool PreservesSpace { get; set; }
+        /// <summary>Currently not in use.</summary>
         internal protected bool OmitsXmlDeclaration { get; set; }
+        /// <summary>Currently not in use.</summary>
         internal protected bool OmitsDoctypeDeclaration { get; set; }
+        /// <summary>Determines if HTML output gets encoded regarding special characters, like accents.</summary>
         internal protected bool EntityEncodesInternationalCharacters { get; set; }
+        /// <summary>Determines if parser uses XHTML.</summary>
+        /// <remarks>Explicitly used for CDATA handling when scanning CSS.</remarks>
         internal protected bool UsesXhtml { get; set; }
+        /// <summary>Determines if comments are removed from the HTML.</summary>
         internal protected bool PreservesComments { get; set; }
+        /// <summary>Currently not in use.</summary>
         internal protected bool EmbedsStyleSheets { get; set; }
+        /// <summary>Determines if unknowkn HTML tags get encoded instead of removed.</summary>
         internal protected bool EncodesUnknownTag { get; set; }
+        /// <summary>Currently not in use.</summary>
         internal protected bool AllowsDynamicAttributes { get; set; }
 
+        /// <summary>Create policy with <see cref="ParseContext"/>.</summary>
+        /// <param name="parseContext">Context with all collections to load the new policy.</param>
         protected Policy(ParseContext parseContext)
         {
             commonAttributes = parseContext.commonAttributes;
@@ -79,6 +95,10 @@ namespace OWASP.AntiSamy.Html
             requireClosingTagsMatcher = new TagMatcher(parseContext.requireClosingTags);
         }
 
+        /// <summary>Create policy with full paramterers.</summary>
+        /// <param name="old">Old policy to copy from.</param>
+        /// <param name="directives">Directives to override.</param>
+        /// <param name="tagRules">Tag rules to override.</param>
         protected Policy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
         {
             commonAttributes = old.commonAttributes;
@@ -92,7 +112,7 @@ namespace OWASP.AntiSamy.Html
             requireClosingTagsMatcher = old.requireClosingTagsMatcher;
         }
 
-        /// <summary> This retrieves a policy based on a default location ("Resources/antisamy.xml")</summary>
+        /// <summary> This retrieves a policy based on a default location ("Resources/antisamy.xml") or from the embedded XML.</summary>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the default location.</returns>
         /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance()
@@ -133,7 +153,7 @@ namespace OWASP.AntiSamy.Html
         public static Policy GetInstance(FileInfo file) => GetInternalPolicyFromFile(file.FullName);
 
         /// <summary> This retrieves a policy based on the <see cref="Stream"/> object passed in</summary>
-        /// <param name="file">A <see cref="Stream"/> object which contains the XML policy information.</param>
+        /// <param name="stream">A <see cref="Stream"/> object which contains the XML policy information.</param>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file pointed to by the <c>file</c> parameter.</returns>
         /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance(Stream stream) => GetInternalPolicyFromStream(stream);
@@ -182,12 +202,12 @@ namespace OWASP.AntiSamy.Html
             return new InternalPolicy(this, newDirectives, tagRules);
         }
 
-        /// <summary>A simple method for returning one of the <common-regexp> entries by name.</summary>
+        /// <summary>A simple method for returning one of the &lt;common-regexp&gt; entries by name.</summary>
         /// <param name="name">The name of the common-regexp we want to look up.</param>
         /// <returns> A string associated with the common-regexp lookup name specified.</returns>
         internal string GetCommonRegularExpressionByName(string name) => name == null ? null : commonRegularExpressions.GetValueOrDefault(name);
 
-        /// <summary> A simple method for returning one of the <global-attribute> entries by name.</summary>
+        /// <summary> A simple method for returning one of the &lt;global-attribute&gt; entries by name.</summary>
         /// <param name="name">The name of the global-attribute we want to look up.</param>
         /// <returns> An Attribute associated with the global-attribute lookup name specified.</returns>
         internal Attribute GetGlobalAttributeByName(string name) => globalAttributes.GetValueOrDefault(name.ToLowerInvariant());
@@ -207,7 +227,7 @@ namespace OWASP.AntiSamy.Html
         /// <returns> The CSS <see cref="Property"/> associated with the name specified, or null if none is found.</returns>
         internal Property GetPropertyByName(string name) => cssRules.GetValueOrDefault(name.ToLowerInvariant());
 
-        /// <summary> A simple method for returning one of the <common-attribute> entries by name.</summary>
+        /// <summary> A simple method for returning one of the &lt;common-attribute&gt; entries by name.</summary>
         /// <param name="name">The name of the common-attribute we want to look up.</param>
         /// <returns> An <see cref="Attribute"/> associated with the common-attribute lookup name specified.</returns>
         internal Attribute GetCommonAttributeByName(string name) => commonAttributes.GetValueOrDefault(name.ToLowerInvariant());
@@ -320,8 +340,8 @@ namespace OWASP.AntiSamy.Html
             }
         }
 
-        /// <summary> Go through <directives> section of the policy file.</summary>
-        /// <param name="directiveListNode">Top level of <directives></param>
+        /// <summary> Go through &lt;directives&gt; section of the policy file.</summary>
+        /// <param name="directiveListNode">Top level of &lt;directives&gt;</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the directives dictionary to fill.</param>
         private static void ParseDirectives(XmlNode directiveListNode, ParseContext parseContext)
         {
@@ -336,8 +356,8 @@ namespace OWASP.AntiSamy.Html
             }
         }
 
-        /// <summary> Go through <global-tag-attributes> section of the policy file.</summary>
-        /// <param name="globalAttributeListNode">Top level of <global-tag-attributes></param>
+        /// <summary> Go through &lt;global-tag-attributes&gt; section of the policy file.</summary>
+        /// <param name="globalAttributeListNode">Top level of &lt;global-tag-attributes&gt;</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the global attributes dictionary to fill.</param>
         private static void ParseGlobalAttributes(XmlNode globalAttributeListNode, ParseContext parseContext)
         {
@@ -356,8 +376,8 @@ namespace OWASP.AntiSamy.Html
             }
         }
 
-        /// <summary> Go through <dynamic-tag-attributes> section of the policy file.</summary>
-        /// <param name="dynamicAttributeListNode">Top level of <dynamic-tag-attributes></param>
+        /// <summary> Go through &lt;dynamic-tag-attributes&gt; section of the policy file.</summary>
+        /// <param name="dynamicAttributeListNode">Top level of &lt;dynamic-tag-attributes&gt;</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the dynamic attributes dictionary to fill.</param>
         private static void ParseDynamicAttributes(XmlNode dynamicAttributeListNode, ParseContext parseContext)
         {
@@ -376,8 +396,8 @@ namespace OWASP.AntiSamy.Html
             }
         }
 
-        /// <summary> Go through the <common-regexps> section of the policy file.</summary>
-        /// <param name="commonRegularExpressionListNode">Top level of <common-regexps>.</param>
+        /// <summary> Go through the &lt;common-regexps&gt; section of the policy file.</summary>
+        /// <param name="commonRegularExpressionListNode">Top level of &lt;common-regexps&gt;.</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the common regular expressions dictionary to fill.</param>
         private static void ParseCommonRegExps(XmlNode commonRegularExpressionListNode, ParseContext parseContext)
         {
@@ -392,8 +412,8 @@ namespace OWASP.AntiSamy.Html
             }
         }
 
-        /// <summary> Go through the <common-attributes> section of the policy file.</summary>
-        /// <param name="commonAttributeListNode">Top level of <common-attributes>.</param>
+        /// <summary> Go through the &lt;common-attributes&gt; section of the policy file.</summary>
+        /// <param name="commonAttributeListNode">Top level of &lt;common-attributes&gt;.</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the common attributes dictionary to fill.</param>
         private static void ParseCommonAttributes(XmlNode commonAttributeListNode, ParseContext parseContext)
         {
@@ -439,8 +459,8 @@ namespace OWASP.AntiSamy.Html
             return allowedList;
         }
 
-        /// <summary> Private method for parsing the <tag-rules> from the XML file.</summary>
-        /// <param name="tagAttributeListNode">The top level of <tag-rules></param>
+        /// <summary> Private method for parsing the &lt;tag-rules&gt; from the XML file.</summary>
+        /// <param name="tagAttributeListNode">The top level of &lt;tag-rules&gt;</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the tag rules dictionary to fill.</param>
         private static void ParseTagRules(XmlNode tagAttributeListNode, ParseContext parseContext)
         {
@@ -554,8 +574,8 @@ namespace OWASP.AntiSamy.Html
             return allowedList;
         }
 
-        /// <summary> Go through the <css-rules> section of the policy file.</summary>
-        /// <param name="cssNodeList">Top level of <css-rules>.</param>
+        /// <summary> Go through the &lt;css-rules&gt; section of the policy file.</summary>
+        /// <param name="cssNodeList">Top level of &lt;css-rules&gt;.</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the CSS rules dictionary to fill.</param>
         private static void ParseCssRules(XmlNode cssNodeList, ParseContext parseContext)
         {
@@ -578,16 +598,16 @@ namespace OWASP.AntiSamy.Html
             }
         }
 
-        /// <summary> Go through the <allowed-empty-tags> section of the policy file.</summary>
-        /// <param name="allowedEmptyTagListNode">Top level of <allowed-empty-tags>.</param>
+        /// <summary> Go through the &lt;allowed-empty-tags&gt; section of the policy file.</summary>
+        /// <param name="allowedEmptyTagListNode">Top level of &lt;allowed-empty-tags&gt;.</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the allowed empty tags list to fill.</param>
         private static void ParseAllowedEmptyTags(XmlNode allowedEmptyTagListNode, ParseContext parseContext)
         {
             ParseTagListWithLiterals(allowedEmptyTagListNode, parseContext.allowedEmptyTags, Constants.DEFAULT_ALLOWED_EMPTY_TAGS);
         }
 
-        /// <summary> Go through the <require-closing-tags> section of the policy file.</summary>
-        /// <param name="requireClosingTagListNode">Top level of <require-closing-tags>.</param>
+        /// <summary> Go through the &lt;require-closing-tags&gt; section of the policy file.</summary>
+        /// <param name="requireClosingTagListNode">Top level of &lt;require-closing-tags&gt;.</param>
         /// <param name="parseContext">The <see cref="ParseContext"/> containing the require closing tags list to fill.</param>
         private static void ParseRequireClosingTags(XmlNode requireClosingTagListNode, ParseContext parseContext)
         {

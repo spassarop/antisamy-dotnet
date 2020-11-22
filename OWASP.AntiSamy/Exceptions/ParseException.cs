@@ -27,22 +27,27 @@ using System.Runtime.Serialization;
 
 namespace OWASP.AntiSamy.Exceptions
 {
+    /// <summary>Exception thrown when parsing with scanners.</summary>
     public class ParseException : Exception
     {
+        /// <summary></summary>
         public ParseException()
         {
         }
 
+        /// <summary></summary>
         public ParseException(string message)
             : base(message)
         {
         }
 
+        /// <summary></summary>
         public ParseException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
 
+        /// <summary></summary>
         protected ParseException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2020, Jerry Hoff, Sebastiï¿½n Passaro
+ * Copyright (c) 2008-2020, Jerry Hoff, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -44,6 +44,7 @@ namespace OWASP.AntiSamy.Html
 
         private const double MILLISECONDS_DENOMINATOR = 1000D;
 
+        /// <summary>Empty constructor.</summary>
         public CleanResults()
         {
         }
@@ -61,13 +62,16 @@ namespace OWASP.AntiSamy.Html
             this.errorMessages = errorMessages;
         }
 
-        public CleanResults(DateTime date) => startOfScan = date;
+        /// <summary>Constructor with start of scan.</summary>
+        public CleanResults(DateTime startOfScan) => this.startOfScan = startOfScan;
 
         /// <summary>Operation not supported.</summary>
         /// <returns>Returns <see langword="null"/>.</returns>
         [Obsolete]
         public XmlDocumentFragment GetCleanXmlDocumentFragment() => null;
 
+        /// <summary>Sets the clean HTML into the <see cref="CleanResults"/> object.</summary>
+        /// <param name="cleanHtml"></param>
         public void SetCleanHtml(string cleanHtml) => this.cleanHtml = cleanHtml;
 
         /// <summary> Return the filtered HTML as a string.</summary>
@@ -75,7 +79,7 @@ namespace OWASP.AntiSamy.Html
         public string GetCleanHtml() => cleanHtml;
 
         /// <summary> Return a list of error messages.</summary>
-        /// <returns> A <see cref="List{string}"/> object which contains the error messages after a scan.</returns>
+        /// <returns> A <see cref="List{String}"/> object which contains the error messages after a scan.</returns>
         public List<string> GetErrorMessages() => errorMessages;
 
         /// <summary> Return the time when scan finished.</summary>

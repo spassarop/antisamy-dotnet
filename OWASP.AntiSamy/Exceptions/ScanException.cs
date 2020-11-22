@@ -34,20 +34,24 @@ namespace OWASP.AntiSamy.Exceptions
     /// </summary>
     public class ScanException : Exception
     {
+        /// <summary></summary>
         public ScanException()
         {
         }
 
+        /// <summary></summary>
         public ScanException(string message)
             : base(message)
         {
         }
 
+        /// <summary></summary>
         public ScanException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
 
+        /// <summary></summary>
         protected ScanException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

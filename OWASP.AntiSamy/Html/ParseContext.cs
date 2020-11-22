@@ -29,6 +29,7 @@ using Tag = OWASP.AntiSamy.Html.Model.Tag;
 
 namespace OWASP.AntiSamy.Html
 {
+    /// <summary>This class has all the collections used to store the parsed policy.</summary>
     public class ParseContext
     {
         internal Dictionary<string, string> commonRegularExpressions = new Dictionary<string, string>();

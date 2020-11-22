@@ -22,8 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * 
+/*
  * This exception gets thrown when there is an unrecognized Selector type parsing
  * the tainted CSS.
  * 
@@ -33,16 +32,19 @@
 
 namespace OWASP.AntiSamy.Exceptions
 {
+    /// <summary>Currently not in use.</summary>
     public class UnknownSelectorException : ScanException
     {
         private readonly string selectorName;
 
+        /// <summary>Currently not in use.</summary>
         public UnknownSelectorException(string selectorName)
             : base("Unknown selector " + selectorName)
         {
             this.selectorName = selectorName;
         }
 
+        /// <summary>Currently not in use.</summary>
         public string GetSelectorName() => selectorName;
     }
 }

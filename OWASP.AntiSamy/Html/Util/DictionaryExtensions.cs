@@ -33,8 +33,8 @@ namespace OWASP.AntiSamy.Html.Util
         /// </summary>
         public static U GetValueOrDefault<T, U>(this Dictionary<T, U> dictionary, T key)
         {
-#if NETCORE
-            return dictionary.GetValueOrDefault(key)
+#if NETCOREAPP
+            return dictionary.GetValueOrDefault(key);
 #else
             return dictionary.ContainsKey(key) ? dictionary[key] : default;
 #endif

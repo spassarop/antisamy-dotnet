@@ -32,7 +32,14 @@ namespace OWASP.AntiSamy.Html
     {
         private readonly HashSet<string> allowedLowercase;
 
-        public TagMatcher(List<string> allowedValues) => allowedLowercase = allowedValues.Select(v => v.ToLowerInvariant()).ToHashSet();
+        public TagMatcher(List<string> allowedValues)
+        {
+#if NET5_0
+            allowedLowercase = allowedValues.Select(v => v.ToLowerInvariant()).ToHashSet();
+#else
+            allowedLowercase = new HashSet<string>(allowedValues.Select(v => v.ToLowerInvariant()).ToList());
+#endif
+        }
 
         /// <summary>Examines if this tag matches the values in this matcher.
         /// Please note that this is case-insensitive, which is ok for HTML and XHTML, but not really for XML.</summary>

@@ -32,20 +32,24 @@ namespace OWASP.AntiSamy.Exceptions
     /// will be thrown with this exception.</summary>
     public class PolicyException : Exception
     {
+        /// <summary></summary>
         public PolicyException()
         {
         }
 
+        /// <summary></summary>
         public PolicyException(string message)
             : base(message)
         {
         }
 
+        /// <summary></summary>
         public PolicyException(string message, Exception innerException)
             : base(message, innerException)
         {
         }
 
+        /// <summary></summary>
         protected PolicyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

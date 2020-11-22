@@ -58,7 +58,7 @@ namespace OWASP.AntiSamy.Html.Util
         /// <summary>Decodes only the special characters in the input text.
         /// Intentioned for decoding special/international characters without affecting the HTML characters.</summary>
         /// <param name="text">The text to decode.</param>
-        /// <returns>The provided text with only special characters decoded.<returns>
+        /// <returns>The provided text with only special characters decoded.</returns>
         public static string Decode(string text)
         {
             Init();

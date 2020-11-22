@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Jerry Hoff, Caner Patir, Sebastiï¿½n Passaro
+ * Copyright (c) 2020, Jerry Hoff, Caner Patir, Sebastián Passaro
  * 
  * 
  * All rights reserved.
@@ -43,7 +43,7 @@ namespace OWASP.AntiSamy.Css
 {
     /// <summary> Encapsulates the parsing and validation of a CSS style sheet or inline declaration. 
     /// To make use of this class, instantiate the scanner with the desired policy and call either 
-    /// <see cref="ScanInlineStyle(string, string, int)"/> or <see cref="ScanStyleSheet(string, int)"/> as appropriate.
+    /// <see cref="ScanInlineStyle(string, string)"/> or <see cref="ScanStyleSheet(string)"/> as appropriate.
     /// </summary>
     internal class CssScanner
     {
@@ -103,6 +103,8 @@ namespace OWASP.AntiSamy.Css
         /// <summary> Does the actual scan.</summary>
         /// <param name="taintedCss">A string containing the contents of the CSS style sheet to validate.</param>
         /// <param name="isInlineCss">A boolean specifying if the style to parse is inline.</param>
+        /// <param name="tagName">In case of inline style, the tag name where the attribute is located. 
+        /// Provide <see langword="null"/> or empty string otherwise.</param>
         /// <exception cref="ScanException"/>
         /// <exception cref="ParseException"/>
         private CleanResults DoScan(string taintedCss, bool isInlineCss, string tagName)

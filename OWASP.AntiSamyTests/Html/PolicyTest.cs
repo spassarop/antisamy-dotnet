@@ -39,7 +39,7 @@ namespace AntiSamyTests
             TestConstants.MYSPACE_POLICY_PATH, TestConstants.SLASHDOT_POLICY_PATH, TestConstants.TINYMCE_POLICY_PATH 
         };
 
-        private string AssembleFile(string allowedEmptyTagsSection)
+        private static string AssembleFile(string allowedEmptyTagsSection)
         {
             return TestConstants.POLICY_HEADER + TestConstants.POLICY_DIRECTIVES + TestConstants.POLICY_COMMON_REGEXPS
                 + TestConstants.POLICY_COMMON_ATTRIBUTES + TestConstants.POLICY_GLOBAL_TAG_ATTRIBUTES
@@ -118,6 +118,24 @@ namespace AntiSamyTests
             try
             {
                 policy = Policy.GetInstance(new FileInfo(Policy.GetPolicyAbsolutePathFromFilename(TestConstants.DEFAULT_POLICY_PATH)));
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+
+            policy.Should().NotBeNull();
+        }
+
+
+
+        [Test]
+        public void TestCreateFromDefaultPolicy()
+        {
+            Policy policy = null;
+            try
+            {
+                policy = Policy.GetInstance();
             }
             catch
             {
