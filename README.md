@@ -3,7 +3,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4d5e15cf396e4d5ca659bd9d71f3f57d)](https://app.codacy.com/manual/spassarop/antisamy-dotnet?utm_source=github.com&utm_medium=referral&utm_content=spassarop/antisamy-dotnet&utm_campaign=Badge_Grade_Dashboard)
 [![Actions Status](https://github.com/spassarop/antisamy-dotnet/workflows/CI/badge.svg)](https://github.com/spassarop/antisamy-dotnet/actions)
 
-A library for performing fast, configurable cleansing of HTML coming from untrusted sources. Refactored from an [old project in .NET framework 2.0](https://wiki.owasp.org/index.php/Category:OWASP_AntiSamy_Project_.NET) to the current version in .NET core 3.1 and .NET framework 4.7.2.
+A library for performing fast, configurable cleansing of HTML coming from untrusted sources. Refactored from an [old project in .NET Framework 2.0](https://wiki.owasp.org/index.php/Category:OWASP_AntiSamy_Project_.NET).
 
 Another way of saying that could be: It's an API that helps you make sure that clients don't supply malicious cargo code in the HTML they supply for their profile, comments, etc., that get persisted on the server. The term "malicious code" in regard to web applications usually mean "JavaScript." Mostly, Cascading Stylesheets are only considered malicious when they invoke JavaScript. However, there are many situations where "normal" HTML and CSS can be used in a malicious manner.
 
@@ -70,10 +70,11 @@ CleanResults results = antiSamy.Scan(dirtyInput, policyFilePath);
 ### 5. Analyzing CleanResults
 The `CleanResults` object provides a lot of useful stuff.
 
--   `GetErrorMessages()` - a list of String error messages -- *if this returns 0 that does not mean there were no attacks!*
 -   `GetCleanHTML()` - the clean, safe HTML output.
--   `GetCleanXMLDocumentFragment()` - the clean, safe `XMLDocumentFragment` which is reflected in `GetCleanHTML()`.
+-   `GetErrorMessages()` - a list of String error messages. -- *if this returns empty that does not mean there were no attacks!*
+-   `GetNumberOfErrors()` - the error message count in case the list itself is not needed. -- *if this returns 0 that does not mean there were no attacks!*
 -   `GetScanTime()` - returns the scan time in seconds.
+-   `GetStartOfScan()` and `GetEndOfScan()` - return the each `DateTime` object in case it is needed.
  
 __Important note__: There has been much confusion about the `GetErrorMessages()` method. The `GetErrorMessages()` method does not subtly answer the question "is this safe input?" in the affirmative if it returns an empty list. You must always use the sanitized input and there is no way to be sure the input passed in had no attacks.
 
@@ -109,6 +110,12 @@ To run the tests:
 ```
 dotnet test OWASP.AntiSamy.sln
 ```
+
+## Supported platforms
+-   .NET Framework 4.6+
+-   .NET Core 2.0+
+-   .NET Standard 2.0
+-   .NET 5.0
 
 ## Dependencies
 Core:

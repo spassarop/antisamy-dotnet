@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net472</TargetFrameworks>
+    <TargetFrameworks>net5.0;netstandard2.0;netcoreapp3.1;net46</TargetFrameworks>
     <StartupObject></StartupObject>
     <OldToolsVersion>3.5</OldToolsVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -12,11 +12,14 @@
     <Authors>spassaro</Authors>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <Copyright>Copyright © 2020 - Arshan Dabirsiaghi, Sebastián Passaro</Copyright>
-    <Description>A library for performing fast, configurable cleansing of HTML coming from untrusted sources. Refactored from an old project in .NET framework 2.0 to the current version in .NET core 3.1 and .NET framework 4.7.2.
+    <Description>A library for performing fast, configurable cleansing of HTML coming from untrusted sources.
 
     Another way of saying that could be: It's an API that helps you make sure that clients don't supply malicious cargo code in the HTML they supply for their profile, comments, etc., that get persisted on the server. The term "malicious code" in regard to web applications usually mean "JavaScript." Mostly, Cascading Stylesheets are only considered malicious when they invoke JavaScript. However, there are many situations where "normal" HTML and CSS can be used in a malicious manner.</Description>
     <Title>OWASP.AntiSamy</Title>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0'">
+    <DefineConstants>NET5_0</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.14.0" />
