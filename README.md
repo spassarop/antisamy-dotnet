@@ -14,7 +14,7 @@ This project will be trying to be in sync with the original Java version, its re
 ### 1. Import the dependency
 Ways to import the project:
 
-1.  Import the NuGet package.
+1.  Import the [NuGet package](https://www.nuget.org/packages/OWASP.AntiSamy/).
 2.  Build and reference the OWASP.AntiSamy DLL in your project. 
 
 ### 2. Choosing a base policy file
