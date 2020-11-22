@@ -28,6 +28,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using System.Xml.Schema;
 using OWASP.AntiSamy.Exceptions;
 using OWASP.AntiSamy.Html.Model;
 using OWASP.AntiSamy.Html.Scan;
@@ -273,11 +274,13 @@ namespace OWASP.AntiSamy.Html
             {
                 var document = new XmlDocument
                 {
-                    // Setting this to NULL disables DTDs - Its NOT null by default.
+                    // Setting this to NULL disables DTDs - Its NOT null by default on 4.5.1 and older, but leaving it anyway.
                     XmlResolver = null
                 };
 
                 document.Load(GetPolicyAbsolutePathFromFilename(filename));
+                ValidateSchema(document);
+
                 return document;
             }
             catch (Exception ex)
@@ -296,16 +299,48 @@ namespace OWASP.AntiSamy.Html
             {
                 var document = new XmlDocument
                 {
-                    // Setting this to NULL disables DTDs - Its NOT null by default.
+                    // Setting this to NULL disables DTDs - Its NOT null by default on 4.5.1 and older, but leaving it anyway.
                     XmlResolver = null
                 };
                 document.Load(stream);
+                ValidateSchema(document);
+
                 return document;
             }
             catch (Exception ex)
             {
                 throw new PolicyException($"Problem loading policy XML from file: {ex.Message}", ex);
             }
+        }
+
+        private static void ValidateSchema(XmlDocument document)
+        {
+            try
+            {
+                Stream xsdStream = new MemoryStream(Encoding.UTF8.GetBytes(
+                    Properties.Resources.ResourceManager.GetObject(Constants.DEFAULT_POLICY_SCHEMA_RESOURCE_KEY) as string));
+                var schemaSet = new XmlSchemaSet();
+                schemaSet.Add("", XmlReader.Create(xsdStream));
+                document.Schemas = schemaSet;
+                document.Schemas.Compile();
+                document.Validate(PolicySchemaValidationEventHandler);
+            }
+            catch (Exception ex)
+            {
+                if (ex is PolicyException)
+                {
+                    throw;
+                }
+
+                throw new PolicyException($"Problem loading policy default XML from stream: {ex.Message}", ex);
+            }
+        }
+
+        private static void PolicySchemaValidationEventHandler(object sender, ValidationEventArgs e)
+        {
+            // This event means there was an error/warning validating the schema
+            throw new PolicyException(
+                $"Problem validating the policy against the XML schema: \"{e.Severity.ToString().ToUpper()}: {e.Message}\"", e.Exception);
         }
 
         /// <summary>Parse the policy from the provided <see cref="XmlDocument"/>.</summary>

@@ -41,6 +41,19 @@ I don't know of a possible use case for this policy file. If you wanted to allow
 ### 3. Tailoring the policy file
 You may want to deploy OWASP AntiSamy .NET in a default configuration, but it's equally likely that a site may want to have strict, business-driven rules for what users can allow. The discussion that decides the tailoring should also consider attack surface - which grows in relative proportion to the policy file.
 
+You may also want to enable/modify some "directives", which are basically advanced user options. Supported directives are the following:
+-   `maxInputSize` (int): Maximum input size for the HTML to read.
+-   `nofollowAnchors` (bool): Determines if adds the attribute `rel="nofollow"` on `<a>` tags.
+-   `validateParamAsEmbed` (bool): Determines if validates the `<param>` tag as `<embed>` tag.
+-   `preserveSpace` (bool): Determines if HTML output gets trimmed.
+-   `preserveComments` (bool): Determines if comments are removed from the HTML.
+-   `entityEncodeIntlChars` (bool): Determines if HTML output gets encoded regarding special characters, like accents.
+-   `useXHTML` (bool): Determines if parser uses XHTML, explicitly used for CDATA handling when scanning CSS.
+-   `onUnknownTag` (string): Determines the action for a detected unknown tag. Today, the only value taken into account is `"encode"`. Default action is `"remove"`.
+
+More directives are supported on the Java-based project. For more detailed information on directive declaration and general policy format, inspect the example policies.
+**Note**: Every input policy **will be validated** by AntiSamy against the only defined schema.
+
 ### 4. Calling the OWASP AntiSamy .NET API
 Using OWASP AntiSamy .NET is easy. Here is an example of invoking AntiSamy with a policy file:
 
@@ -76,7 +89,7 @@ The `CleanResults` object provides a lot of useful stuff.
 -   `GetScanTime()` - returns the scan time in seconds.
 -   `GetStartOfScan()` and `GetEndOfScan()` - return the each `DateTime` object in case it is needed.
  
-__Important note__: There has been much confusion about the `GetErrorMessages()` method. The `GetErrorMessages()` method does not subtly answer the question "is this safe input?" in the affirmative if it returns an empty list. You must always use the sanitized input and there is no way to be sure the input passed in had no attacks.
+**Important note**: There has been much confusion about the `GetErrorMessages()` method. The `GetErrorMessages()` method does not subtly answer the question "is this safe input?" in the affirmative if it returns an empty list. You must always use the sanitized input and there is no way to be sure the input passed in had no attacks.
 
 The serialization and deserialization process that is critical to the effectiveness of the sanitizer is purposefully lossy and will filter out attacks via several attack vectors. Unfortunately, one of the tradeoffs of this strategy is that we don't always know in retrospect that an attack was seen. Thus, the `GetErrorMessages()` API is there to help users understand their well-intentioned input meet the requirements of the system, not help a developer detect if an attack was present. 
 
