@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Jerry Hoff, Caner Patir, Sebastián Passaro
+ * Copyright (c) 2020, Jerry Hoff, Caner Patir, Sebastiï¿½n Passaro
  * 
  * 
  * All rights reserved.
@@ -152,7 +152,7 @@ namespace OWASP.AntiSamy.Css
                 cleanStylesheet = $"<![CDATA[[{cleanStylesheet}]]>";
             }
 
-            return new CleanResults(startOfScan, new DateTime(), cleanStylesheet, null, errorMessages);
+            return new CleanResults(startOfScan, new DateTime(), cleanStylesheet, errorMessages);
         }
 
         /// <summary> Removes the "dummy" wrapper around the inline CSS.</summary>

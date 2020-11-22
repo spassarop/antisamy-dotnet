@@ -58,7 +58,6 @@ namespace OWASP.AntiSamy.Html.Scan
         // Needed to parse input
         private readonly XmlDocument document = new XmlDocument();
         // Needed to represent the parsed version of the input
-        private XmlDocumentFragment dom;
         public AntiSamyDomScanner(Policy policy)
         {
             InitBlock();
@@ -148,13 +147,12 @@ namespace OWASP.AntiSamy.Html.Scan
 
             // Grab end time (to be put in the result set along with start time)
             var end = DateTime.Now;
-            Results = new CleanResults(start, end, finalCleanHTML, dom, errorMessages);
+            Results = new CleanResults(start, end, finalCleanHTML, errorMessages);
             return Results;
         }
 
         private void InitBlock()
         {
-            dom = document.CreateDocumentFragment();
             errorMessages.Clear();
         }
 

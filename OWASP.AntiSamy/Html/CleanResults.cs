@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2020, Jerry Hoff, Sebastián Passaro
+ * Copyright (c) 2008-2020, Jerry Hoff, Sebastiï¿½n Passaro
  * 
  * All rights reserved.
  * 
@@ -40,7 +40,6 @@ namespace OWASP.AntiSamy.Html
         private readonly List<string> errorMessages = new List<string>();
         private readonly DateTime startOfScan;
         private readonly DateTime endOfScan;
-        private readonly XmlDocumentFragment cleanXmlDocumentFragment;
         private string cleanHtml;
 
         private const double MILLISECONDS_DENOMINATOR = 1000D;
@@ -49,18 +48,25 @@ namespace OWASP.AntiSamy.Html
         {
         }
 
-        public CleanResults(DateTime startOfScan, DateTime endOfScan, string cleanHTML, XmlDocumentFragment xmlDocumentFragment, List<string> errorMessages)
+        /// <summary>Full constructor.</summary>
+        /// <param name="startOfScan"></param>
+        /// <param name="endOfScan"></param>
+        /// <param name="cleanHTML"></param>
+        /// <param name="errorMessages"></param>
+        public CleanResults(DateTime startOfScan, DateTime endOfScan, string cleanHTML, List<string> errorMessages)
         {
             this.startOfScan = startOfScan;
             this.endOfScan = endOfScan;
-            this.cleanXmlDocumentFragment = xmlDocumentFragment;
             this.cleanHtml = cleanHTML;
             this.errorMessages = errorMessages;
         }
 
         public CleanResults(DateTime date) => startOfScan = date;
 
-        public XmlDocumentFragment GetCleanXmlDocumentFragment() => cleanXmlDocumentFragment;
+        /// <summary>Operation not supported.</summary>
+        /// <returns>Returns <see langword="null"/>.</returns>
+        [Obsolete]
+        public XmlDocumentFragment GetCleanXmlDocumentFragment() => null;
 
         public void SetCleanHtml(string cleanHtml) => this.cleanHtml = cleanHtml;
 
