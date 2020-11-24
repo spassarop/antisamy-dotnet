@@ -15,7 +15,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  pre_job:
+  evaluate_action_skip:
     continue-on-error: true
     runs-on: windows-latest
     # Map a step output to a job output
@@ -31,7 +31,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # This should skip the whole job if it is detected as duplicate
-    needs: pre_job
+    needs: evaluate_action_skip
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
     
     runs-on: windows-latest
