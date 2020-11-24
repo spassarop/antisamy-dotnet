@@ -2,6 +2,7 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4d5e15cf396e4d5ca659bd9d71f3f57d)](https://app.codacy.com/manual/spassarop/antisamy-dotnet?utm_source=github.com&utm_medium=referral&utm_content=spassarop/antisamy-dotnet&utm_campaign=Badge_Grade_Dashboard)
 [![Actions Status](https://github.com/spassarop/antisamy-dotnet/workflows/CI/badge.svg)](https://github.com/spassarop/antisamy-dotnet/actions)
+![CodeQL](https://github.com/spassarop/antisamy-dotnet/workflows/CodeQL/badge.svg)
 
 A library for performing fast, configurable cleansing of HTML coming from untrusted sources. Refactored from an [old project in .NET Framework 2.0](https://wiki.owasp.org/index.php/Category:OWASP_AntiSamy_Project_.NET).
 
