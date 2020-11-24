@@ -21,9 +21,27 @@ on:
     - cron: '28 12 * * 4'
 
 jobs:
+  evaluate_action_skip:
+    continue-on-error: true
+    runs-on: windows-latest
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v2.1.0
+        with:
+          github_token: ${{ github.token }}
+          paths_ignore: '["**/*.md"]'
+          
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    
+    # This should skip the whole job if it is detected as duplicate
+    needs: evaluate_action_skip
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    
+    runs-on: windows-latest
 
     strategy:
       fail-fast: false
