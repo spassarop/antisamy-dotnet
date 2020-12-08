@@ -454,7 +454,7 @@ namespace OWASP.AntiSamy.Html
         {
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(commonAttributeListNode, "attribute"))
             {
-                // TODO: DEFAULT_ONINVALID seems to have been removed from common attributes. Do we need this code?
+                // TODO: Throw exception if onInvalid is defined but is not an expected option?
                 string onInvalid = XmlUtil.GetAttributeValue(node, "onInvalid");
                 string name = XmlUtil.GetAttributeValue(node, "name");
                 var attribute = new Attribute(name)

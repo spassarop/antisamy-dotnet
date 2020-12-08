@@ -404,7 +404,9 @@ namespace OWASP.AntiSamy.Html.Scan
             while (attributes.Count > 0)
             {
                 AddError(Constants.ERROR_ATTRIBUTE_NOT_IN_POLICY,
-                    HtmlEntityEncoder.HtmlEntityEncode(tagName), HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name));
+                    HtmlEntityEncoder.HtmlEntityEncode(tagName), 
+                    HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Name),
+                    HtmlEntityEncoder.HtmlEntityEncode(attributes[0].Value));
 
                 node.Attributes.Remove(attributes[0].Name);
             }
@@ -481,8 +483,6 @@ namespace OWASP.AntiSamy.Html.Scan
                     attribute = Policy.GetGlobalAttributeByName(name);
                 }
 
-                bool isAttributeValid = false;
-
                 if (name.ToLowerInvariant() == "style" && attribute != null)
                 {
                     var styleScanner = new CssScanner(Policy);
@@ -516,7 +516,7 @@ namespace OWASP.AntiSamy.Html.Scan
                         value = HtmlEntity.DeEntitize(value);
                         string lowerCaseValue = value.ToLowerInvariant();
 
-                        isAttributeValid = attribute.AllowedValues.Any(v => v != null && v.ToLowerInvariant() == lowerCaseValue)
+                        bool isAttributeValid = attribute.AllowedValues.Any(v => v != null && v.ToLowerInvariant() == lowerCaseValue)
                             || attribute.AllowedRegExp.Any(r => r != null && Regex.IsMatch(value, "^" + r + "$"));
 
                         if (!isAttributeValid)
@@ -532,7 +532,7 @@ namespace OWASP.AntiSamy.Html.Scan
                             }
                             else if (onInvalidAction == "filterTag")
                             {
-                                // Remove the attribute and keep the rest of the tag
+                                // Remove the node and move up the rest that was inside the tag after processing
                                 ProcessChildren(node);
                                 PromoteChildren(node);
                                 AddError(Constants.ERROR_ATTRIBUTE_CAUSE_FILTER,
@@ -542,7 +542,7 @@ namespace OWASP.AntiSamy.Html.Scan
                             }
                             else if (onInvalidAction == "encodeTag")
                             {
-                                // Remove the attribute and keep the rest of the tag
+                                // Encode the node and move up the rest that was inside the tag after processing
                                 ProcessChildren(node);
                                 EncodeAndPromoteChildren(node); 
                                 AddError(Constants.ERROR_ATTRIBUTE_CAUSE_ENCODE,
@@ -552,6 +552,7 @@ namespace OWASP.AntiSamy.Html.Scan
                             }
                             else
                             {
+                                // Just remove the attribute
                                 node.Attributes.Remove(attribute.Name);
                                 currentAttributeIndex--;
                                 AddError(Constants.ERROR_ATTRIBUTE_INVALID, 
@@ -560,9 +561,9 @@ namespace OWASP.AntiSamy.Html.Scan
                                     HtmlEntityEncoder.HtmlEntityEncode(value));
                             }
 
-                            if (onInvalidAction == "removeTag" || onInvalidAction == "filterTag")
+                            if (new string[] { "removeTag", "filterTag", "encodeTag" }.Contains(onInvalidAction))
                             {
-                                return false; // Can't process any more if we remove/filter the tag	
+                                return false; // Can't process any more if we remove/filter/encode the tag	
                             }
                         }
                     }
@@ -612,7 +613,7 @@ namespace OWASP.AntiSamy.Html.Scan
             RemoveNode(node);
         }
         
-        private string StripNonValidXmlCharacters(string textToClean)
+        private static string StripNonValidXmlCharacters(string textToClean)
         {
             if (string.IsNullOrEmpty(textToClean))
             {
@@ -639,22 +640,22 @@ namespace OWASP.AntiSamy.Html.Scan
             return cleanText.ToString();
         }
 
-        private string NodeToString(HtmlNode node)
+        private static string NodeToString(HtmlNode node)
         {
             var nodeToString = new StringBuilder("<" + node.Name);
 
             foreach (HtmlAttribute attribute in node.GetAttributes())
             {
                 nodeToString
-                    .Append(" ")
+                    .Append(' ')
                     .Append(HtmlEntityEncoder.HtmlEntityEncode(attribute.Name))
                     .Append("=\"")
                     .Append(HtmlEntityEncoder.HtmlEntityEncode(attribute.Value))
-                    .Append("\"");
+                    .Append('"');
             }
             if (node.HasChildNodes)
             {
-                nodeToString.Append(">");
+                nodeToString.Append('>');
             }
             else
             {
