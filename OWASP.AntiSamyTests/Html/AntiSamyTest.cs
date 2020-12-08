@@ -718,5 +718,16 @@ namespace AntiSamyTests
             antisamy.Scan("<div><?foo note=\"I am XML processing instruction. I wish to be excluded\" ?></div>", policy).GetCleanHtml().Should().Be("<div></div>");
             antisamy.Scan("<?xml-stylesheet type=\"text/css\" href=\"style.css\"?>", policy).GetCleanHtml().Should().BeEmpty();
         }
+
+        [Test]
+        public void TestTagTruncation()
+        {
+            Policy revised = policy
+                .MutateTag(new Tag("section", "validate", null))
+                .MutateTag(new Tag("div", "truncate", null));
+
+            antisamy.Scan("<section><div class='.divToTruncate'>Div only contains this text<span>Confirmed</span></div></section>", revised)
+                .GetCleanHtml().Should().Be("<section><div>Div only contains this text</div></section>");
+        }
     }
 }
