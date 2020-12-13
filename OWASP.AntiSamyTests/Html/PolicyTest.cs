@@ -34,17 +34,17 @@ namespace AntiSamyTests
     [TestFixture]
     public class PolicyTest
     {
-        private static string[] AllPolicyFilePaths = { 
+        private static readonly string[] AllPolicyFilePaths = { 
             TestConstants.DEFAULT_POLICY_PATH, TestConstants.ANYTHINGGOES_POLICY_PATH, TestConstants.EBAY_POLICY_PATH, 
             TestConstants.MYSPACE_POLICY_PATH, TestConstants.SLASHDOT_POLICY_PATH, TestConstants.TINYMCE_POLICY_PATH 
         };
 
-        private static string AssembleFile(string allowedEmptyTagsSection)
+        private static string AssembleFile(string otherTagsSection)
         {
             return TestConstants.POLICY_HEADER + TestConstants.POLICY_DIRECTIVES + TestConstants.POLICY_COMMON_REGEXPS
                 + TestConstants.POLICY_COMMON_ATTRIBUTES + TestConstants.POLICY_GLOBAL_TAG_ATTRIBUTES
                 + TestConstants.POLICY_DYNAMIC_TAG_ATTRIBUTES + TestConstants.POLICY_TAG_RULES
-                + TestConstants.POLICY_CSS_RULES + allowedEmptyTagsSection + TestConstants.POLICY_FOOTER;
+                + TestConstants.POLICY_CSS_RULES + otherTagsSection + TestConstants.POLICY_FOOTER;
         }
 
         [Test]
@@ -127,8 +127,6 @@ namespace AntiSamyTests
             policy.Should().NotBeNull();
         }
 
-
-
         [Test]
         public void TestCreateFromDefaultPolicy()
         {
@@ -208,6 +206,39 @@ namespace AntiSamyTests
 
             testPolicy.Should().NotBeNull();
             result.Should().NotBeNull();
+        }
+
+        public static void TestInvalidPolicies()
+        {
+            Policy policy;
+            
+            // Add not supported tags
+            policy = TryGetInvalidPolicy(AssembleFile("<notSupportedTag></notSupportedTag>"));
+            policy.Should().BeNull();
+
+            // Add duplicated tags
+            policy = TryGetInvalidPolicy(AssembleFile("<tag-rules></tag-rules>"));
+            policy.Should().BeNull();
+
+            // Remove required tags
+            policy = TryGetInvalidPolicy(AssembleFile("").Replace("<tag-rules>", "").Replace("</tag-rules>", ""));
+            policy.Should().BeNull();
+        }
+
+        private static Policy TryGetInvalidPolicy(string policyXML)
+        {
+            Policy invalidPolicy = null;
+
+            try
+            {
+                invalidPolicy = Policy.GetInstance(new MemoryStream(Encoding.UTF8.GetBytes(policyXML)));
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+
+            return invalidPolicy;
         }
     }
 }
