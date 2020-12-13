@@ -43,6 +43,8 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     public class Policy
     {
+        static private XmlSchemaSet defaultPolicySchemaSet = null;
+
         private readonly Dictionary<string, string> commonRegularExpressions;
         private readonly Dictionary<string, Attribute> commonAttributes;
         private readonly Dictionary<string, Tag> tagRules;
@@ -317,11 +319,15 @@ namespace OWASP.AntiSamy.Html
         {
             try
             {
-                Stream xsdStream = new MemoryStream(Encoding.UTF8.GetBytes(
-                    Properties.Resources.ResourceManager.GetObject(Constants.DEFAULT_POLICY_SCHEMA_RESOURCE_KEY) as string));
-                var schemaSet = new XmlSchemaSet();
-                schemaSet.Add("", XmlReader.Create(xsdStream));
-                document.Schemas = schemaSet;
+                if (defaultPolicySchemaSet == null)
+                {
+                    Stream xsdStream = new MemoryStream(Encoding.UTF8.GetBytes(
+                        Properties.Resources.ResourceManager.GetObject(Constants.DEFAULT_POLICY_SCHEMA_RESOURCE_KEY) as string));
+                    defaultPolicySchemaSet = new XmlSchemaSet();
+                    defaultPolicySchemaSet.Add("", XmlReader.Create(xsdStream));
+                }
+
+                document.Schemas = defaultPolicySchemaSet;
                 document.Schemas.Compile();
                 document.Validate(PolicySchemaValidationEventHandler);
             }
