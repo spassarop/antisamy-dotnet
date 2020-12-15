@@ -111,8 +111,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         // Supported languages
         public static readonly List<string> SUPPORTED_LANGUAGES = new List<string> {
-            "de-DE", "en-AU", "en-CA", "en-GB", "en-US", "es-MX", 
-            "it-IT", "no-NB", "pt-BR", "pt-PT", "ru-RU", "zh-CN"
+            "de", "en", "es", "it", "nb", "pt", "ru", "zh-CN"
         };
     }
 }

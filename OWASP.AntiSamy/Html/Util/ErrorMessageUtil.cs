@@ -24,6 +24,8 @@
 
 using System.Globalization;
 using System.Resources;
+using System.Text.RegularExpressions;
+using OWASP.AntiSamy.Html.Scan;
 
 namespace OWASP.AntiSamy.Html.Util
 {
@@ -48,6 +50,42 @@ namespace OWASP.AntiSamy.Html.Util
                 Properties.Resources.ResourceManager.GetString(messageKey, new CultureInfo(CurrentCultureName));
 
             return string.Format(rawMessage, arguments);
+        }
+
+        internal static void SetCulture(string cultureName)
+        {
+            if (IsValidCultureFormat(cultureName) && IsCultureSupported(cultureName))
+            {
+                CurrentCultureName = cultureName;
+            }
+            else
+            {
+                throw new CultureNotFoundException(string.Format(Constants.ERROR_CULTURE_NOTSUPPORTED, string.Join(", ", Constants.SUPPORTED_LANGUAGES)));
+            }
+        }
+
+        private static bool IsValidCultureFormat(string cultureName)
+        {
+            // Enough control for cultures supported today
+            return new Regex(@"^[a-z]{2}(-[A-Z]{2})?$", RegexOptions.Compiled).IsMatch(cultureName);
+        }
+
+        private static bool IsCultureSupported(string cultureName)
+        {
+            if (Constants.SUPPORTED_LANGUAGES.Contains(cultureName))
+            {
+                return true;
+            }
+
+            try
+            {
+                string parentCulture = new CultureInfo(cultureName).Parent.Name;
+                return Constants.SUPPORTED_LANGUAGES.Contains(parentCulture);
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
