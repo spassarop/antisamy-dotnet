@@ -15,6 +15,7 @@ Steps to reproduce the behavior:
 1. Set up this policy '...'
 2. Call AntiSamy with this input '....'
 3. See error
+*If possible, include a unit test.*
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
