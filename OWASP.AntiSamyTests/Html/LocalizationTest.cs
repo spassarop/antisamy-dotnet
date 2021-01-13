@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
@@ -48,7 +49,7 @@ namespace AntiSamyTests
         [Test]
         public void TestMessageInSupportedCulture()
         {
-            foreach (string cultureName in Constants.SUPPORTED_LANGUAGES)
+            foreach (string cultureName in Constants.SUPPORTED_LANGUAGES.Union(new List<string> { "en-US", "es-UY" }))
             {
                 string message = null;
 
@@ -66,6 +67,30 @@ namespace AntiSamyTests
                 }
 
                 message.Should().NotBeNull(because: $"\"{cultureName}\" should be a valid culture and have an associated message.");
+            }
+        }
+
+        [Test]
+        public void TestInvalidAndNotSupportedCultures()
+        {
+            var invalidCultures = new List<string> { "EN", "en-USS", "en-us", "<bad>" };
+            var notSupportedCultures = new List<string> { "mt", "mt-MT", "hh" };
+
+            foreach (string cultureName in invalidCultures.Union(notSupportedCultures))
+            {
+                string message = null;
+
+                try
+                {
+                    antisamy.SetCulture(cultureName);
+                    message = antisamy.Scan("<unknowntag>", policy).GetErrorMessages().First();
+                }
+                catch
+                {
+                    // To comply with try/catch
+                }
+
+                message.Should().BeNull(because: $"\"{cultureName}\" should be either invalid or not supported.");
             }
         }
     }

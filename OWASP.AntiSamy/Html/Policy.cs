@@ -43,6 +43,8 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     public class Policy
     {
+        static private XmlSchemaSet defaultPolicySchemaSet = null;
+
         private readonly Dictionary<string, string> commonRegularExpressions;
         private readonly Dictionary<string, Attribute> commonAttributes;
         private readonly Dictionary<string, Tag> tagRules;
@@ -113,7 +115,7 @@ namespace OWASP.AntiSamy.Html
             requireClosingTagsMatcher = old.requireClosingTagsMatcher;
         }
 
-        /// <summary> This retrieves a policy based on a default location ("Resources/antisamy.xml") or from the embedded XML.</summary>
+        /// <summary> This retrieves a policy based on a default location ("AntiSamyPolicyExamples/antisamy.xml") or from the embedded XML.</summary>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the default location.</returns>
         /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance()
@@ -317,11 +319,15 @@ namespace OWASP.AntiSamy.Html
         {
             try
             {
-                Stream xsdStream = new MemoryStream(Encoding.UTF8.GetBytes(
-                    Properties.Resources.ResourceManager.GetObject(Constants.DEFAULT_POLICY_SCHEMA_RESOURCE_KEY) as string));
-                var schemaSet = new XmlSchemaSet();
-                schemaSet.Add("", XmlReader.Create(xsdStream));
-                document.Schemas = schemaSet;
+                if (defaultPolicySchemaSet == null)
+                {
+                    Stream xsdStream = new MemoryStream(Encoding.UTF8.GetBytes(
+                        Properties.Resources.ResourceManager.GetObject(Constants.DEFAULT_POLICY_SCHEMA_RESOURCE_KEY) as string));
+                    defaultPolicySchemaSet = new XmlSchemaSet();
+                    defaultPolicySchemaSet.Add("", XmlReader.Create(xsdStream));
+                }
+
+                document.Schemas = defaultPolicySchemaSet;
                 document.Schemas.Compile();
                 document.Validate(PolicySchemaValidationEventHandler);
             }
@@ -454,7 +460,7 @@ namespace OWASP.AntiSamy.Html
         {
             foreach (XmlElement node in PolicyParserUtil.GetChildrenByTagName(commonAttributeListNode, "attribute"))
             {
-                // TODO: DEFAULT_ONINVALID seems to have been removed from common attributes. Do we need this code?
+                // TODO: Throw exception if onInvalid is defined but is not an expected option?
                 string onInvalid = XmlUtil.GetAttributeValue(node, "onInvalid");
                 string name = XmlUtil.GetAttributeValue(node, "name");
                 var attribute = new Attribute(name)

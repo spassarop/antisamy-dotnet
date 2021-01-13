@@ -96,7 +96,6 @@ namespace OWASP.AntiSamy.Css
         /// <exception cref="ParseException"/>
         public CleanResults ScanInlineStyle(string taintedCss, string tagName)
         {
-            // TODO: Do something about tagName (probably delete it later)
             return DoScan(taintedCss, isInlineCss: true, tagName: tagName);
         }
 

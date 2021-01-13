@@ -67,7 +67,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string ACTION_TRUNCATE = "truncate";
         public static readonly string ACTION_ENCODE = "encode";
 
-        public static readonly string DEFAULT_POLICY_URI = "Resources/antisamy.xml";
+        public static readonly string DEFAULT_POLICY_URI = "AntiSamyPolicyExamples/antisamy.xml";
         public static readonly string DEFAULT_POLICY_RESOURCE_KEY = "DEFAULT_ANTISAMY_POLICY_XML";
         public static readonly string DEFAULT_POLICY_SCHEMA_RESOURCE_KEY = "DEFAULT_ANTISAMY_POLICY_XSD";
         public static readonly string DEFAULT_ONINVALID = "removeAttribute";
@@ -111,8 +111,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         // Supported languages
         public static readonly List<string> SUPPORTED_LANGUAGES = new List<string> {
-            "de-DE", "en-AU", "en-CA", "en-GB", "en-US", "es-MX", 
-            "it-IT", "no-NB", "pt-BR", "pt-PT", "ru-RU", "zh-CN"
+            "de", "en", "es", "it", "nb", "pt", "ru", "zh-CN"
         };
     }
 }

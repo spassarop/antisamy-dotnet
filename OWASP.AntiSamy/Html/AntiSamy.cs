@@ -131,14 +131,7 @@ namespace OWASP.AntiSamy.Html
         /// <exception cref="System.Globalization.CultureNotFoundException"/>
         public void SetCulture(string cultureName)
         {
-            if (Constants.SUPPORTED_LANGUAGES.Contains(cultureName))
-            {
-                Util.ErrorMessageUtil.CurrentCultureName = cultureName;
-            }
-            else
-            {
-                throw new System.Globalization.CultureNotFoundException(string.Format(Constants.ERROR_CULTURE_NOTSUPPORTED, string.Join(", ", Constants.SUPPORTED_LANGUAGES)));
-            }
+            Util.ErrorMessageUtil.SetCulture(cultureName);
         }
     }
 }
