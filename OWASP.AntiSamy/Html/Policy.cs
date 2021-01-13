@@ -115,7 +115,7 @@ namespace OWASP.AntiSamy.Html
             requireClosingTagsMatcher = old.requireClosingTagsMatcher;
         }
 
-        /// <summary> This retrieves a policy based on a default location ("Resources/antisamy.xml") or from the embedded XML.</summary>
+        /// <summary> This retrieves a policy based on a default location ("AntiSamyPolicyExamples/antisamy.xml") or from the embedded XML.</summary>
         /// <returns> A populated <see cref="Policy"/> object based on the XML policy file located in the default location.</returns>
         /// <exception cref="PolicyException"></exception>
         public static Policy GetInstance()

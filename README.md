@@ -42,6 +42,8 @@ I don't know of a possible use case for this policy file. If you wanted to allow
 ### 3. Tailoring the policy file
 You may want to deploy OWASP AntiSamy .NET in a default configuration, but it's equally likely that a site may want to have strict, business-driven rules for what users can allow. The discussion that decides the tailoring should also consider attack surface - which grows in relative proportion to the policy file.
 
+When installing from the NuGet package, policy examples are included in your project **but not copied to the output folder by default**. If you decide to use one you can, for example in Visual Studio, select the chosen XML policy file and specify in its properties to be copied if newer or always. The example files are removed along with the package in case it's deleted. 
+
 You may also want to enable/modify some "directives", which are basically advanced user options. Supported directives are the following:
 -   `maxInputSize` (int): Maximum input size for the HTML to read.
 -   `nofollowAnchors` (bool): Determines if adds the attribute `rel="nofollow"` on `<a>` tags.
@@ -135,12 +137,12 @@ dotnet test OWASP.AntiSamy.sln
 Core:
 -   AngleSharp (v0.14.0)
 -   AngleSharp.Css (v0.14.2)
--   HtmlAgilityPack (v1.11.28)
+-   HtmlAgilityPack (v1.11.29)
 
 Tests:
 -   FluentAssertions (v5.10.3)
--   Microsoft.NET.Test.Sdk (v16.8.0)
--   NUnit (v3.12.0)
+-   Microsoft.NET.Test.Sdk (v16.8.3)
+-   NUnit (v3.13.0)
 -   NUnit3TestAdapter (v3.17.0)
 
 ## License

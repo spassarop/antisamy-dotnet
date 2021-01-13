@@ -13,8 +13,8 @@
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <Copyright>Copyright © 2020 - Arshan Dabirsiaghi, Sebastián Passaro</Copyright>
     <Description>A library for performing fast, configurable cleansing of HTML coming from untrusted sources.
-
-    Another way of saying that could be: It's an API that helps you make sure that clients don't supply malicious cargo code in the HTML they supply for their profile, comments, etc., that get persisted on the server. The term "malicious code" in regard to web applications usually mean "JavaScript." Mostly, Cascading Stylesheets are only considered malicious when they invoke JavaScript. However, there are many situations where "normal" HTML and CSS can be used in a malicious manner.</Description>
+    
+Another way of saying that could be: It's an API that helps you make sure that clients don't supply malicious cargo code in the HTML they supply for their profile, comments, etc., that get persisted on the server. The term "malicious code" in regard to web applications usually mean "JavaScript." Mostly, Cascading Stylesheets are only considered malicious when they invoke JavaScript. However, there are many situations where "normal" HTML and CSS can be used in a malicious manner.</Description>
     <Title>OWASP.AntiSamy</Title>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
@@ -24,31 +24,37 @@
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.14.0" />
     <PackageReference Include="AngleSharp.Css" Version="0.14.2" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.28" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.29" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Resources\antisamy-anythinggoes.xml">
+    <!-- Added so NuGet copies this folder to the output package -->
+    <Content Include="AntiSamyPolicyExamples\**\*">
+      <CopyToPublishDirectory>true</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="AntiSamyPolicyExamples\antisamy-anythinggoes.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\antisamy-ebay.xml">
+    <None Update="AntiSamyPolicyExamples\antisamy-ebay.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\antisamy-myspace.xml">
+    <None Update="AntiSamyPolicyExamples\antisamy-myspace.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\antisamy-slashdot.xml">
+    <None Update="AntiSamyPolicyExamples\antisamy-slashdot.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\antisamy-test.xml">
+    <None Update="AntiSamyPoliciesExamplesAntiSamyPolicyExamples\antisamy-test.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\antisamy-tinymce.xml">
+    <None Update="AntiSamyPolicyExamples\antisamy-tinymce.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\antisamy.xml">
+    <None Update="AntiSamyPolicyExamples\antisamy.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\antisamy.xsd">
+    <None Update="AntiSamyPolicyExamples\antisamy.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
