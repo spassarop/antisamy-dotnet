@@ -140,7 +140,7 @@ namespace AntiSamyTests
         public void TestEmptyTags()
         {
             string html = antisamy.Scan("<br ><strong></strong><a>hello world</a><b /><i/><hr>", policy).GetCleanHtml();
-                
+
             var regex = new Regex(".*<strong(\\s*)/>.*");
             regex.IsMatch(html).Should().BeFalse();
 
@@ -149,7 +149,7 @@ namespace AntiSamyTests
 
             regex = new Regex(".*<i(\\s*)/>.*");
             regex.IsMatch(html).Should().BeFalse();
-            
+
             (html.Contains("<hr />") || html.Contains("<hr/>")).Should().BeTrue();
         }
 
@@ -170,7 +170,7 @@ namespace AntiSamyTests
         {
             antisamy.Scan("<div style=\"font-family: Geneva, Arial, courier new, sans-serif\">Test</div>", policy).GetCleanHtml().Should().Contain("font-family");
         }
-       
+
         [Test(Description = "Tests issue #30 from owaspantisamy Google Code Archive>: 'missing quotes around properties with spaces'")]
         [Ignore("CDATA is not handled by HtmlAgilityPack the same way than the Java version. The code works but the format is just different.")]
         public void TestCssPropertiesWithMultilineAndCData()
@@ -362,7 +362,7 @@ namespace AntiSamyTests
             CleanResults result = antisamy.Scan("hello<p align='invalid'>world</p>", policy);
             result.GetCleanHtml().Should().NotContain("invalid");
             result.GetNumberOfErrors().Should().Be(1);
-            
+
             antisamy.Scan("hello<p align='left'>world</p>", policy).GetCleanHtml().Should().Contain("left");
         }
 
@@ -409,7 +409,7 @@ namespace AntiSamyTests
 
             int expectedLocation = header.Length;
             int actualLocation = result.IndexOf(nl);
-            actualLocation.Should().BeInRange(expectedLocation - 1, expectedLocation, 
+            actualLocation.Should().BeInRange(expectedLocation - 1, expectedLocation,
                 because: "According to Java project: 'account for line separator length difference across OSes'");
         }
 
@@ -539,7 +539,7 @@ namespace AntiSamyTests
         }
 
         [Test(Description = "Tests issue #144 from owaspantisamy Google Code Archive.")]
-        public void TestPinataString ()
+        public void TestPinataString()
         {
             antisamy.Scan("pi\u00f1ata", policy).GetCleanHtml().Should().Be("pi\u00f1ata");
         }
@@ -737,6 +737,12 @@ namespace AntiSamyTests
 
             antisamy.Scan("<section><div class='.divToTruncate'>Div only contains this text<span>Confirmed</span></div></section>", revised)
                 .GetCleanHtml().Should().Be("<section><div>Div only contains this text</div></section>");
+        }
+
+        [Test(Description = "Tests issue #81 from nahsra/antisamy on GitHub.")]
+        public void PreserveImportantOnCssProperty()
+        {
+            antisamy.Scan("<p style=\"color: red !important\">Some Text</p>", policy).GetCleanHtml().Should().Contain("!important");
         }
     }
 }
