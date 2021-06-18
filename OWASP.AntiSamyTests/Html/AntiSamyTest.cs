@@ -740,9 +740,15 @@ namespace AntiSamyTests
         }
 
         [Test(Description = "Tests issue #81 from nahsra/antisamy on GitHub.")]
-        public void PreserveImportantOnCssProperty()
+        public void TestPreserveImportantOnCssProperty()
         {
             antisamy.Scan("<p style=\"color: red !important\">Some Text</p>", policy).GetCleanHtml().Should().Contain("!important");
+        }
+
+        [Test]
+        public void TestEntityReferenceEncodedInHtmlAttribute()
+        {
+            antisamy.Scan("<p><a href=\"javascript&#00058x=1,%61%6c%65%72%74%28%22%62%6f%6f%6d%22%29\">xss</a></p>", policy).GetCleanHtml().Should().Contain("javascript&amp;#00058");
         }
     }
 }
