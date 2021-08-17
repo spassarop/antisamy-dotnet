@@ -172,9 +172,10 @@ http://www.w3.org/TR/html401/struct/global.html
 
 		<attribute name="lang" description="The 'lang' attribute tells the browser what language the element's attribute values and content are written in">
 		 	<regexp-list>
-		 		<regexp value="[a-zA-Z]{2,20}"/>
+		 		<regexp value="[a-zA-Z0-9-]{2,20}"/>
 		 	</regexp-list>
 		 </attribute>
+    
 		 <attribute name="title" description="The 'title' attribute provides text that shows up in a 'tooltip' when a user hovers their mouse over the element">
 		 	<regexp-list>
 		 		<regexp name="htmlTitle"/>
@@ -251,9 +252,8 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="poly"/>
 			</literal-list>
 		</attribute>
-		
-		
-		
+
+
 		<!--  Table attributes  -->
 		
 		<attribute name="border">
@@ -371,9 +371,8 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="top"/>
 			</literal-list>
 		</attribute>
-		
-		
-		
+
+
 		<!-- Intrinsic JavaScript Events -->
 		
 		<attribute name="onFocus" description="The 'onFocus' event is executed when the control associated with the tag gains focus">
@@ -433,9 +432,8 @@ http://www.w3.org/TR/html401/struct/global.html
 		 		<literal value="colgroup"/>
 		 	</literal-list>
 		 </attribute>
-		
-		
-		
+
+
 		 <!-- If you want users to be able to mess with tabindex, uncomment this -->
 		 <!--  
 		 <attribute name="tabindex" description="...">
@@ -543,17 +541,15 @@ http://www.w3.org/TR/html401/struct/global.html
 
 		<tag name="script" action="remove"/>
 		<tag name="noscript" action="validate"/> <!-- although no javascript can fire inside a noscript tag, css is still a viable attack vector -->
-		
-		
-		
+
+
 		<!-- Frame & related tags -->
 		
 		<tag name="iframe" action="remove"/>
 		<tag name="frameset" action="remove"/>
 		<tag name="frame" action="remove"/>
-		
-		
-		
+
+
 		<!-- Form related tags -->
 		
 		<tag name="label" action="validate">
@@ -722,10 +718,8 @@ http://www.w3.org/TR/html401/struct/global.html
 			<attribute name="readonly"/>
 			<attribute name="accesskey"/>
 		</tag>
-		
-		
-		
-		
+
+
 		<!-- All formatting tags -->
 		
 		<tag name="h1" action="validate"/>
@@ -812,9 +806,8 @@ http://www.w3.org/TR/html401/struct/global.html
 			<attribute name="href"/>
 		</tag>
 		-->
-		
-		
-		
+
+
 		<!-- Stylesheet Tags -->
 		
 		<tag name="style" action="validate">
@@ -890,29 +883,22 @@ http://www.w3.org/TR/html401/struct/global.html
 				</literal-list>
 			</attribute>
 		</tag>
-		
-		
-		
-				
+
 
 		<!-- List tags -->
 
 		<tag name="ul" action="validate"/>
 		<tag name="ol" action="validate"/>
 		<tag name="li" action="validate"/>
-		
 
-		
-		
+
 		<!-- Dictionary tags -->
 		
 		<tag name="dd" action="truncate"/>
 		<tag name="dl" action="truncate"/>
 		<tag name="dt" action="truncate"/>
-		
 
 
-		
 		<!-- Table tags (tbody, thead, tfoot)-->
 		
 		<tag name="thead" action="validate">

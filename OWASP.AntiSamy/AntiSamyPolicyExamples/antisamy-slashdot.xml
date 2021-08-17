@@ -59,7 +59,7 @@ Slashdot allowed tags taken from "Reply" page:
 
 		<attribute name="lang" description="The 'lang' attribute tells the browser what language the element's attribute values and content are written in">
 		 	<regexp-list>
-		 		<regexp value="[a-zA-Z]{2,20}"/>
+		 		<regexp value="[a-zA-Z0-9-]{2,20}"/>
 		 	</regexp-list>
 		 </attribute>
 		 
@@ -169,7 +169,6 @@ Slashdot allowed tags taken from "Reply" page:
 		<tag name="li" action="validate"/>
 		
 	</tag-rules>
-
 
 
 	<!--  No CSS on Slashdot posts -->
