@@ -750,5 +750,20 @@ namespace AntiSamyTests
         {
             antisamy.Scan("<p><a href=\"javascript&#00058x=1,%61%6c%65%72%74%28%22%62%6f%6f%6d%22%29\">xss</a></p>", policy).GetCleanHtml().Should().Contain("javascript&amp;#00058");
         }
+
+        [Test(Description = "Tests issue #101 from nahsra/antisamy on GitHub.")]
+        public void TestManySingificantFiguresAndExponentialValuesOnCss()
+        {
+            // Test that margin attribute is not removed when value has too much significant figures.
+            // Current behavior is that decimals like 0.00001 are internally translated to 1E-05, this
+            // is reflected on regex validation and actual output. The inconsistency is due to Batik CSS.
+            antisamy.Scan("<p style=\"margin: 0.0001pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin");
+            antisamy.Scan("<p style=\"margin: 10000000pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin");
+            
+            // When using exponential directly the "e" or "E" is internally considered as the start of
+            // the dimension/unit type. This creates inconsistencies that make the regex validation fail or value gets deleted.
+            antisamy.Scan("<p style=\"margin: 1.0E-04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
+            antisamy.Scan("<p style=\"margin: 1.0E+04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
+        }
     }
 }
