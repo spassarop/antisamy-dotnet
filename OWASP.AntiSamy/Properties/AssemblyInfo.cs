@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("spassaro")]
 [assembly: AssemblyProduct("AntiSamy")]
-[assembly: AssemblyCopyright("Copyright © 2020 - Arshan Dabirsiaghi, Sebastián Passaro")]
+[assembly: AssemblyCopyright("Copyright © 2021 - Arshan Dabirsiaghi, Sebastián Passaro")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
