@@ -239,6 +239,24 @@ namespace OWASP.AntiSamy.Html
         /// <returns> A <see cref="TagMatcher"/> with all the allowed empty tags configured in the policy.</returns>
         internal TagMatcher GetAllowedEmptyTags() => allowedEmptyTagsMatcher;
 
+        /// <summary>A method for returning one of the dynamic &lt;common-attribute&gt; entries by name.</summary>
+        /// <param name="name">The name of the dynamic common-attribute we want to look up.</param>
+        /// <returns>An <see cref="Attribute"/> associated with the common-attribute lookup name specified, or null if not found.</returns>
+        internal Attribute GetDynamicAttributeByName(string name)
+        {
+            Attribute dynamicAttribute = null;
+            string nameLowercase = name.ToLowerInvariant();
+            foreach (KeyValuePair<string, Attribute> attributeEntry in dynamicAttributes)
+            {
+                if (nameLowercase.StartsWith(attributeEntry.Key))
+                {
+                    dynamicAttribute = attributeEntry.Value;
+                    break;
+                }
+            }
+            return dynamicAttribute;
+        }
+
         internal Policy MutateTag(Tag tag)
         {
             var newTagRules = new Dictionary<string, Tag>(tagRules);
@@ -428,7 +446,8 @@ namespace OWASP.AntiSamy.Html
                 Attribute toAdd = parseContext.commonAttributes.GetValueOrTypeDefault(name.ToLowerInvariant());
                 if (toAdd != null)
                 {
-                    parseContext.globalAttributes.Add(name.ToLowerInvariant(), toAdd);
+                    string attributeName = name.ToLowerInvariant().Substring(0, name.Length - 1);
+                    parseContext.dynamicAttributes.Add(attributeName, toAdd);
                 }
                 else
                 {

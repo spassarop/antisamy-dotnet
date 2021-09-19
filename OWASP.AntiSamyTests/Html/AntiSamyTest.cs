@@ -545,6 +545,15 @@ namespace AntiSamyTests
         }
 
         [Test]
+        public void TestHtml5DynamicDataAttribute()
+        {
+            // Test good attribute "data-"
+            antisamy.Scan("<p data-tag=\"abc123\">Hello World!</p>", policy).GetCleanHtml().Should().Be("<p data-tag=\"abc123\">Hello World!</p>");
+            // Test bad attribute "dat-"
+            antisamy.Scan("<p dat-tag=\"abc123\">Hello World!</p>", policy).GetCleanHtml().Should().Be("<p>Hello World!</p>");
+        }
+
+        [Test]
         public void TestXssOnMouseOver()
         {
             antisamy.Scan("<bogus>whatever</bogus><img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" onmouseover=\"alert('xss')\">", policy).GetCleanHtml()
