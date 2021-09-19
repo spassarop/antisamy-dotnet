@@ -55,7 +55,6 @@ Slashdot allowed tags taken from "Reply" page:
 	-->
 
 	<common-attributes>
-		
 
 		<attribute name="lang" description="The 'lang' attribute tells the browser what language the element's attribute values and content are written in">
 		 	<regexp-list>
@@ -87,7 +86,6 @@ Slashdot allowed tags taken from "Reply" page:
 		</attribute>
 
 	</common-attributes>
-
 
 	<!--
 	This requires normal updates as browsers continue to diverge from the W3C and each other. As long as the browser wars continue
@@ -142,8 +140,7 @@ Slashdot allowed tags taken from "Reply" page:
 		
 		<tag name="quote" action="validate"/>
 		<tag name="ecode" action="validate"/> 
-		
-						
+
 		<!-- Anchor and anchor related tags -->
 		
 		<tag name="a" action="validate">
@@ -169,7 +166,6 @@ Slashdot allowed tags taken from "Reply" page:
 		<tag name="li" action="validate"/>
 		
 	</tag-rules>
-
 
 	<!--  No CSS on Slashdot posts -->
 
