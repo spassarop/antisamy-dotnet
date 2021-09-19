@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2020, Jerry Hoff, Sebastián Passaro
+ * Copyright (c) 2009-2021, Jerry Hoff, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -55,9 +55,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public Policy Policy { private get; set; }
         // All error messages live in here
         private readonly List<string> errorMessages = new List<string>();
-        // Needed to parse input
-        private readonly XmlDocument document = new XmlDocument();
-        // Needed to represent the parsed version of the input
+
         public AntiSamyDomScanner(Policy policy)
         {
             InitBlock();
@@ -481,6 +479,12 @@ namespace OWASP.AntiSamy.Html.Scan
                 if (attribute == null)
                 {
                     attribute = Policy.GetGlobalAttributeByName(name);
+                    
+                    // Not a global attribute, perhaps it is a dynamic attribute, if allowed.
+                    if (attribute == null && Policy.AllowsDynamicAttributes)
+                    {
+                        attribute = Policy.GetDynamicAttributeByName(name);
+                    }
                 }
 
                 if (name.ToLowerInvariant() == "style" && attribute != null)

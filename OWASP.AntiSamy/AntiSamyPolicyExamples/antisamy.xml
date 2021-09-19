@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 
-
 <!-- 
 W3C rules retrieved from:
 http://www.w3.org/TR/html401/struct/global.html
 -->
-	
-	
+
 <anti-samy-rules xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:noNamespaceSchemaLocation="antisamy.xsd">
 
@@ -106,9 +104,9 @@ http://www.w3.org/TR/html401/struct/global.html
 		<regexp name="number" value="(-|\+)?([0-9]+(\.[0-9]+)?)"/>
 		<regexp name="angle" value="(-|\+)?([0-9]+(\.[0-9]+)?)(deg|grads|rad)"/>
 		<regexp name="time" value="([0-9]+(\.[0-9]+)?)(ms|s)"/>
-		<regexp name="frequency" value="([0-9]+(\.[0-9]+)?)(hz|khz)"/>	
-		<regexp name="length" value="((-|\+)?0|(-|\+)?([0-9]+(\.[0-9]+)?)(em|ex|px|in|cm|mm|pt|pc))"/>
-		<regexp name="positiveLength" value="((\+)?0|(\+)?([0-9]+(\.[0-9]+)?)(em|ex|px|in|cm|mm|pt|pc))"/>
+		<regexp name="frequency" value="([0-9]+(\.[0-9]+)?)(hz|khz)"/>
+    <regexp name="length" value="((-|\+)?0|(-|\+)?([0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?)(rem|vw|vh|em|ex|px|in|cm|mm|pt|pc))"/>
+    <regexp name="positiveLength" value="((\+)?0|(\+)?([0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?)(rem|vw|vh|em|ex|px|in|cm|mm|pt|pc))"/>
 		<regexp name="percentage" value="(-|\+)?([0-9]+(\.[0-9]+)?)%"/>
 		<regexp name="positivePercentage" value="(\+)?([0-9]+(\.[0-9]+)?)%"/>
 		
@@ -142,7 +140,6 @@ http://www.w3.org/TR/html401/struct/global.html
 	-->
 
 	<common-attributes>
-		
 
 		<!-- Common to all HTML tags  -->
 		
@@ -172,9 +169,10 @@ http://www.w3.org/TR/html401/struct/global.html
 
 		<attribute name="lang" description="The 'lang' attribute tells the browser what language the element's attribute values and content are written in">
 		 	<regexp-list>
-		 		<regexp value="[a-zA-Z]{2,20}"/>
+		 		<regexp value="[a-zA-Z0-9-]{2,20}"/>
 		 	</regexp-list>
 		 </attribute>
+    
 		 <attribute name="title" description="The 'title' attribute provides text that shows up in a 'tooltip' when a user hovers their mouse over the element">
 		 	<regexp-list>
 		 		<regexp name="htmlTitle"/>
@@ -214,8 +212,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		 	</literal-list>
 		 	
 		 </attribute>
-		 
-		 
+
 		 <!-- Anchor related -->
 		 
 		 <!--  onInvalid="filterTag" has been removed as per suggestion at OWASP SJ 2007 - just "name" is valid -->
@@ -241,8 +238,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		 		
 		 	</regexp-list>
 		 </attribute>
-		
-		
+
 		<attribute name="shape" description="The 'shape' attribute defines the shape of the selectable area">
 			<literal-list>
 				<literal value="default"/>
@@ -251,9 +247,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="poly"/>
 			</literal-list>
 		</attribute>
-		
-		
-		
+
 		<!--  Table attributes  -->
 		
 		<attribute name="border">
@@ -323,7 +317,6 @@ http://www.w3.org/TR/html401/struct/global.html
 			</regexp-list>				
 		 </attribute>
 
-
 		<attribute name="axis" description="The 'headers' attribute is a comma-separated list of related header cells">
 		 	<regexp-list>
 			 	<regexp value="[a-zA-Z0-9\s*,]*"/>
@@ -336,8 +329,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<!-- <regexp value="(nowrap){0,1}"/>  -->
 			</regexp-list>
 		</attribute>
-		
-		
+
 		<!--  Common positioning attributes  -->
 
 		<attribute name="width">
@@ -371,9 +363,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="top"/>
 			</literal-list>
 		</attribute>
-		
-		
-		
+
 		<!-- Intrinsic JavaScript Events -->
 		
 		<attribute name="onFocus" description="The 'onFocus' event is executed when the control associated with the tag gains focus">
@@ -433,9 +423,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		 		<literal value="colgroup"/>
 		 	</literal-list>
 		 </attribute>
-		
-		
-		
+
 		 <!-- If you want users to be able to mess with tabindex, uncomment this -->
 		 <!--  
 		 <attribute name="tabindex" description="...">
@@ -444,8 +432,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		 	</regexp-list>
 		 </attribute>
 		  -->
-		 
-		 
+
 		 <!-- Input/form related common attributes -->
 		 
 		 <attribute name="disabled">
@@ -471,8 +458,7 @@ http://www.w3.org/TR/html401/struct/global.html
 		 		<regexp name="number"/>
 		 	</regexp-list>
 		 </attribute>
-		 
-		 
+
 		<attribute name="autocomplete">
 			<literal-list>
 				<literal value="on"/>
@@ -493,7 +479,6 @@ http://www.w3.org/TR/html401/struct/global.html
 		 </attribute>
 		 
 	</common-attributes>
-
 
 	<!--
 	This requires normal updates as browsers continue to diverge from the W3C and each other. As long as the browser wars continue
@@ -538,22 +523,17 @@ http://www.w3.org/TR/html401/struct/global.html
 		<!-- since we're validating the style sheets this is safe to have - switch to "truncate" if the user's html will appear in the html body -->
 		<tag name="title" action="truncate"/>
 
-
 		<!-- Tags related to JavaScript -->
 
 		<tag name="script" action="remove"/>
 		<tag name="noscript" action="validate"/> <!-- although no javascript can fire inside a noscript tag, css is still a viable attack vector -->
-		
-		
-		
+
 		<!-- Frame & related tags -->
 		
 		<tag name="iframe" action="remove"/>
 		<tag name="frameset" action="remove"/>
 		<tag name="frame" action="remove"/>
-		
-		
-		
+
 		<!-- Form related tags -->
 		
 		<tag name="label" action="validate">
@@ -563,7 +543,6 @@ http://www.w3.org/TR/html401/struct/global.html
 				</regexp-list>
 			</attribute>
 		</tag>
-		
 
 		<!--
 			If you wish to enable any of the form related tags, change the tag's action below from "filter" or "remove" to "validate". The attributes have been 
@@ -722,10 +701,7 @@ http://www.w3.org/TR/html401/struct/global.html
 			<attribute name="readonly"/>
 			<attribute name="accesskey"/>
 		</tag>
-		
-		
-		
-		
+
 		<!-- All formatting tags -->
 		
 		<tag name="h1" action="validate"/>
@@ -780,7 +756,6 @@ http://www.w3.org/TR/html401/struct/global.html
 				</regexp-list>
 			</attribute>
 		</tag>
-		
 
 		<!-- Anchor and anchor related tags -->
 		
@@ -812,9 +787,7 @@ http://www.w3.org/TR/html401/struct/global.html
 			<attribute name="href"/>
 		</tag>
 		-->
-		
-		
-		
+
 		<!-- Stylesheet Tags -->
 		
 		<tag name="style" action="validate">
@@ -832,7 +805,6 @@ http://www.w3.org/TR/html401/struct/global.html
 			<attribute name="align"/>
 		</tag>
 
-	
 		<!-- Image & image related tags -->
 		
 		<tag name="img" action="validate">
@@ -890,29 +862,19 @@ http://www.w3.org/TR/html401/struct/global.html
 				</literal-list>
 			</attribute>
 		</tag>
-		
-		
-		
-				
 
 		<!-- List tags -->
 
 		<tag name="ul" action="validate"/>
 		<tag name="ol" action="validate"/>
 		<tag name="li" action="validate"/>
-		
 
-		
-		
 		<!-- Dictionary tags -->
 		
 		<tag name="dd" action="truncate"/>
 		<tag name="dl" action="truncate"/>
 		<tag name="dt" action="truncate"/>
-		
 
-
-		
 		<!-- Table tags (tbody, thead, tfoot)-->
 		
 		<tag name="thead" action="validate">
@@ -1027,7 +989,6 @@ http://www.w3.org/TR/html401/struct/global.html
 				
 		<tag name="fieldset" action="validate"/>
 		<tag name="legend" action="validate"/>
-		
 
 		<!-- tags for popular Flash embeds -->
 
@@ -1141,7 +1102,6 @@ http://www.w3.org/TR/html401/struct/global.html
 		</tag>
 		
 	</tag-rules>
-
 
 	<!--  CSS validation processing rules  -->
 
@@ -2699,8 +2659,7 @@ http://www.w3.org/TR/html401/struct/global.html
 				<literal value="fantasy"/>
 				<literal value="monospace"/>											
 			</literal-list>
-			
-						
+
 			<regexp-list>
 				<regexp value="[\w,\-&apos;&quot; ]+"/>
 			</regexp-list>
@@ -2761,7 +2720,6 @@ http://www.w3.org/TR/html401/struct/global.html
 		</property>		
 		<!--  end manual properties -->
 	</css-rules>
-
 
     <allowed-empty-tags>
         <literal-list>

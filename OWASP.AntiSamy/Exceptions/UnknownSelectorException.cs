@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2009-2020, Sebastián Passaro
+ * Copyright (c) 2009-2021, Sebastián Passaro
  * 
  * All rights reserved.
  * 

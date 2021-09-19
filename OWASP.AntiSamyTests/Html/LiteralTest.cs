@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2009-2020, Arshan Dabirsiaghi, Sebastián Passaro
+ * Copyright (c) 2009-2021, Arshan Dabirsiaghi, Sebastián Passaro
  * 
  * All rights reserved.
  * 

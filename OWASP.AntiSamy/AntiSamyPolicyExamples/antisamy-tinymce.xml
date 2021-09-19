@@ -58,7 +58,7 @@
 			description="The 'lang' attribute tells the browser what language the element's attribute values and content are written in">
 
 			<regexp-list>
-				<regexp value="[a-zA-Z]{2,20}" />
+				<regexp value="[a-zA-Z0-9-]{2,20}" />
 			</regexp-list>
 		</attribute>
 
@@ -100,7 +100,6 @@
 		This requires normal updates as browsers continue to diverge from the W3C and each other. As long as the browser wars continue
 		this is going to continue. I'm not sure war is the right word for what's going on. Doesn't somebody have to win a war after
 		a while?
-
 
 	-->
 

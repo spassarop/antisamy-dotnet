@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2009-2020, Arshan Dabirsiaghi, Sebastián Passaro
+ * Copyright (c) 2009-2021, Arshan Dabirsiaghi, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -140,7 +140,7 @@ namespace AntiSamyTests
         public void TestEmptyTags()
         {
             string html = antisamy.Scan("<br ><strong></strong><a>hello world</a><b /><i/><hr>", policy).GetCleanHtml();
-                
+
             var regex = new Regex(".*<strong(\\s*)/>.*");
             regex.IsMatch(html).Should().BeFalse();
 
@@ -149,7 +149,7 @@ namespace AntiSamyTests
 
             regex = new Regex(".*<i(\\s*)/>.*");
             regex.IsMatch(html).Should().BeFalse();
-            
+
             (html.Contains("<hr />") || html.Contains("<hr/>")).Should().BeTrue();
         }
 
@@ -170,7 +170,7 @@ namespace AntiSamyTests
         {
             antisamy.Scan("<div style=\"font-family: Geneva, Arial, courier new, sans-serif\">Test</div>", policy).GetCleanHtml().Should().Contain("font-family");
         }
-       
+
         [Test(Description = "Tests issue #30 from owaspantisamy Google Code Archive>: 'missing quotes around properties with spaces'")]
         [Ignore("CDATA is not handled by HtmlAgilityPack the same way than the Java version. The code works but the format is just different.")]
         public void TestCssPropertiesWithMultilineAndCData()
@@ -362,7 +362,7 @@ namespace AntiSamyTests
             CleanResults result = antisamy.Scan("hello<p align='invalid'>world</p>", policy);
             result.GetCleanHtml().Should().NotContain("invalid");
             result.GetNumberOfErrors().Should().Be(1);
-            
+
             antisamy.Scan("hello<p align='left'>world</p>", policy).GetCleanHtml().Should().Contain("left");
         }
 
@@ -409,7 +409,7 @@ namespace AntiSamyTests
 
             int expectedLocation = header.Length;
             int actualLocation = result.IndexOf(nl);
-            actualLocation.Should().BeInRange(expectedLocation - 1, expectedLocation, 
+            actualLocation.Should().BeInRange(expectedLocation - 1, expectedLocation,
                 because: "According to Java project: 'account for line separator length difference across OSes'");
         }
 
@@ -539,9 +539,18 @@ namespace AntiSamyTests
         }
 
         [Test(Description = "Tests issue #144 from owaspantisamy Google Code Archive.")]
-        public void TestPinataString ()
+        public void TestPinataString()
         {
             antisamy.Scan("pi\u00f1ata", policy).GetCleanHtml().Should().Be("pi\u00f1ata");
+        }
+
+        [Test]
+        public void TestHtml5DynamicDataAttribute()
+        {
+            // Test good attribute "data-"
+            antisamy.Scan("<p data-tag=\"abc123\">Hello World!</p>", policy).GetCleanHtml().Should().Be("<p data-tag=\"abc123\">Hello World!</p>");
+            // Test bad attribute "dat-"
+            antisamy.Scan("<p dat-tag=\"abc123\">Hello World!</p>", policy).GetCleanHtml().Should().Be("<p>Hello World!</p>");
         }
 
         [Test]
@@ -737,6 +746,42 @@ namespace AntiSamyTests
 
             antisamy.Scan("<section><div class='.divToTruncate'>Div only contains this text<span>Confirmed</span></div></section>", revised)
                 .GetCleanHtml().Should().Be("<section><div>Div only contains this text</div></section>");
+        }
+
+        [Test(Description = "Tests issue #81 from nahsra/antisamy on GitHub.")]
+        public void TestPreserveImportantOnCssProperty()
+        {
+            antisamy.Scan("<p style=\"color: red !important\">Some Text</p>", policy).GetCleanHtml().Should().Contain("!important");
+        }
+
+        [Test]
+        public void TestEntityReferenceEncodedInHtmlAttribute()
+        {
+            antisamy.Scan("<p><a href=\"javascript&#00058x=1,%61%6c%65%72%74%28%22%62%6f%6f%6d%22%29\">xss</a></p>", policy).GetCleanHtml().Should().Contain("javascript&amp;#00058");
+        }
+
+        [Test(Description = "Tests issue #101 from nahsra/antisamy on GitHub.")]
+        public void TestManySingificantFiguresAndExponentialValuesOnCss()
+        {
+            // Test that margin attribute is not removed when value has too much significant figures.
+            // Current behavior is that decimals like 0.00001 are internally translated to 1E-05, this
+            // is reflected on regex validation and actual output. The inconsistency is due to Batik CSS.
+            antisamy.Scan("<p style=\"margin: 0.0001pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin");
+            antisamy.Scan("<p style=\"margin: 10000000pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin");
+            
+            // When using exponential directly the "e" or "E" is internally considered as the start of
+            // the dimension/unit type. This creates inconsistencies that make the regex validation fail or value gets deleted.
+            antisamy.Scan("<p style=\"margin: 1.0E-04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
+            antisamy.Scan("<p style=\"margin: 1.0E+04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
+        }
+
+        [Test]
+        public void TestCssUnits()
+        {
+            const string input = "<div style=\"width:50vw;height:50vh;padding:1rpc;\">\n" +
+                "\t<p style=\"font-size:1.5ex;padding-left:1rem;padding-top:16px;\">Some text.</p>\n" +
+                "</div>";
+            antisamy.Scan(input, policy).GetCleanHtml().Should().ContainAll("ex", "px", "rem", "vw", "vh").And.NotContain("rpc");
         }
     }
 }
