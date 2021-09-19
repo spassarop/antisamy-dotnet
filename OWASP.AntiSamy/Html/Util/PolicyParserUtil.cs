@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2020, Arshan Dabirsiaghi, Jason Li, Kristian Rosenvold, Sebastián Passaro
+ * Copyright (c) 2008-2021, Arshan Dabirsiaghi, Jason Li, Kristian Rosenvold, Sebastián Passaro
  * 
  * All rights reserved.
  * 
