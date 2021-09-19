@@ -774,5 +774,14 @@ namespace AntiSamyTests
             antisamy.Scan("<p style=\"margin: 1.0E-04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
             antisamy.Scan("<p style=\"margin: 1.0E+04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
         }
+
+        [Test]
+        public void TestCSSUnits()
+        {
+            string input = "<div style=\"width:50vw;height:50vh;padding:1rpc;\">\n" +
+                "\t<p style=\"font-size:1.5ex;padding-left:1rem;padding-top:16px;\">Some text.</p>\n" +
+                "</div>";
+            antisamy.Scan(input, policy).GetCleanHtml().Should().ContainAll("ex", "px", "rem", "vw", "vh").And.NotContain("rpc");
+        }
     }
 }
