@@ -783,5 +783,12 @@ namespace AntiSamyTests
                 "</div>";
             antisamy.Scan(input, policy).GetCleanHtml().Should().ContainAll("ex", "px", "rem", "vw", "vh").And.NotContain("rpc");
         }
+
+        [Test(Description = "Tests for CVE-2021-42575.")]
+        public void TestXSSInsideSelectOptionStyle()
+        {
+            antisamy.Scan("<select><option><style>h1{color:black;}</style></option></select>", policy).GetCleanHtml().Should().Contain("color");
+            antisamy.Scan("<select><option><style><script>alert(1)</script></style></option></select>", policy).GetCleanHtml().Should().NotContain("<script>");
+        }
     }
 }
