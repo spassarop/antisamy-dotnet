@@ -76,12 +76,14 @@ namespace OWASP.AntiSamy.Html
         internal protected bool UsesXhtml { get; set; }
         /// <summary>Determines if comments are removed from the HTML.</summary>
         internal protected bool PreservesComments { get; set; }
-        /// <summary>Currently not in use.</summary>
+        /// <summary>Determines if style sheets can be embedded/imported to be parsed.</summary>
         internal protected bool EmbedsStyleSheets { get; set; }
         /// <summary>Determines if unknowkn HTML tags get encoded instead of removed.</summary>
         internal protected bool EncodesUnknownTag { get; set; }
-        /// <summary>Currently not in use.</summary>
+        /// <summary>Determines if dynamic attributes (like data-*) are allowed.</summary>
         internal protected bool AllowsDynamicAttributes { get; set; }
+        /// <summary>Determines how much milliseconds to wait when importing syle sheets.</summary>
+        internal protected int ConnectionTimeout { get; set; }
 
         /// <summary>Create policy with <see cref="ParseContext"/>.</summary>
         /// <param name="parseContext">Context with all collections to load the new policy.</param>

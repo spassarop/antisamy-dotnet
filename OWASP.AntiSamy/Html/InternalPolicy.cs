@@ -51,6 +51,7 @@ namespace OWASP.AntiSamy.Html
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
             EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
             AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
+            ConnectionTimeout = DetermineConnectionTimeout();
         }
 
         public InternalPolicy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
@@ -69,6 +70,7 @@ namespace OWASP.AntiSamy.Html
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
             EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
             AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
+            ConnectionTimeout = DetermineConnectionTimeout();
         }
 
         private bool IsTrue(string anchorsNofollow)
@@ -81,13 +83,26 @@ namespace OWASP.AntiSamy.Html
         public int DetermineMaximumInputSize()
         {
             // Grab the size specified in the config file
-            if (!int.TryParse(GetDirectiveByName("maxInputSize"), out int maxInputSize))
+            if (!int.TryParse(GetDirectiveByName(Constants.MAX_INPUT_SIZE), out int maxInputSize))
             {
                 // Holds the maximum input size for the incoming fragment
                 maxInputSize = Constants.DEFAULT_MAX_INPUT_SIZE;
             }
 
             return maxInputSize;
+        }
+
+        /// <summary>Returns the connection timeout for loading CSS files. If this value is not specified by
+        /// the policy, the <c>DEFAULT_CONNECTION_TIMEOUT</c> is used.</summary>
+        public int DetermineConnectionTimeout()
+        {
+            // Grab the size specified in the config file
+            if (!int.TryParse(GetDirectiveByName(Constants.CONNECTION_TIMEOUT), out int timeout))
+            {
+                timeout = Constants.DEFAULT_CONNECTION_TIMEOUT;
+            }
+
+            return timeout;
         }
     }
 }
