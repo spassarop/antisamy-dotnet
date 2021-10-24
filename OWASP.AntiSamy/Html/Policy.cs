@@ -56,6 +56,7 @@ namespace OWASP.AntiSamy.Html
         private readonly TagMatcher requireClosingTagsMatcher;
 
         /// <summary>Maximum input size for the HTML to read.</summary>
+        /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_MAX_INPUT_SIZE</c> is used.</remarks>
         internal protected int MaxInputSize { get; set; }
         /// <summary>Determines if adds the attribute "nofollow" on &lt;a&gt; tags.</summary>
         internal protected bool DoesNotFollowAnchors { get; protected set; }
@@ -83,7 +84,11 @@ namespace OWASP.AntiSamy.Html
         /// <summary>Determines if dynamic attributes (like data-*) are allowed.</summary>
         internal protected bool AllowsDynamicAttributes { get; set; }
         /// <summary>Determines how much milliseconds to wait when importing syle sheets.</summary>
+        /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_CONNECTION_TIMEOUT</c> is used.</remarks>
         internal protected int ConnectionTimeout { get; set; }
+        /// <summary>Determines how much milliseconds to wait when importing syle sheets.</summary>
+        /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_MAX_STYLESHEET_IMPORTS</c> is used.</remarks>
+        internal protected int MaxStyleSheetImports { get; set; }
 
         /// <summary>Create policy with <see cref="ParseContext"/>.</summary>
         /// <param name="parseContext">Context with all collections to load the new policy.</param>

@@ -22,6 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using System.Collections.Generic;
 using OWASP.AntiSamy.Html.Scan;
 using Tag = OWASP.AntiSamy.Html.Model.Tag;
@@ -35,29 +36,20 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     internal class InternalPolicy : Policy
     {
-        public InternalPolicy(ParseContext parseContext)
-            : base(parseContext)
+        public InternalPolicy(ParseContext parseContext) : base(parseContext)
         {
-            MaxInputSize = DetermineMaximumInputSize();
-            DoesNotFollowAnchors = IsTrue(Constants.ANCHORS_NOFOLLOW);
-            ValidatesParamAsEmbed = IsTrue(Constants.VALIDATE_PARAM_AS_EMBED);
-            FormatsOutput = IsTrue(Constants.FORMAT_OUTPUT);
-            PreservesSpace = IsTrue(Constants.PRESERVE_SPACE);
-            OmitsXmlDeclaration = IsTrue(Constants.OMIT_XML_DECLARATION);
-            OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
-            EntityEncodesInternationalCharacters = IsTrue(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS);
-            UsesXhtml = IsTrue(Constants.USE_XHTML);
-            EncodesUnknownTag = GetDirectiveByName("onUnknownTag") == "encode";
-            PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
-            EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
-            AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
-            ConnectionTimeout = DetermineConnectionTimeout();
+            SetProperties();
         }
 
         public InternalPolicy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
                 : base(old, directives, tagRules)
         {
-            MaxInputSize = DetermineMaximumInputSize();
+            SetProperties();
+        }
+
+        private void SetProperties()
+        {
+            MaxInputSize = GetIntegerDirective(Constants.MAX_INPUT_SIZE, Constants.DEFAULT_MAX_INPUT_SIZE);
             DoesNotFollowAnchors = IsTrue(Constants.ANCHORS_NOFOLLOW);
             ValidatesParamAsEmbed = IsTrue(Constants.VALIDATE_PARAM_AS_EMBED);
             FormatsOutput = IsTrue(Constants.FORMAT_OUTPUT);
@@ -70,7 +62,8 @@ namespace OWASP.AntiSamy.Html
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
             EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
             AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
-            ConnectionTimeout = DetermineConnectionTimeout();
+            ConnectionTimeout = GetIntegerDirective(Constants.CONNECTION_TIMEOUT, Constants.DEFAULT_CONNECTION_TIMEOUT);
+            MaxStyleSheetImports = GetIntegerDirective(Constants.MAX_STYLESHEET_IMPORTS, Constants.DEFAULT_MAX_STYLESHEET_IMPORTS);
         }
 
         private bool IsTrue(string anchorsNofollow)
@@ -78,31 +71,10 @@ namespace OWASP.AntiSamy.Html
             return GetDirectiveByName(anchorsNofollow) == "true";
         }
 
-        /// <summary>Returns the maximum input size. If this value is not specified by
-        /// the policy, the <c>DEFAULT_MAX_INPUT_SIZE</c> is used.</summary>
-        public int DetermineMaximumInputSize()
+        /// <summary>Returns the integer value from directive or a default value.</summary>
+        public int GetIntegerDirective(string directiveName, int defaultValue)
         {
-            // Grab the size specified in the config file
-            if (!int.TryParse(GetDirectiveByName(Constants.MAX_INPUT_SIZE), out int maxInputSize))
-            {
-                // Holds the maximum input size for the incoming fragment
-                maxInputSize = Constants.DEFAULT_MAX_INPUT_SIZE;
-            }
-
-            return maxInputSize;
-        }
-
-        /// <summary>Returns the connection timeout for loading CSS files. If this value is not specified by
-        /// the policy, the <c>DEFAULT_CONNECTION_TIMEOUT</c> is used.</summary>
-        public int DetermineConnectionTimeout()
-        {
-            // Grab the size specified in the config file
-            if (!int.TryParse(GetDirectiveByName(Constants.CONNECTION_TIMEOUT), out int timeout))
-            {
-                timeout = Constants.DEFAULT_CONNECTION_TIMEOUT;
-            }
-
-            return timeout;
+            return int.TryParse(GetDirectiveByName(directiveName), out int integer) ? integer : defaultValue;
         }
     }
 }
