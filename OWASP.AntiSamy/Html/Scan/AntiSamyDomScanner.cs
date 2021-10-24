@@ -151,6 +151,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void InitBlock()
         {
+            Results = null;
             errorMessages.Clear();
         }
 

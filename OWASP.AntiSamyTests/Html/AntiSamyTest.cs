@@ -31,6 +31,7 @@ using FluentAssertions;
 using NUnit.Framework;
 using OWASP.AntiSamy.Html;
 using OWASP.AntiSamy.Html.Model;
+using OWASP.AntiSamy.Html.Util;
 using Constants = OWASP.AntiSamy.Html.Scan.Constants;
 
 namespace AntiSamyTests
@@ -789,6 +790,35 @@ namespace AntiSamyTests
         {
             antisamy.Scan("<select><option><style>h1{color:black;}</style></option></select>", policy).GetCleanHtml().Should().Contain("color");
             antisamy.Scan("<select><option><style><script>alert(1)</script></style></option></select>", policy).GetCleanHtml().Should().NotContain("<script>");
+        }
+
+        [Test]
+        public void TestStyleImport()
+        {
+            // Check order is correct:
+            //  First import: noprint class
+            //  Second import: table.browserref selector
+            //  Original styles: very-specific-antisamy class
+            const string input = "<style type='text/css'>\n" +
+                "\t@import url(https://www.w3.org/2008/site/css/realprint.css);\n" +
+                "\t@import \"https://www.w3schools.com/browserref.css\";\n" +
+                "\t.very-specific-antisamy {font: 15pt \"Arial\"; color: blue;}\n" +
+                "</style>";
+            var resultRegex = new Regex(@".*?\.noprint.*?table\.browserref.*?\.very-specific-antisamy.*?", RegexOptions.Singleline);
+            
+            Policy revised = policy.CloneWithDirective(Constants.EMBED_STYLESHEETS, "true");
+            resultRegex.IsMatch(antisamy.Scan(input, revised).GetCleanHtml()).Should().Be(true);
+
+            // Test a couple of errors
+            Policy revised2 = policy.CloneWithDirective(Constants.EMBED_STYLESHEETS, "true").CloneWithDirective(Constants.MAX_STYLESHEET_IMPORTS, "1");
+            antisamy.Scan(input, revised2).GetErrorMessages()
+                .Should().Contain(string.Format(OWASP.AntiSamy.Properties.Resources.ResourceManager.GetString(Constants.ERROR_CSS_IMPORT_EXCEEDED), 
+                HtmlEntityEncoder.HtmlEntityEncode("https://www.w3schools.com/browserref.css"), 1));
+
+            Policy revised3 = revised.CloneWithDirective(Constants.MAX_INPUT_SIZE, "500");
+            antisamy.Scan(input, revised3).GetErrorMessages()
+                .Should().Contain(string.Format(OWASP.AntiSamy.Properties.Resources.ResourceManager.GetString(Constants.ERROR_CSS_IMPORT_TOOLARGE), 
+                HtmlEntityEncoder.HtmlEntityEncode("https://www.w3schools.com/browserref.css"), 500));
         }
     }
 }
