@@ -22,9 +22,9 @@ Another way of saying that could be: It's an API that helps you make sure that c
     <DefineConstants>NET5_0</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.16.0" />
-    <PackageReference Include="AngleSharp.Css" Version="0.16.1" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.36" />
+    <PackageReference Include="AngleSharp" Version="0.16.1" />
+    <PackageReference Include="AngleSharp.Css" Version="0.16.2" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.38" />
   </ItemGroup>
   <ItemGroup>
     <!-- Added so NuGet copies this folder to the output package -->

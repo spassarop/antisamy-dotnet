@@ -767,13 +767,13 @@ namespace AntiSamyTests
             // Test that margin attribute is not removed when value has too much significant figures.
             // Current behavior is that decimals like 0.00001 are internally translated to 1E-05, this
             // is reflected on regex validation and actual output. The inconsistency is due to Batik CSS.
-            antisamy.Scan("<p style=\"margin: 0.0001pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin");
-            antisamy.Scan("<p style=\"margin: 10000000pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin");
+            antisamy.Scan("<p style=\"margin: 0.0001pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin: 0.0001pt");
+            antisamy.Scan("<p style=\"margin: 10000000pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin: 10000000pt");
             
-            // When using exponential directly the "e" or "E" is internally considered as the start of
-            // the dimension/unit type. This creates inconsistencies that make the regex validation fail or value gets deleted.
-            antisamy.Scan("<p style=\"margin: 1.0E-04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
-            antisamy.Scan("<p style=\"margin: 1.0E+04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
+            // When using exponential directly with "e" or "E" the output gets transformed to decimal.
+            // Ideally in a new version of AngleSharp.Css it should keep the exponential format.
+            antisamy.Scan("<p style=\"margin: 1.0E-04pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin: 0.0001");
+            antisamy.Scan("<p style=\"margin: 1.0e+04pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin: 10000");
         }
 
         [Test]
@@ -809,7 +809,6 @@ namespace AntiSamyTests
             Policy revised = policy.CloneWithDirective(Constants.EMBED_STYLESHEETS, "true");
             resultRegex.IsMatch(antisamy.Scan(input, revised).GetCleanHtml()).Should().Be(true);
 
-            // Test a couple of errors
             Policy revised2 = policy.CloneWithDirective(Constants.EMBED_STYLESHEETS, "true").CloneWithDirective(Constants.MAX_STYLESHEET_IMPORTS, "1");
             antisamy.Scan(input, revised2).GetErrorMessages()
                 .Should().Contain(string.Format(OWASP.AntiSamy.Properties.Resources.ResourceManager.GetString(Constants.ERROR_CSS_IMPORT_EXCEEDED), 
