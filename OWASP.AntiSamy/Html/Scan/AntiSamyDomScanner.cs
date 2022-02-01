@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2021, Jerry Hoff, Sebastián Passaro
+ * Copyright (c) 2009-2022, Jerry Hoff, Sebastiï¿½n Passaro
  * 
  * All rights reserved.
  * 

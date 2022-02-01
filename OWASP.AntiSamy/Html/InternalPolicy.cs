@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Kristian Rosenvold, Sebastián Passaro
+ * Copyright (c) 2008-2022, Kristian Rosenvold, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -22,7 +22,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using System;
 using System.Collections.Generic;
 using OWASP.AntiSamy.Html.Scan;
 using Tag = OWASP.AntiSamy.Html.Model.Tag;
