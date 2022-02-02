@@ -44,15 +44,7 @@ You may want to deploy OWASP AntiSamy .NET in a default configuration, but it's 
 
 When installing from the NuGet package, policy examples are included in your project **but not copied to the output folder by default**. If you decide to use one you can, for example in Visual Studio, select the chosen XML policy file and specify in its properties to be copied if newer or always. The example files are removed along with the package in case it's deleted. 
 
-You may also want to enable/modify some "directives", which are basically advanced user options. Supported directives are the following:
--   `maxInputSize` (int): Maximum input size for the HTML to read.
--   `nofollowAnchors` (bool): Determines if adds the attribute `rel="nofollow"` on `<a>` tags.
--   `validateParamAsEmbed` (bool): Determines if validates the `<param>` tag as `<embed>` tag.
--   `preserveSpace` (bool): Determines if HTML output gets trimmed.
--   `preserveComments` (bool): Determines if comments are removed from the HTML.
--   `entityEncodeIntlChars` (bool): Determines if HTML output gets encoded regarding special characters, like accents.
--   `useXHTML` (bool): Determines if parser uses XHTML, explicitly used for CDATA handling when scanning CSS.
--   `onUnknownTag` (string): Determines the action for a detected unknown tag. Today, the only value taken into account is `"encode"`. Default action is `"remove"`.
+You may also want to enable/modify some "directives", which are basically advanced user options. Supported directives are the specified in the [wiki](https://github.com/spassarop/antisamy-dotnet/wiki/AntiSamy-Directives).
 
 More directives are supported on the Java-based project. For more detailed information on directive declaration and general policy format, inspect the example policies.
 **Note**: Every input policy **will be validated** by AntiSamy against the only defined schema.
