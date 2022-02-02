@@ -57,7 +57,8 @@ namespace OWASP.AntiSamy.Html
             OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
             EntityEncodesInternationalCharacters = IsTrue(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS);
             UsesXhtml = IsTrue(Constants.USE_XHTML);
-            EncodesUnknownTag = GetDirectiveByName("onUnknownTag") == "encode";
+            string onUnknownTagActionValue = GetDirectiveByName(Constants.ON_UNKNOWN_TAG_ACTION);
+            OnUnknownTagAction = string.IsNullOrEmpty(onUnknownTagActionValue) ? string.Empty : onUnknownTagActionValue.ToLowerInvariant();
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
             EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
             AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
@@ -65,9 +66,9 @@ namespace OWASP.AntiSamy.Html
             MaxStyleSheetImports = GetIntegerDirective(Constants.MAX_STYLESHEET_IMPORTS, Constants.DEFAULT_MAX_STYLESHEET_IMPORTS);
         }
 
-        private bool IsTrue(string anchorsNofollow)
+        private bool IsTrue(string booleanDirective)
         {
-            return GetDirectiveByName(anchorsNofollow) == "true";
+            return GetDirectiveByName(booleanDirective) == "true";
         }
 
         /// <summary>Returns the integer value from directive or a default value.</summary>

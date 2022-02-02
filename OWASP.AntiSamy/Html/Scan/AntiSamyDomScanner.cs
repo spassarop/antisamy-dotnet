@@ -213,26 +213,26 @@ namespace OWASP.AntiSamy.Html.Scan
                 tag = BASIC_EMBED_TAG;
             }
 
-            if (tag == null && Policy.EncodesUnknownTag || tag != null && tag.Action == Constants.ACTION_ENCODE)
+            if (tag == null && Policy.OnUnknownTagAction == Constants.ACTION_ENCODE || tag != null && tag.Action == Constants.ACTION_ENCODE)
             {
                 EncodeTag(node, tagName);
             }
-            else if (tag == null || tag.Action == Constants.ACTION_FILTER)
+            else if (tag == null && Policy.OnUnknownTagAction == Constants.ACTION_FILTER || tag != null && tag.Action == Constants.ACTION_FILTER)
             {
                 FilterTag(node, tag, tagName);
             }
-            else if (tag.Action == Constants.ACTION_VALIDATE)
+            else if (tag != null && tag.Action == Constants.ACTION_VALIDATE)
             {
                 ValidateTag(node, parentNode, tagName, tag, isMasqueradingParam);
             }
-            else if (tag.Action == Constants.ACTION_TRUNCATE)
+            else if (tag == null && Policy.OnUnknownTagAction == Constants.ACTION_TRUNCATE || tag != null && tag.Action == Constants.ACTION_TRUNCATE)
             {
                 TruncateTag(node, tagName);
             }
             else
             {
-                // If we reached this it means the tag's action is "remove", which means to remove the tag (including its contents).
-                AddError(Constants.ERROR_TAG_DISALLOWED, HtmlEntityEncoder.HtmlEntityEncode(tagName));
+                // If we reached this it means the tag's action is "remove" or the tag is unknown, which means to remove the tag (including its contents).
+                AddError(tag == null ? Constants.ERROR_TAG_NOT_IN_POLICY : Constants.ERROR_TAG_DISALLOWED, HtmlEntityEncoder.HtmlEntityEncode(tagName));
                 RemoveNode(node);
             }
         }

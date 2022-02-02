@@ -79,8 +79,8 @@ namespace OWASP.AntiSamy.Html
         internal protected bool PreservesComments { get; set; }
         /// <summary>Determines if style sheets can be embedded/imported to be parsed.</summary>
         internal protected bool EmbedsStyleSheets { get; set; }
-        /// <summary>Determines if unknowkn HTML tags get encoded instead of removed.</summary>
-        internal protected bool EncodesUnknownTag { get; set; }
+        /// <summary>Determines which action to take when encountering unknown HTML tags instead of removing them.</summary>
+        internal protected string OnUnknownTagAction { get; set; }
         /// <summary>Determines if dynamic attributes (like data-*) are allowed.</summary>
         internal protected bool AllowsDynamicAttributes { get; set; }
         /// <summary>Determines how much milliseconds to wait when importing syle sheets.</summary>

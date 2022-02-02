@@ -190,11 +190,11 @@ namespace AntiSamyTests
         {
             const string html = "<b><u><g>foo</g></u></b>";
 
-            Policy revised = policy.CloneWithDirective("onUnknownTag", "encode");
+            Policy revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_ENCODE);
             antisamy.Scan(html, revised).GetCleanHtml().Should().ContainAll("&lt;g&gt;", "&lt;/g&gt;");
 
             Tag tag = policy.GetTagByName("b").MutateAction("encode");
-            Policy revised2 = policy.MutateTag(tag);
+            Policy revised2 = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_FILTER).MutateTag(tag);
             antisamy.Scan(html, revised2).GetCleanHtml().Should().ContainAll("&lt;b&gt;", "&lt;/b&gt;");
         }
 
@@ -557,7 +557,8 @@ namespace AntiSamyTests
         [Test]
         public void TestXssOnMouseOver()
         {
-            antisamy.Scan("<bogus>whatever</bogus><img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" onmouseover=\"alert('xss')\">", policy).GetCleanHtml()
+            Policy revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_FILTER);
+            antisamy.Scan("<bogus>whatever</bogus><img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" onmouseover=\"alert('xss')\">", revised).GetCleanHtml()
                 .Should().Be("whatever<img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" />");
         }
 
@@ -588,7 +589,8 @@ namespace AntiSamyTests
             using var reader = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes($"<bogus>whatever</bogus>{testImgSrcUrl}onmouseover=\"alert('xss')\">")));
             using var writer = new StreamWriter(new MemoryStream());
 
-            antisamy.Scan(reader, writer, policy).GetCleanHtml().Should().BeNull();
+            Policy revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_FILTER);
+            antisamy.Scan(reader, writer, revised).GetCleanHtml().Should().BeNull();
 
             using var resultReader = new StreamReader(writer.BaseStream);
             resultReader.ReadToEnd().Should().Be($"whatever{testImgSrcUrl}/>");
@@ -818,6 +820,29 @@ namespace AntiSamyTests
             antisamy.Scan(input, revised3).GetErrorMessages()
                 .Should().Contain(string.Format(OWASP.AntiSamy.Properties.Resources.ResourceManager.GetString(Constants.ERROR_CSS_IMPORT_TOOLARGE), 
                 HtmlEntityEncoder.HtmlEntityEncode("https://www.w3schools.com/browserref.css"), 500));
+        }
+
+        [Test]
+        public void TestOnUnknownTagActions()
+        {
+            const string unknownTag = "<bogus a=\"1\">whatever</bogus><span>Text</span>";
+            // Default is to remove.
+            antisamy.Scan(unknownTag, policy).GetCleanHtml().Should().Be("<span>Text</span>");
+            // Only actions different than "remove" are considered, any other text reuslts in removing. 
+            Policy revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, "other text");
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("<span>Text</span>");
+            // Cannot validate undefined tag, remove it.
+            revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_VALIDATE);
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("<span>Text</span>");
+            // Encode tag
+            revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_ENCODE);
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("&lt;bogus a=&quot;1&quot;&gt;whatever&lt;/bogus&gt;<span>Text</span>");
+            // Filter tag
+            revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_FILTER);
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("whatever<span>Text</span>");
+            // Truncate tag
+            revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_TRUNCATE);
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("<bogus>whatever</bogus><span>Text</span>");
         }
     }
 }
