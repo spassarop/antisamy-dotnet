@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Jerry Hoff, Sebastiï¿½n Passaro
+ * Copyright (c) 2009-2022, Jerry Hoff, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -108,7 +108,7 @@ namespace OWASP.AntiSamy.Html.Scan
             {
                 OptionAutoCloseOnEnd = true, // Add closing tags
                 OptionMaxNestedChildNodes = Constants.MAX_NESTED_TAGS, // TODO: Add directive for this like in MaxInputSize?
-                OptionOutputAsXml = true, // Enforces XML rules, encodes big 5
+                OptionOutputAsXml = Policy.UsesXhtml, // Enforces XML rules, encodes big 5
                 OptionXmlForceOriginalComment = true // Fix provided by the library for weird added spaces in HTML comments
             };
 
@@ -141,6 +141,17 @@ namespace OWASP.AntiSamy.Html.Scan
             if (Policy.EntityEncodesInternationalCharacters)
             {
                 finalCleanHTML = SpecialCharactersEncoder.Encode(finalCleanHTML);
+            }
+
+            if (!Policy.UsesXhtml && !Policy.OmitsDoctypeDeclaration)
+            {
+                finalCleanHTML = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
+                    "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" + finalCleanHTML;
+            }
+
+            if (Policy.UsesXhtml && !Policy.OmitsXmlDeclaration)
+            {
+                finalCleanHTML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + finalCleanHTML;
             }
 
             // Grab end time (to be put in the result set along with start time)

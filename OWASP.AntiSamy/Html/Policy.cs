@@ -66,9 +66,9 @@ namespace OWASP.AntiSamy.Html
         internal protected bool FormatsOutput { get; set; }
         /// <summary>Determines if HTML output gets trimmed.</summary>
         internal protected bool PreservesSpace { get; set; }
-        /// <summary>Currently not in use.</summary>
+        /// <summary>Avoids prepending prepend the "&lt;?xml ...&gt;" initial tag when using XHTML.</summary>
         internal protected bool OmitsXmlDeclaration { get; set; }
-        /// <summary>Currently not in use.</summary>
+        /// <summary>Avoids prepending prepend the "&lt;!DOCTYPE html ...&gt;" initial tag.</summary>
         internal protected bool OmitsDoctypeDeclaration { get; set; }
         /// <summary>Determines if HTML output gets encoded regarding special characters, like accents.</summary>
         internal protected bool EntityEncodesInternationalCharacters { get; set; }
