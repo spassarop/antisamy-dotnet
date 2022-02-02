@@ -79,6 +79,12 @@ namespace OWASP.AntiSamy.Css
         {
             this.policy = policy;
 
+            // FIX: Leave this in case there is no solution, hex is better that lots of rgb/a autoconversions.
+            // Set UseHex to true to preserve Hex color format on CSS and avoid rgba() conversion
+            //var colorType = typeof(CssKeywords).Assembly.GetType("AngleSharp.Css.Values.Color");
+            //var useHex = colorType.GetProperty("UseHex", BindingFlags.Public | BindingFlags.Static);
+            //useHex.SetValue(null, true);
+
             var cssParserOptions = new CssParserOptions
             {
                 IsIncludingUnknownDeclarations = true,

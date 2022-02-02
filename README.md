@@ -132,18 +132,19 @@ dotnet test OWASP.AntiSamy.sln
 -   .NET Core 2.0+
 -   .NET Standard 2.0
 -   .NET 5.0
+-   .NET 6.0
 
 ## Dependencies
 Core:
 -   AngleSharp (v0.16.1)
--   AngleSharp.Css (v0.16.2)
--   HtmlAgilityPack (v1.11.38)
+-   AngleSharp.Css (v0.16.3)
+-   HtmlAgilityPack (v1.11.40)
 
 Tests:
 -   FluentAssertions (v5.10.3)
--   Microsoft.NET.Test.Sdk (v16.8.3)
--   NUnit (v3.13.0)
--   NUnit3TestAdapter (v3.17.0)
+-   Microsoft.NET.Test.Sdk (v17.0.0)
+-   NUnit (v3.13.2)
+-   NUnit3TestAdapter (v4.2.1)
 
 ## License
 Released under the [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause) license as specified here: [LICENSE](https://github.com/spassarop/antisamy-dotnet/blob/master/LICENSE). 
