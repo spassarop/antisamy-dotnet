@@ -32,6 +32,7 @@ using NUnit.Framework;
 using OWASP.AntiSamy.Html;
 using OWASP.AntiSamy.Html.Model;
 using OWASP.AntiSamy.Html.Util;
+using Attribute = OWASP.AntiSamy.Html.Model.Attribute;
 using Constants = OWASP.AntiSamy.Html.Scan.Constants;
 
 namespace AntiSamyTests
@@ -473,7 +474,7 @@ namespace AntiSamyTests
         [Ignore("Current result is <iframe />, more inspection is needed.")]
         public void TestIframeValidation()
         {
-            var tag = new Tag("iframe", Constants.ACTION_VALIDATE, new Dictionary<string, OWASP.AntiSamy.Html.Model.Attribute>());
+            var tag = new Tag("iframe", Constants.ACTION_VALIDATE, new Dictionary<string, Attribute>());
             Policy revised = policy.MutateTag(tag);
 
             antisamy.Scan("<iframe></iframe>", revised).GetCleanHtml().Should().Be("<iframe></iframe>");
@@ -843,6 +844,42 @@ namespace AntiSamyTests
             // Truncate tag
             revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_TRUNCATE);
             antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("<bogus>whatever</bogus><span>Text</span>");
+        }
+
+        [Test]
+        public void TestNoopenerAndNoreferrer()
+        {
+            Policy basePolicy = policy.MutateTag(new Tag("a", Constants.ACTION_VALIDATE, new Dictionary<string, Attribute>
+            {
+                { "target", new Attribute("target", string.Empty, string.Empty, new List<string>(), new List<string>{ "_blank", "_self" }) },
+                { "rel", new Attribute("rel", string.Empty, string.Empty, new List<string>(), new List<string>{ "nofollow", "noopener", "noreferrer" }) }
+            }));
+
+            Policy revised = basePolicy.CloneWithDirective(Constants.ANCHORS_NOFOLLOW, "true").CloneWithDirective(Constants.ANCHORS_NOOPENER_NOREFERRER, "true");
+            // No target="_blank", so only nofollow can be added.
+            antisamy.Scan("<a>Link text</a>", revised).GetCleanHtml().Should().Contain("nofollow").And.NotContain("noopener noreferrer");
+            // target="_blank", can have both.
+            antisamy.Scan("<a target=\"_blank\">Link text</a>", revised).GetCleanHtml().Should().Contain("nofollow noopener noreferrer");
+            
+            Policy revised2 = basePolicy.CloneWithDirective(Constants.ANCHORS_NOFOLLOW, "false").CloneWithDirective(Constants.ANCHORS_NOOPENER_NOREFERRER, "true");
+            // No target="_blank", no rel added.
+            antisamy.Scan("<a>Link text</a>", revised2).GetCleanHtml().Should().NotContain("rel=");
+            // target="_blank", everything present.
+            antisamy.Scan("<a target='_blank' rel='nofollow'>Link text</a>", revised2).GetCleanHtml().Should().Contain("nofollow noopener noreferrer");
+            // target="_self", no rel added.
+            antisamy.Scan("<a target='_self'>Link text</a>", revised2).GetCleanHtml().Should().NotContain("rel=");
+            // target="_self", only nofollow present.
+            antisamy.Scan("<a target='_self' rel='nofollow'>Link text</a>", revised2).GetCleanHtml().Should().Contain("nofollow").And.NotContain("noopener noreferrer");
+            // noopener is not repeated
+            antisamy.Scan("<a target='_blank' rel='noopener'>Link text</a>", revised2).GetCleanHtml()
+                .Split(new string[] { "noopener" }, StringSplitOptions.None).Length.Should().Be(2);
+
+            Policy revised3 = basePolicy.CloneWithDirective(Constants.ANCHORS_NOFOLLOW, "false").CloneWithDirective(Constants.ANCHORS_NOOPENER_NOREFERRER, "false");
+            // No rel added
+            antisamy.Scan("<a>Link text</a>", revised3).GetCleanHtml().Should().NotContain("rel=");
+            // noopener is not repeated
+            antisamy.Scan("<a target='_blank' rel='noopener'>Link text</a>", revised3).GetCleanHtml()
+                .Split(new string[] { "noopener" }, StringSplitOptions.None).Length.Should().Be(2);
         }
     }
 }

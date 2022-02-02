@@ -58,17 +58,22 @@ namespace OWASP.AntiSamy.Html
         /// <summary>Maximum input size for the HTML to read.</summary>
         /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_MAX_INPUT_SIZE</c> is used.</remarks>
         internal protected int MaxInputSize { get; set; }
-        /// <summary>Determines if adds the attribute "nofollow" on &lt;a&gt; tags.</summary>
-        internal protected bool DoesNotFollowAnchors { get; protected set; }
+        /// <summary>Determines if adds the value "nofollow" for "rel" attribute on &lt;a&gt; tags.</summary>
+        internal protected bool AddNofollowInAnchors { get; protected set; }
+        /// <summary>
+        /// Determines if adds the value "noopener noreferrer" for "rel" attribute on &lt;a&gt; tags.
+        /// Only impacted if anchor has <c>target="_blank"</c> attrbiute.
+        /// </summary>
+        internal protected bool AddNoopenerAndNoreferrerInAnchors { get; protected set; }
         /// <summary>Determines if validates the &lt;param&gt; tag as &lt;embed&gt; tag.</summary>
         internal protected bool ValidatesParamAsEmbed { get; set; }
         /// <remarks>Currently not in use.</remarks>
         internal protected bool FormatsOutput { get; set; }
         /// <summary>Determines if HTML output gets trimmed.</summary>
         internal protected bool PreservesSpace { get; set; }
-        /// <summary>Avoids prepending prepend the "&lt;?xml ...&gt;" initial tag when using XHTML.</summary>
+        /// <summary>Avoids prepending prepend the <c>"&lt;?xml ...&gt;"</c> initial tag when using XHTML.</summary>
         internal protected bool OmitsXmlDeclaration { get; set; }
-        /// <summary>Avoids prepending prepend the "&lt;!DOCTYPE html ...&gt;" initial tag.</summary>
+        /// <summary>Avoids prepending prepend the <c>"&lt;!DOCTYPE html ...&gt;"</c> initial tag.</summary>
         internal protected bool OmitsDoctypeDeclaration { get; set; }
         /// <summary>Determines if HTML output gets encoded regarding special characters, like accents.</summary>
         internal protected bool EntityEncodesInternationalCharacters { get; set; }

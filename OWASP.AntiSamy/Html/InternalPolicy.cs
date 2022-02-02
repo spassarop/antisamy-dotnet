@@ -49,7 +49,8 @@ namespace OWASP.AntiSamy.Html
         private void SetProperties()
         {
             MaxInputSize = GetIntegerDirective(Constants.MAX_INPUT_SIZE, Constants.DEFAULT_MAX_INPUT_SIZE);
-            DoesNotFollowAnchors = IsTrue(Constants.ANCHORS_NOFOLLOW);
+            AddNofollowInAnchors = IsTrue(Constants.ANCHORS_NOFOLLOW);
+            AddNoopenerAndNoreferrerInAnchors = IsTrue(Constants.ANCHORS_NOOPENER_NOREFERRER);
             ValidatesParamAsEmbed = IsTrue(Constants.VALIDATE_PARAM_AS_EMBED);
             FormatsOutput = IsTrue(Constants.FORMAT_OUTPUT);
             PreservesSpace = IsTrue(Constants.PRESERVE_SPACE);

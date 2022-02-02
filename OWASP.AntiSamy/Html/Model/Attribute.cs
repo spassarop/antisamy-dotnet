@@ -101,5 +101,43 @@ namespace OWASP.AntiSamy.Html.Model
                 .Append($"\"{Constants.ANY_NORMAL_WHITESPACES}")
                 .ToString();
         }
+
+        internal static string MergeRelValuesInAnchor(bool addNofollow, bool addNoopenerAndNoreferrer, string currentRelValue)
+        {
+            string newRelValue = "";
+            if (string.IsNullOrEmpty(currentRelValue))
+            {
+                if (addNofollow) newRelValue = "nofollow";
+                if (addNoopenerAndNoreferrer) newRelValue += " noopener noreferrer";
+            }
+            else
+            {
+                var relTokens = new List<string>();
+                newRelValue = currentRelValue;
+                foreach (string value in currentRelValue.Split(' '))
+                {
+                    relTokens.Add(value.ToLowerInvariant());
+                }
+
+                if (addNofollow && !relTokens.Contains("nofollow"))
+                {
+                    newRelValue += " nofollow";
+                }
+
+                if (addNoopenerAndNoreferrer)
+                {
+                    if (!relTokens.Contains("noopener"))
+                    {
+                        newRelValue += " noopener";
+                    }
+                    if (!relTokens.Contains("noreferrer"))
+                    {
+                        newRelValue += " noreferrer";
+                    }
+                }
+            }
+
+            return newRelValue.Trim();
+        }
     }
 }

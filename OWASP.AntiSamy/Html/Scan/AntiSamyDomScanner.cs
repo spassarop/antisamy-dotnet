@@ -385,9 +385,31 @@ namespace OWASP.AntiSamy.Html.Scan
                 return;
             }
 
-            if (Policy.DoesNotFollowAnchors && tagName.ToLowerInvariant() == "a")
+            if (Policy.AddNofollowInAnchors && tagName.ToLowerInvariant() == "a")
             {
                 node.SetAttributeValue("rel", "nofollow");
+            }
+
+            if (tagName.ToLowerInvariant() == "a")
+            {
+                bool addNofollow = Policy.AddNofollowInAnchors;
+                bool addNoopenerAndNoreferrer = false;
+
+                if (Policy.AddNoopenerAndNoreferrerInAnchors)
+                {
+                    string targetAttribute = node.GetAttributeValue("target", null);
+                    if (targetAttribute != null && targetAttribute.ToLowerInvariant() == "_blank")
+                    {
+                        addNoopenerAndNoreferrer = true;
+                    }
+                }
+
+                string relAttribute = node.GetAttributeValue("rel", null);
+                string relValue = Attribute.MergeRelValuesInAnchor(addNofollow, addNoopenerAndNoreferrer, relAttribute ?? string.Empty);
+                if (!string.IsNullOrEmpty(relValue))
+                {
+                    node.SetAttributeValue("rel", relValue.Trim());
+                }
             }
 
             ProcessChildren(node);

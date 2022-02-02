@@ -54,6 +54,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string EMBED_STYLESHEETS = "embedStyleSheets";
         public static readonly string CONNECTION_TIMEOUT = "connectionTimeout";
         public static readonly string ANCHORS_NOFOLLOW = "nofollowAnchors";
+        public static readonly string ANCHORS_NOOPENER_NOREFERRER = "noopenerAndNoreferrerAnchors";
         public static readonly string VALIDATE_PARAM_AS_EMBED = "validateParamAsEmbed";
         public static readonly string PRESERVE_SPACE = "preserveSpace";
         public static readonly string PRESERVE_COMMENTS = "preserveComments";
