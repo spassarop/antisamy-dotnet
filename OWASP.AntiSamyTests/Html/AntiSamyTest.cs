@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2009-2021, Arshan Dabirsiaghi, Sebastián Passaro
+ * Copyright (c) 2009-2022, Arshan Dabirsiaghi, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -31,6 +31,8 @@ using FluentAssertions;
 using NUnit.Framework;
 using OWASP.AntiSamy.Html;
 using OWASP.AntiSamy.Html.Model;
+using OWASP.AntiSamy.Html.Util;
+using Attribute = OWASP.AntiSamy.Html.Model.Attribute;
 using Constants = OWASP.AntiSamy.Html.Scan.Constants;
 
 namespace AntiSamyTests
@@ -189,11 +191,11 @@ namespace AntiSamyTests
         {
             const string html = "<b><u><g>foo</g></u></b>";
 
-            Policy revised = policy.CloneWithDirective("onUnknownTag", "encode");
+            Policy revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_ENCODE);
             antisamy.Scan(html, revised).GetCleanHtml().Should().ContainAll("&lt;g&gt;", "&lt;/g&gt;");
 
             Tag tag = policy.GetTagByName("b").MutateAction("encode");
-            Policy revised2 = policy.MutateTag(tag);
+            Policy revised2 = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_FILTER).MutateTag(tag);
             antisamy.Scan(html, revised2).GetCleanHtml().Should().ContainAll("&lt;b&gt;", "&lt;/b&gt;");
         }
 
@@ -472,7 +474,7 @@ namespace AntiSamyTests
         [Ignore("Current result is <iframe />, more inspection is needed.")]
         public void TestIframeValidation()
         {
-            var tag = new Tag("iframe", Constants.ACTION_VALIDATE, new Dictionary<string, OWASP.AntiSamy.Html.Model.Attribute>());
+            var tag = new Tag("iframe", Constants.ACTION_VALIDATE, new Dictionary<string, Attribute>());
             Policy revised = policy.MutateTag(tag);
 
             antisamy.Scan("<iframe></iframe>", revised).GetCleanHtml().Should().Be("<iframe></iframe>");
@@ -556,7 +558,8 @@ namespace AntiSamyTests
         [Test]
         public void TestXssOnMouseOver()
         {
-            antisamy.Scan("<bogus>whatever</bogus><img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" onmouseover=\"alert('xss')\">", policy).GetCleanHtml()
+            Policy revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_FILTER);
+            antisamy.Scan("<bogus>whatever</bogus><img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" onmouseover=\"alert('xss')\">", revised).GetCleanHtml()
                 .Should().Be("whatever<img src=\"https://ssl.gstatic.com/codesite/ph/images/defaultlogo.png\" />");
         }
 
@@ -587,7 +590,8 @@ namespace AntiSamyTests
             using var reader = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes($"<bogus>whatever</bogus>{testImgSrcUrl}onmouseover=\"alert('xss')\">")));
             using var writer = new StreamWriter(new MemoryStream());
 
-            antisamy.Scan(reader, writer, policy).GetCleanHtml().Should().BeNull();
+            Policy revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_FILTER);
+            antisamy.Scan(reader, writer, revised).GetCleanHtml().Should().BeNull();
 
             using var resultReader = new StreamReader(writer.BaseStream);
             resultReader.ReadToEnd().Should().Be($"whatever{testImgSrcUrl}/>");
@@ -766,13 +770,13 @@ namespace AntiSamyTests
             // Test that margin attribute is not removed when value has too much significant figures.
             // Current behavior is that decimals like 0.00001 are internally translated to 1E-05, this
             // is reflected on regex validation and actual output. The inconsistency is due to Batik CSS.
-            antisamy.Scan("<p style=\"margin: 0.0001pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin");
-            antisamy.Scan("<p style=\"margin: 10000000pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin");
+            antisamy.Scan("<p style=\"margin: 0.0001pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin: 0.0001pt");
+            antisamy.Scan("<p style=\"margin: 10000000pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin: 10000000pt");
             
-            // When using exponential directly the "e" or "E" is internally considered as the start of
-            // the dimension/unit type. This creates inconsistencies that make the regex validation fail or value gets deleted.
-            antisamy.Scan("<p style=\"margin: 1.0E-04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
-            antisamy.Scan("<p style=\"margin: 1.0E+04pt;\">Some text.</p>", policy).GetCleanHtml().Should().NotContain("margin");
+            // When using exponential directly with "e" or "E" the output gets transformed to decimal.
+            // Ideally in a new version of AngleSharp.Css it should keep the exponential format.
+            antisamy.Scan("<p style=\"margin: 1.0E-04pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin: 0.0001");
+            antisamy.Scan("<p style=\"margin: 1.0e+04pt;\">Some text.</p>", policy).GetCleanHtml().Should().Contain("margin: 10000");
         }
 
         [Test]
@@ -782,6 +786,100 @@ namespace AntiSamyTests
                 "\t<p style=\"font-size:1.5ex;padding-left:1rem;padding-top:16px;\">Some text.</p>\n" +
                 "</div>";
             antisamy.Scan(input, policy).GetCleanHtml().Should().ContainAll("ex", "px", "rem", "vw", "vh").And.NotContain("rpc");
+        }
+
+        [Test(Description = "Tests for CVE-2021-42575.")]
+        public void TestXSSInsideSelectOptionStyle()
+        {
+            antisamy.Scan("<select><option><style>h1{color:black;}</style></option></select>", policy).GetCleanHtml().Should().Contain("color");
+            antisamy.Scan("<select><option><style><script>alert(1)</script></style></option></select>", policy).GetCleanHtml().Should().NotContain("<script>");
+        }
+
+        [Test]
+        public void TestStyleImport()
+        {
+            // Check order is correct:
+            //  First import: noprint class
+            //  Second import: table.browserref selector
+            //  Original styles: very-specific-antisamy class
+            const string input = "<style type='text/css'>\n" +
+                "\t@import url(https://www.w3.org/2008/site/css/realprint.css);\n" +
+                "\t@import \"https://www.w3schools.com/browserref.css\";\n" +
+                "\t.very-specific-antisamy {font: 15pt \"Arial\"; color: blue;}\n" +
+                "</style>";
+            var resultRegex = new Regex(@".*?\.noprint.*?table\.browserref.*?\.very-specific-antisamy.*?", RegexOptions.Singleline);
+            
+            Policy revised = policy.CloneWithDirective(Constants.EMBED_STYLESHEETS, "true");
+            resultRegex.IsMatch(antisamy.Scan(input, revised).GetCleanHtml()).Should().Be(true);
+
+            Policy revised2 = policy.CloneWithDirective(Constants.EMBED_STYLESHEETS, "true").CloneWithDirective(Constants.MAX_STYLESHEET_IMPORTS, "1");
+            antisamy.Scan(input, revised2).GetErrorMessages()
+                .Should().Contain(string.Format(OWASP.AntiSamy.Properties.Resources.ResourceManager.GetString(Constants.ERROR_CSS_IMPORT_EXCEEDED), 
+                HtmlEntityEncoder.HtmlEntityEncode("https://www.w3schools.com/browserref.css"), 1));
+
+            Policy revised3 = revised.CloneWithDirective(Constants.MAX_INPUT_SIZE, "500");
+            antisamy.Scan(input, revised3).GetErrorMessages()
+                .Should().Contain(string.Format(OWASP.AntiSamy.Properties.Resources.ResourceManager.GetString(Constants.ERROR_CSS_IMPORT_TOOLARGE), 
+                HtmlEntityEncoder.HtmlEntityEncode("https://www.w3schools.com/browserref.css"), 500));
+        }
+
+        [Test]
+        public void TestOnUnknownTagActions()
+        {
+            const string unknownTag = "<bogus a=\"1\">whatever</bogus><span>Text</span>";
+            // Default is to remove.
+            antisamy.Scan(unknownTag, policy).GetCleanHtml().Should().Be("<span>Text</span>");
+            // Only actions different than "remove" are considered, any other text reuslts in removing. 
+            Policy revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, "other text");
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("<span>Text</span>");
+            // Cannot validate undefined tag, remove it.
+            revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_VALIDATE);
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("<span>Text</span>");
+            // Encode tag
+            revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_ENCODE);
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("&lt;bogus a=&quot;1&quot;&gt;whatever&lt;/bogus&gt;<span>Text</span>");
+            // Filter tag
+            revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_FILTER);
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("whatever<span>Text</span>");
+            // Truncate tag
+            revised = policy.CloneWithDirective(Constants.ON_UNKNOWN_TAG_ACTION, Constants.ACTION_TRUNCATE);
+            antisamy.Scan(unknownTag, revised).GetCleanHtml().Should().Be("<bogus>whatever</bogus><span>Text</span>");
+        }
+
+        [Test]
+        public void TestNoopenerAndNoreferrer()
+        {
+            Policy basePolicy = policy.MutateTag(new Tag("a", Constants.ACTION_VALIDATE, new Dictionary<string, Attribute>
+            {
+                { "target", new Attribute("target", string.Empty, string.Empty, new List<string>(), new List<string>{ "_blank", "_self" }) },
+                { "rel", new Attribute("rel", string.Empty, string.Empty, new List<string>(), new List<string>{ "nofollow", "noopener", "noreferrer" }) }
+            }));
+
+            Policy revised = basePolicy.CloneWithDirective(Constants.ANCHORS_NOFOLLOW, "true").CloneWithDirective(Constants.ANCHORS_NOOPENER_NOREFERRER, "true");
+            // No target="_blank", so only nofollow can be added.
+            antisamy.Scan("<a>Link text</a>", revised).GetCleanHtml().Should().Contain("nofollow").And.NotContain("noopener noreferrer");
+            // target="_blank", can have both.
+            antisamy.Scan("<a target=\"_blank\">Link text</a>", revised).GetCleanHtml().Should().Contain("nofollow noopener noreferrer");
+            
+            Policy revised2 = basePolicy.CloneWithDirective(Constants.ANCHORS_NOFOLLOW, "false").CloneWithDirective(Constants.ANCHORS_NOOPENER_NOREFERRER, "true");
+            // No target="_blank", no rel added.
+            antisamy.Scan("<a>Link text</a>", revised2).GetCleanHtml().Should().NotContain("rel=");
+            // target="_blank", everything present.
+            antisamy.Scan("<a target='_blank' rel='nofollow'>Link text</a>", revised2).GetCleanHtml().Should().Contain("nofollow noopener noreferrer");
+            // target="_self", no rel added.
+            antisamy.Scan("<a target='_self'>Link text</a>", revised2).GetCleanHtml().Should().NotContain("rel=");
+            // target="_self", only nofollow present.
+            antisamy.Scan("<a target='_self' rel='nofollow'>Link text</a>", revised2).GetCleanHtml().Should().Contain("nofollow").And.NotContain("noopener noreferrer");
+            // noopener is not repeated
+            antisamy.Scan("<a target='_blank' rel='noopener'>Link text</a>", revised2).GetCleanHtml()
+                .Split(new string[] { "noopener" }, StringSplitOptions.None).Length.Should().Be(2);
+
+            Policy revised3 = basePolicy.CloneWithDirective(Constants.ANCHORS_NOFOLLOW, "false").CloneWithDirective(Constants.ANCHORS_NOOPENER_NOREFERRER, "false");
+            // No rel added
+            antisamy.Scan("<a>Link text</a>", revised3).GetCleanHtml().Should().NotContain("rel=");
+            // noopener is not repeated
+            antisamy.Scan("<a target='_blank' rel='noopener'>Link text</a>", revised3).GetCleanHtml()
+                .Split(new string[] { "noopener" }, StringSplitOptions.None).Length.Should().Be(2);
         }
     }
 }

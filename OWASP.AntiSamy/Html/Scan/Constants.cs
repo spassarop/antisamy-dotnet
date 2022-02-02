@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Jerry Hoff, Sebastián Passaro
+ * Copyright (c) 2008-2022, Jerry Hoff, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -54,13 +54,19 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string EMBED_STYLESHEETS = "embedStyleSheets";
         public static readonly string CONNECTION_TIMEOUT = "connectionTimeout";
         public static readonly string ANCHORS_NOFOLLOW = "nofollowAnchors";
+        public static readonly string ANCHORS_NOOPENER_NOREFERRER = "noopenerAndNoreferrerAnchors";
         public static readonly string VALIDATE_PARAM_AS_EMBED = "validateParamAsEmbed";
         public static readonly string PRESERVE_SPACE = "preserveSpace";
         public static readonly string PRESERVE_COMMENTS = "preserveComments";
         public static readonly string ENTITY_ENCODE_INERNATIONAL_CHARS = "entityEncodeIntlChars";
         public static readonly string ALLOW_DYNAMIC_ATTRIBUTES = "allowDynamicAttributes";
+        public static readonly string MAX_INPUT_SIZE = "maxInputSize";
+        public static readonly string MAX_STYLESHEET_IMPORTS = "maxStyleSheetImports";
+        public static readonly string ON_UNKNOWN_TAG_ACTION = "onUnknownTag";
         public static readonly int DEFAULT_MAX_INPUT_SIZE = 100_000;
         public static readonly int MAX_NESTED_TAGS = 1000;
+        public static readonly int DEFAULT_CONNECTION_TIMEOUT = 1000;
+        public static readonly int DEFAULT_MAX_STYLESHEET_IMPORTS = 1;
 
         public static readonly string ACTION_FILTER = "filter";
         public static readonly string ACTION_VALIDATE = "validate";

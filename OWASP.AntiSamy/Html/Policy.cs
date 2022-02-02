@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Jerry Hoff, Sebastián Passaro
+ * Copyright (c) 2008-2022, Jerry Hoff, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -56,18 +56,24 @@ namespace OWASP.AntiSamy.Html
         private readonly TagMatcher requireClosingTagsMatcher;
 
         /// <summary>Maximum input size for the HTML to read.</summary>
+        /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_MAX_INPUT_SIZE</c> is used.</remarks>
         internal protected int MaxInputSize { get; set; }
-        /// <summary>Determines if adds the attribute "nofollow" on &lt;a&gt; tags.</summary>
-        internal protected bool DoesNotFollowAnchors { get; protected set; }
+        /// <summary>Determines if adds the value "nofollow" for "rel" attribute on &lt;a&gt; tags.</summary>
+        internal protected bool AddNofollowInAnchors { get; protected set; }
+        /// <summary>
+        /// Determines if adds the value "noopener noreferrer" for "rel" attribute on &lt;a&gt; tags.
+        /// Only impacted if anchor has <c>target="_blank"</c> attrbiute.
+        /// </summary>
+        internal protected bool AddNoopenerAndNoreferrerInAnchors { get; protected set; }
         /// <summary>Determines if validates the &lt;param&gt; tag as &lt;embed&gt; tag.</summary>
         internal protected bool ValidatesParamAsEmbed { get; set; }
         /// <remarks>Currently not in use.</remarks>
         internal protected bool FormatsOutput { get; set; }
         /// <summary>Determines if HTML output gets trimmed.</summary>
         internal protected bool PreservesSpace { get; set; }
-        /// <summary>Currently not in use.</summary>
+        /// <summary>Avoids prepending prepend the <c>"&lt;?xml ...&gt;"</c> initial tag when using XHTML.</summary>
         internal protected bool OmitsXmlDeclaration { get; set; }
-        /// <summary>Currently not in use.</summary>
+        /// <summary>Avoids prepending prepend the <c>"&lt;!DOCTYPE html ...&gt;"</c> initial tag.</summary>
         internal protected bool OmitsDoctypeDeclaration { get; set; }
         /// <summary>Determines if HTML output gets encoded regarding special characters, like accents.</summary>
         internal protected bool EntityEncodesInternationalCharacters { get; set; }
@@ -76,12 +82,18 @@ namespace OWASP.AntiSamy.Html
         internal protected bool UsesXhtml { get; set; }
         /// <summary>Determines if comments are removed from the HTML.</summary>
         internal protected bool PreservesComments { get; set; }
-        /// <summary>Currently not in use.</summary>
+        /// <summary>Determines if style sheets can be embedded/imported to be parsed.</summary>
         internal protected bool EmbedsStyleSheets { get; set; }
-        /// <summary>Determines if unknowkn HTML tags get encoded instead of removed.</summary>
-        internal protected bool EncodesUnknownTag { get; set; }
-        /// <summary>Currently not in use.</summary>
+        /// <summary>Determines which action to take when encountering unknown HTML tags instead of removing them.</summary>
+        internal protected string OnUnknownTagAction { get; set; }
+        /// <summary>Determines if dynamic attributes (like data-*) are allowed.</summary>
         internal protected bool AllowsDynamicAttributes { get; set; }
+        /// <summary>Determines how much milliseconds to wait when importing syle sheets.</summary>
+        /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_CONNECTION_TIMEOUT</c> is used.</remarks>
+        internal protected int ConnectionTimeout { get; set; }
+        /// <summary>Determines how much milliseconds to wait when importing syle sheets.</summary>
+        /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_MAX_STYLESHEET_IMPORTS</c> is used.</remarks>
+        internal protected int MaxStyleSheetImports { get; set; }
 
         /// <summary>Create policy with <see cref="ParseContext"/>.</summary>
         /// <param name="parseContext">Context with all collections to load the new policy.</param>

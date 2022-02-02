@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Kristian Rosenvold, Sebastián Passaro
+ * Copyright (c) 2008-2022, Kristian Rosenvold, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -35,29 +35,22 @@ namespace OWASP.AntiSamy.Html
     /// </summary>
     internal class InternalPolicy : Policy
     {
-        public InternalPolicy(ParseContext parseContext)
-            : base(parseContext)
+        public InternalPolicy(ParseContext parseContext) : base(parseContext)
         {
-            MaxInputSize = DetermineMaximumInputSize();
-            DoesNotFollowAnchors = IsTrue(Constants.ANCHORS_NOFOLLOW);
-            ValidatesParamAsEmbed = IsTrue(Constants.VALIDATE_PARAM_AS_EMBED);
-            FormatsOutput = IsTrue(Constants.FORMAT_OUTPUT);
-            PreservesSpace = IsTrue(Constants.PRESERVE_SPACE);
-            OmitsXmlDeclaration = IsTrue(Constants.OMIT_XML_DECLARATION);
-            OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
-            EntityEncodesInternationalCharacters = IsTrue(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS);
-            UsesXhtml = IsTrue(Constants.USE_XHTML);
-            EncodesUnknownTag = GetDirectiveByName("onUnknownTag") == "encode";
-            PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
-            EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
-            AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
+            SetProperties();
         }
 
         public InternalPolicy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
                 : base(old, directives, tagRules)
         {
-            MaxInputSize = DetermineMaximumInputSize();
-            DoesNotFollowAnchors = IsTrue(Constants.ANCHORS_NOFOLLOW);
+            SetProperties();
+        }
+
+        private void SetProperties()
+        {
+            MaxInputSize = GetIntegerDirective(Constants.MAX_INPUT_SIZE, Constants.DEFAULT_MAX_INPUT_SIZE);
+            AddNofollowInAnchors = IsTrue(Constants.ANCHORS_NOFOLLOW);
+            AddNoopenerAndNoreferrerInAnchors = IsTrue(Constants.ANCHORS_NOOPENER_NOREFERRER);
             ValidatesParamAsEmbed = IsTrue(Constants.VALIDATE_PARAM_AS_EMBED);
             FormatsOutput = IsTrue(Constants.FORMAT_OUTPUT);
             PreservesSpace = IsTrue(Constants.PRESERVE_SPACE);
@@ -65,29 +58,24 @@ namespace OWASP.AntiSamy.Html
             OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
             EntityEncodesInternationalCharacters = IsTrue(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS);
             UsesXhtml = IsTrue(Constants.USE_XHTML);
-            EncodesUnknownTag = GetDirectiveByName("onUnknownTag") == "encode";
+            string onUnknownTagActionValue = GetDirectiveByName(Constants.ON_UNKNOWN_TAG_ACTION);
+            OnUnknownTagAction = string.IsNullOrEmpty(onUnknownTagActionValue) ? string.Empty : onUnknownTagActionValue.ToLowerInvariant();
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);
             EmbedsStyleSheets = IsTrue(Constants.EMBED_STYLESHEETS);
             AllowsDynamicAttributes = IsTrue(Constants.ALLOW_DYNAMIC_ATTRIBUTES);
+            ConnectionTimeout = GetIntegerDirective(Constants.CONNECTION_TIMEOUT, Constants.DEFAULT_CONNECTION_TIMEOUT);
+            MaxStyleSheetImports = GetIntegerDirective(Constants.MAX_STYLESHEET_IMPORTS, Constants.DEFAULT_MAX_STYLESHEET_IMPORTS);
         }
 
-        private bool IsTrue(string anchorsNofollow)
+        private bool IsTrue(string booleanDirective)
         {
-            return GetDirectiveByName(anchorsNofollow) == "true";
+            return GetDirectiveByName(booleanDirective) == "true";
         }
 
-        /// <summary>Returns the maximum input size. If this value is not specified by
-        /// the policy, the <c>DEFAULT_MAX_INPUT_SIZE</c> is used.</summary>
-        public int DetermineMaximumInputSize()
+        /// <summary>Returns the integer value from directive or a default value.</summary>
+        public int GetIntegerDirective(string directiveName, int defaultValue)
         {
-            // Grab the size specified in the config file
-            if (!int.TryParse(GetDirectiveByName("maxInputSize"), out int maxInputSize))
-            {
-                // Holds the maximum input size for the incoming fragment
-                maxInputSize = Constants.DEFAULT_MAX_INPUT_SIZE;
-            }
-
-            return maxInputSize;
+            return int.TryParse(GetDirectiveByName(directiveName), out int integer) ? integer : defaultValue;
         }
     }
 }

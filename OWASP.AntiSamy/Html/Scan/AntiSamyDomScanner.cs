@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2021, Jerry Hoff, Sebastián Passaro
+ * Copyright (c) 2009-2022, Jerry Hoff, Sebastián Passaro
  * 
  * All rights reserved.
  * 
@@ -108,7 +108,7 @@ namespace OWASP.AntiSamy.Html.Scan
             {
                 OptionAutoCloseOnEnd = true, // Add closing tags
                 OptionMaxNestedChildNodes = Constants.MAX_NESTED_TAGS, // TODO: Add directive for this like in MaxInputSize?
-                OptionOutputAsXml = true, // Enforces XML rules, encodes big 5
+                OptionOutputAsXml = Policy.UsesXhtml, // Enforces XML rules, encodes big 5
                 OptionXmlForceOriginalComment = true // Fix provided by the library for weird added spaces in HTML comments
             };
 
@@ -143,6 +143,17 @@ namespace OWASP.AntiSamy.Html.Scan
                 finalCleanHTML = SpecialCharactersEncoder.Encode(finalCleanHTML);
             }
 
+            if (!Policy.UsesXhtml && !Policy.OmitsDoctypeDeclaration)
+            {
+                finalCleanHTML = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
+                    "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" + finalCleanHTML;
+            }
+
+            if (Policy.UsesXhtml && !Policy.OmitsXmlDeclaration)
+            {
+                finalCleanHTML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + finalCleanHTML;
+            }
+
             // Grab end time (to be put in the result set along with start time)
             var end = DateTime.Now;
             Results = new CleanResults(start, end, finalCleanHTML, errorMessages);
@@ -151,6 +162,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
         private void InitBlock()
         {
+            Results = null;
             errorMessages.Clear();
         }
 
@@ -201,26 +213,26 @@ namespace OWASP.AntiSamy.Html.Scan
                 tag = BASIC_EMBED_TAG;
             }
 
-            if (tag == null && Policy.EncodesUnknownTag || tag != null && tag.Action == Constants.ACTION_ENCODE)
+            if (tag == null && Policy.OnUnknownTagAction == Constants.ACTION_ENCODE || tag != null && tag.Action == Constants.ACTION_ENCODE)
             {
                 EncodeTag(node, tagName);
             }
-            else if (tag == null || tag.Action == Constants.ACTION_FILTER)
+            else if (tag == null && Policy.OnUnknownTagAction == Constants.ACTION_FILTER || tag != null && tag.Action == Constants.ACTION_FILTER)
             {
                 FilterTag(node, tag, tagName);
             }
-            else if (tag.Action == Constants.ACTION_VALIDATE)
+            else if (tag != null && tag.Action == Constants.ACTION_VALIDATE)
             {
                 ValidateTag(node, parentNode, tagName, tag, isMasqueradingParam);
             }
-            else if (tag.Action == Constants.ACTION_TRUNCATE)
+            else if (tag == null && Policy.OnUnknownTagAction == Constants.ACTION_TRUNCATE || tag != null && tag.Action == Constants.ACTION_TRUNCATE)
             {
                 TruncateTag(node, tagName);
             }
             else
             {
-                // If we reached this it means the tag's action is "remove", which means to remove the tag (including its contents).
-                AddError(Constants.ERROR_TAG_DISALLOWED, HtmlEntityEncoder.HtmlEntityEncode(tagName));
+                // If we reached this it means the tag's action is "remove" or the tag is unknown, which means to remove the tag (including its contents).
+                AddError(tag == null ? Constants.ERROR_TAG_NOT_IN_POLICY : Constants.ERROR_TAG_DISALLOWED, HtmlEntityEncoder.HtmlEntityEncode(tagName));
                 RemoveNode(node);
             }
         }
@@ -373,9 +385,31 @@ namespace OWASP.AntiSamy.Html.Scan
                 return;
             }
 
-            if (Policy.DoesNotFollowAnchors && tagName.ToLowerInvariant() == "a")
+            if (Policy.AddNofollowInAnchors && tagName.ToLowerInvariant() == "a")
             {
                 node.SetAttributeValue("rel", "nofollow");
+            }
+
+            if (tagName.ToLowerInvariant() == "a")
+            {
+                bool addNofollow = Policy.AddNofollowInAnchors;
+                bool addNoopenerAndNoreferrer = false;
+
+                if (Policy.AddNoopenerAndNoreferrerInAnchors)
+                {
+                    string targetAttribute = node.GetAttributeValue("target", null);
+                    if (targetAttribute != null && targetAttribute.ToLowerInvariant() == "_blank")
+                    {
+                        addNoopenerAndNoreferrer = true;
+                    }
+                }
+
+                string relAttribute = node.GetAttributeValue("rel", null);
+                string relValue = Attribute.MergeRelValuesInAnchor(addNofollow, addNoopenerAndNoreferrer, relAttribute ?? string.Empty);
+                if (!string.IsNullOrEmpty(relValue))
+                {
+                    node.SetAttributeValue("rel", relValue.Trim());
+                }
             }
 
             ProcessChildren(node);
