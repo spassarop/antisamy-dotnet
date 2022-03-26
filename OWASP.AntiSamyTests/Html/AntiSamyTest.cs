@@ -41,13 +41,13 @@ namespace AntiSamyTests
     public class AntiSamyTest
     {
         private AntiSamy antisamy;
-        private Policy policy;
+        private TestPolicy policy;
 
         [SetUp]
         public void SetUp()
         {
             antisamy = new AntiSamy();
-            policy = Policy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
+            policy = TestPolicy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
         }
 
         [Test(Description = "Test basic XSS cases.")]
@@ -880,6 +880,25 @@ namespace AntiSamyTests
             // noopener is not repeated
             antisamy.Scan("<a target='_blank' rel='noopener'>Link text</a>", revised3).GetCleanHtml()
                 .Split(new string[] { "noopener" }, StringSplitOptions.None).Length.Should().Be(2);
+        }
+
+        [Test]
+        public void TestLeadingDashOnPropertyName()
+        {
+            // Test that property names with leading dash are supported
+            string input = "<style type='text/css'>\n" +
+                "\t.very-specific-antisamy { -moz-border-radius: inherit ; -webkit-border-radius: 25px 10px 5px 10px;}\n" +
+                "</style>";
+            
+            // Define new properties for the policy
+            var leadingDashProperty1 = new Property("-webkit-border-radius");
+            leadingDashProperty1.AddAllowedRegExp("\\d+(\\.\\d+)?px( \\d+(\\.\\d+)?px){0,3}");
+            var leadingDashProperty2 = new Property("-moz-border-radius");
+            leadingDashProperty2.AddAllowedValue("inherit");
+            Policy revised = policy.AddCssProperty(leadingDashProperty1).AddCssProperty(leadingDashProperty2);
+            
+            // Test properties
+            antisamy.Scan(input, revised).GetCleanHtml().Should().ContainAll("-webkit-border-radius", "-moz-border-radius");
         }
     }
 }

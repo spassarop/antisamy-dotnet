@@ -25,6 +25,7 @@
 using System.Collections.Generic;
 using OWASP.AntiSamy.Html.Scan;
 using Tag = OWASP.AntiSamy.Html.Model.Tag;
+using Property = OWASP.AntiSamy.Html.Model.Property;
 
 namespace OWASP.AntiSamy.Html
 {
@@ -40,8 +41,8 @@ namespace OWASP.AntiSamy.Html
             SetProperties();
         }
 
-        public InternalPolicy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
-                : base(old, directives, tagRules)
+        public InternalPolicy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules, Dictionary<string, Property> cssRules)
+                : base(old, directives, tagRules, cssRules)
         {
             SetProperties();
         }

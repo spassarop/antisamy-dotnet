@@ -47,9 +47,9 @@ namespace OWASP.AntiSamy.Html
 
         private readonly Dictionary<string, string> commonRegularExpressions;
         private readonly Dictionary<string, Attribute> commonAttributes;
-        private readonly Dictionary<string, Tag> tagRules;
-        private readonly Dictionary<string, Property> cssRules;
-        private readonly Dictionary<string, string> directives;
+        internal readonly Dictionary<string, Tag> tagRules;
+        internal readonly Dictionary<string, Property> cssRules;
+        internal readonly Dictionary<string, string> directives;
         private readonly Dictionary<string, Attribute> globalAttributes;
         private readonly Dictionary<string, Attribute> dynamicAttributes;
         private readonly TagMatcher allowedEmptyTagsMatcher;
@@ -112,11 +112,12 @@ namespace OWASP.AntiSamy.Html
         /// <param name="old">Old policy to copy from.</param>
         /// <param name="directives">Directives to override.</param>
         /// <param name="tagRules">Tag rules to override.</param>
-        protected Policy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
+        /// <param name="cssRules">CSS rules to override.</param>
+        protected Policy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules, Dictionary<string, Property> cssRules)
         {
             commonAttributes = old.commonAttributes;
             commonRegularExpressions = old.commonRegularExpressions;
-            cssRules = old.cssRules;
+            this.cssRules = cssRules;
             this.directives = directives;
             dynamicAttributes = old.dynamicAttributes;
             globalAttributes = old.globalAttributes;
@@ -211,7 +212,7 @@ namespace OWASP.AntiSamy.Html
                 newDirectives.Add(name, value);
             }
 
-            return new InternalPolicy(this, newDirectives, tagRules);
+            return new InternalPolicy(this, newDirectives, tagRules, cssRules);
         }
 
         /// <summary>A simple method for returning one of the &lt;common-regexp&gt; entries by name.</summary>
@@ -266,24 +267,7 @@ namespace OWASP.AntiSamy.Html
             return dynamicAttribute;
         }
 
-        internal Policy MutateTag(Tag tag)
-        {
-            var newTagRules = new Dictionary<string, Tag>(tagRules);
-            string tagNameToLower = tag.Name.ToLowerInvariant();
-
-            if (newTagRules.ContainsKey(tagNameToLower))
-            {
-                newTagRules[tagNameToLower] = tag;
-            }
-            else
-            {
-                newTagRules.Add(tagNameToLower, tag);
-            }
-
-            return new InternalPolicy(this, directives, newTagRules);
-        }
-
-        private static ParseContext GetParseContext(XmlDocument document)
+        internal static ParseContext GetParseContext(XmlDocument document)
         {
             var parseContext = new ParseContext();
 
@@ -297,7 +281,7 @@ namespace OWASP.AntiSamy.Html
         /// <param name="filename">The name of the file which contains the policy XML.</param>
         /// <returns>The loaded <see cref="XmlDocument"/>.</returns>
         /// <exception cref="PolicyException"/>
-        private static XmlDocument GetXmlDocumentFromFile(string filename)
+        internal static XmlDocument GetXmlDocumentFromFile(string filename)
         {
             try
             {
