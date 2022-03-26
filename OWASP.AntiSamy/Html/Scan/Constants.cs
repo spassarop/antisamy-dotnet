@@ -33,10 +33,6 @@ namespace OWASP.AntiSamy.Html.Scan
             "base", "param", "meta", "input", "textarea", "embed", "basefont", "col"
         };
 
-        public static readonly List<string> DEFAULT_REQUIRE_CLOSING_TAGS = new List<string> {
-            "iframe", "script", "link"
-        };
-
         // For Tag regular expression building
         public static readonly string REGEXP_CHARACTERS = "\\(){}.*?$^-+";
         public static readonly string ANY_NORMAL_WHITESPACES = "(\\s)*";

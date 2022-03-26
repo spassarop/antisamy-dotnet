@@ -53,7 +53,6 @@ namespace OWASP.AntiSamy.Html
         private readonly Dictionary<string, Attribute> globalAttributes;
         private readonly Dictionary<string, Attribute> dynamicAttributes;
         private readonly TagMatcher allowedEmptyTagsMatcher;
-        private readonly TagMatcher requireClosingTagsMatcher;
 
         /// <summary>Maximum input size for the HTML to read.</summary>
         /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_MAX_INPUT_SIZE</c> is used.</remarks>
@@ -107,7 +106,6 @@ namespace OWASP.AntiSamy.Html
             globalAttributes = parseContext.globalAttributes;
             tagRules = parseContext.tagRules;
             allowedEmptyTagsMatcher = new TagMatcher(parseContext.allowedEmptyTags);
-            requireClosingTagsMatcher = new TagMatcher(parseContext.requireClosingTags);
         }
 
         /// <summary>Create policy with full paramterers.</summary>
@@ -124,7 +122,6 @@ namespace OWASP.AntiSamy.Html
             globalAttributes = old.globalAttributes;
             this.tagRules = tagRules;
             allowedEmptyTagsMatcher = old.allowedEmptyTagsMatcher;
-            requireClosingTagsMatcher = old.requireClosingTagsMatcher;
         }
 
         /// <summary> This retrieves a policy based on a default location ("AntiSamyPolicyExamples/antisamy.xml") or from the embedded XML.</summary>
@@ -396,7 +393,6 @@ namespace OWASP.AntiSamy.Html
                 ParseTagRules(document.GetElementsByTagName("tag-rules").Item(0), parseContext);
                 ParseCssRules(document.GetElementsByTagName("css-rules").Item(0), parseContext);
                 ParseAllowedEmptyTags(document.GetElementsByTagName("allowed-empty-tags").Item(0), parseContext);
-                ParseRequireClosingTags(document.GetElementsByTagName("require-closing-tags").Item(0), parseContext);
             }
             catch (Exception ex)
             {
@@ -676,14 +672,6 @@ namespace OWASP.AntiSamy.Html
         private static void ParseAllowedEmptyTags(XmlNode allowedEmptyTagListNode, ParseContext parseContext)
         {
             ParseTagListWithLiterals(allowedEmptyTagListNode, parseContext.allowedEmptyTags, Constants.DEFAULT_ALLOWED_EMPTY_TAGS);
-        }
-
-        /// <summary> Go through the &lt;require-closing-tags&gt; section of the policy file.</summary>
-        /// <param name="requireClosingTagListNode">Top level of &lt;require-closing-tags&gt;.</param>
-        /// <param name="parseContext">The <see cref="ParseContext"/> containing the require closing tags list to fill.</param>
-        private static void ParseRequireClosingTags(XmlNode requireClosingTagListNode, ParseContext parseContext)
-        {
-            ParseTagListWithLiterals(requireClosingTagListNode, parseContext.requireClosingTags, Constants.DEFAULT_REQUIRE_CLOSING_TAGS);
         }
 
         private static void ParseTagListWithLiterals(XmlNode nodeList, List<string> tagListToFill, List<string> defaultTagsList)
