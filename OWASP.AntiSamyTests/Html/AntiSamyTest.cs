@@ -900,5 +900,32 @@ namespace AntiSamyTests
             // Test properties
             antisamy.Scan(input, revised).GetCleanHtml().Should().ContainAll("-webkit-border-radius", "-moz-border-radius");
         }
+
+        [Test]
+        public void TestSmuggledTagsInStyleContent()
+        {
+            Policy revised = policy.CloneWithDirective(Constants.USE_XHTML, "true");
+            antisamy.Scan("<style/>b<![cdata[</style><a href=javascript:alert(1)>test", revised).GetCleanHtml()
+                .Should().NotContain("javascript");
+            revised = policy.CloneWithDirective(Constants.USE_XHTML, "false");
+            antisamy.Scan("<select<style/>W<xmp<script>alert(1)</script>", revised).GetCleanHtml()
+                .Should().NotContain("script");
+        }
+
+        [Test]
+        public void TestMalformedPIScan()
+        {
+            string result = null; 
+            try
+            {
+                result = antisamy.Scan("<!--><?a/", policy).GetCleanHtml();
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+
+            result.Should().NotBeNull();
+        }
     }
 }
