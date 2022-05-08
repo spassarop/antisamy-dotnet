@@ -43,9 +43,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string CLOSE_TAG_ATTRIBUTES = CLOSE_ATTRIBUTE + "*";
 
         // Policy
-        public static readonly string OMIT_XML_DECLARATION = "omitXmlDeclaration";
         public static readonly string OMIT_DOCTYPE_DECLARATION = "omitDoctypeDeclaration";
-        public static readonly string USE_XHTML = "useXHTML";
         public static readonly string FORMAT_OUTPUT = "formatOutput";
         public static readonly string EMBED_STYLESHEETS = "embedStyleSheets";
         public static readonly string CONNECTION_TIMEOUT = "connectionTimeout";

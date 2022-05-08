@@ -70,15 +70,10 @@ namespace OWASP.AntiSamy.Html
         internal protected bool FormatsOutput { get; set; }
         /// <summary>Determines if HTML output gets trimmed.</summary>
         internal protected bool PreservesSpace { get; set; }
-        /// <summary>Avoids prepending prepend the <c>"&lt;?xml ...&gt;"</c> initial tag when using XHTML.</summary>
-        internal protected bool OmitsXmlDeclaration { get; set; }
         /// <summary>Avoids prepending prepend the <c>"&lt;!DOCTYPE html ...&gt;"</c> initial tag.</summary>
         internal protected bool OmitsDoctypeDeclaration { get; set; }
         /// <summary>Determines if HTML output gets encoded regarding special characters, like accents.</summary>
         internal protected bool EntityEncodesInternationalCharacters { get; set; }
-        /// <summary>Determines if parser uses XHTML.</summary>
-        /// <remarks>Explicitly used for CDATA handling when scanning CSS.</remarks>
-        internal protected bool UsesXhtml { get; set; }
         /// <summary>Determines if comments are removed from the HTML.</summary>
         internal protected bool PreservesComments { get; set; }
         /// <summary>Determines if style sheets can be embedded/imported to be parsed.</summary>

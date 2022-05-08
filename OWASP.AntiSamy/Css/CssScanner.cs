@@ -188,7 +188,7 @@ namespace OWASP.AntiSamy.Css
                 }
             }
 
-            if (isCData && !policy.UsesXhtml)
+            if (isCData)
             {
                 cleanStylesheet = $"<![CDATA[{cleanStylesheet}]]>";
             }
