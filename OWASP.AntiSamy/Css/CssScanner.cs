@@ -190,7 +190,7 @@ namespace OWASP.AntiSamy.Css
 
             if (isCData && !policy.UsesXhtml)
             {
-                cleanStylesheet = $"<![CDATA[[{cleanStylesheet}]]>";
+                cleanStylesheet = $"<![CDATA[{cleanStylesheet}]]>";
             }
 
             return new CleanResults(startOfScan, new DateTime(), cleanStylesheet, ErrorMessages);
