@@ -33,10 +33,6 @@ namespace OWASP.AntiSamy.Html.Scan
             "base", "param", "meta", "input", "textarea", "embed", "basefont", "col"
         };
 
-        public static readonly List<string> DEFAULT_REQUIRE_CLOSING_TAGS = new List<string> {
-            "iframe", "script", "link"
-        };
-
         // For Tag regular expression building
         public static readonly string REGEXP_CHARACTERS = "\\(){}.*?$^-+";
         public static readonly string ANY_NORMAL_WHITESPACES = "(\\s)*";
@@ -47,9 +43,7 @@ namespace OWASP.AntiSamy.Html.Scan
         public static readonly string CLOSE_TAG_ATTRIBUTES = CLOSE_ATTRIBUTE + "*";
 
         // Policy
-        public static readonly string OMIT_XML_DECLARATION = "omitXmlDeclaration";
         public static readonly string OMIT_DOCTYPE_DECLARATION = "omitDoctypeDeclaration";
-        public static readonly string USE_XHTML = "useXHTML";
         public static readonly string FORMAT_OUTPUT = "formatOutput";
         public static readonly string EMBED_STYLESHEETS = "embedStyleSheets";
         public static readonly string CONNECTION_TIMEOUT = "connectionTimeout";

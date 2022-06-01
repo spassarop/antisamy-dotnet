@@ -25,6 +25,7 @@
 using System.Collections.Generic;
 using OWASP.AntiSamy.Html.Scan;
 using Tag = OWASP.AntiSamy.Html.Model.Tag;
+using Property = OWASP.AntiSamy.Html.Model.Property;
 
 namespace OWASP.AntiSamy.Html
 {
@@ -40,8 +41,8 @@ namespace OWASP.AntiSamy.Html
             SetProperties();
         }
 
-        public InternalPolicy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
-                : base(old, directives, tagRules)
+        public InternalPolicy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules, Dictionary<string, Property> cssRules)
+                : base(old, directives, tagRules, cssRules)
         {
             SetProperties();
         }
@@ -54,10 +55,8 @@ namespace OWASP.AntiSamy.Html
             ValidatesParamAsEmbed = IsTrue(Constants.VALIDATE_PARAM_AS_EMBED);
             FormatsOutput = IsTrue(Constants.FORMAT_OUTPUT);
             PreservesSpace = IsTrue(Constants.PRESERVE_SPACE);
-            OmitsXmlDeclaration = IsTrue(Constants.OMIT_XML_DECLARATION);
             OmitsDoctypeDeclaration = IsTrue(Constants.OMIT_DOCTYPE_DECLARATION);
             EntityEncodesInternationalCharacters = IsTrue(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS);
-            UsesXhtml = IsTrue(Constants.USE_XHTML);
             string onUnknownTagActionValue = GetDirectiveByName(Constants.ON_UNKNOWN_TAG_ACTION);
             OnUnknownTagAction = string.IsNullOrEmpty(onUnknownTagActionValue) ? string.Empty : onUnknownTagActionValue.ToLowerInvariant();
             PreservesComments = IsTrue(Constants.PRESERVE_COMMENTS);

@@ -94,7 +94,10 @@ namespace OWASP.AntiSamy.Css
             IBrowsingContext browsingContext = BrowsingContext.New(Configuration.Default
                 .WithCss()
                 .With(new DefaultHttpRequester(userAgent: null, setup: SetupHttpRequest))
-                .WithDefaultLoader(new LoaderOptions { IsResourceLoadingEnabled = true }));
+                .WithDefaultLoader(new LoaderOptions { 
+                    IsResourceLoadingEnabled = policy.EmbedsStyleSheets,
+                    IsNavigationDisabled = true
+                }));
             parser = new CssParser(cssParserOptions, browsingContext);
         }
 
@@ -188,9 +191,9 @@ namespace OWASP.AntiSamy.Css
                 }
             }
 
-            if (isCData && !policy.UsesXhtml)
+            if (isCData)
             {
-                cleanStylesheet = $"<![CDATA[[{cleanStylesheet}]]>";
+                cleanStylesheet = $"<![CDATA[{cleanStylesheet}]]>";
             }
 
             return new CleanResults(startOfScan, new DateTime(), cleanStylesheet, ErrorMessages);
@@ -461,6 +464,7 @@ namespace OWASP.AntiSamy.Css
         private void SetupHttpRequest(HttpWebRequest httpWebRequest)
         {
             httpWebRequest.Timeout = policy.ConnectionTimeout;
+            httpWebRequest.AllowAutoRedirect = false;
         }
 
         private void AddError(string errorKey, params object[] arguments)

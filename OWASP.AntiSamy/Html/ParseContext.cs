@@ -40,12 +40,10 @@ namespace OWASP.AntiSamy.Html
         internal Dictionary<string, Attribute> globalAttributes = new Dictionary<string, Attribute>();
         internal Dictionary<string, Attribute> dynamicAttributes = new Dictionary<string, Attribute>();
         internal List<string> allowedEmptyTags = new List<string>();
-        internal List<string> requireClosingTags = new List<string>();
 
         internal void ResetParametersWhereLastConfigurationWins()
         {
             allowedEmptyTags.Clear();
-            requireClosingTags.Clear();
         }
     }
 }

@@ -41,13 +41,13 @@ namespace AntiSamyTests
     public class AntiSamyTest
     {
         private AntiSamy antisamy;
-        private Policy policy;
+        private TestPolicy policy;
 
         [SetUp]
         public void SetUp()
         {
             antisamy = new AntiSamy();
-            policy = Policy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
+            policy = TestPolicy.GetInstance(TestConstants.DEFAULT_POLICY_PATH);
         }
 
         [Test(Description = "Test basic XSS cases.")]
@@ -426,10 +426,8 @@ namespace AntiSamyTests
             antisamy.Scan("text <strong></strong> text <strong><em></em></strong> text", revised).GetCleanHtml()
                 .Should().NotContainAll("<strong />", "<strong/>");
 
-            Policy revised2 = revised.CloneWithDirective(Constants.USE_XHTML, "true");
-
             // Due to CDATA handling on title tag, test result is not equality checking.
-            antisamy.Scan("<html><head><title>foobar</title></head><body><img src=\"http://foobar.com/pic.gif\" /></body></html>", revised2).GetCleanHtml().Should()
+            antisamy.Scan("<html><head><title>foobar</title></head><body><img src=\"http://foobar.com/pic.gif\" /></body></html>", policy).GetCleanHtml().Should()
                 .ContainAll("<title>", "foobar", "</title>", "<body><img src=\"http://foobar.com/pic.gif\" /></body>");
         }
 
@@ -458,13 +456,8 @@ namespace AntiSamyTests
             Policy revised = policy.CloneWithDirective(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS, "false");
             antisamy.Scan(html, revised).GetCleanHtml().Should().Contain("\u00e4");
 
-            Policy revised2 = policy.CloneWithDirective(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS, "true")
-                .CloneWithDirective(Constants.USE_XHTML, "false");
+            Policy revised2 = policy.CloneWithDirective(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS, "true");
             antisamy.Scan(html, revised2).GetCleanHtml().Should().Contain("&auml;").And.NotContain("\u00e4");
-
-            Policy revised3 = policy.CloneWithDirective(Constants.ENTITY_ENCODE_INERNATIONAL_CHARS, "true")
-                .CloneWithDirective(Constants.USE_XHTML, "true");
-            antisamy.Scan(html, revised3).GetCleanHtml().Should().Contain("&auml;").And.NotContain("\u00e4");
 
             antisamy.Scan("<span id=\"my-span\" class='my-class'>More special characters: ɢ♠♤á</span>", revised2).GetCleanHtml().Should()
                 .Be("<span id=\"my-span\" class='my-class'>More special characters: &#610;&spades;&#9828;&aacute;</span>");
@@ -880,6 +873,62 @@ namespace AntiSamyTests
             // noopener is not repeated
             antisamy.Scan("<a target='_blank' rel='noopener'>Link text</a>", revised3).GetCleanHtml()
                 .Split(new string[] { "noopener" }, StringSplitOptions.None).Length.Should().Be(2);
+        }
+
+        [Test]
+        public void TestLeadingDashOnPropertyName()
+        {
+            // Test that property names with leading dash are supported
+            string input = "<style type='text/css'>\n" +
+                "\t.very-specific-antisamy { -moz-border-radius: inherit ; -webkit-border-radius: 25px 10px 5px 10px;}\n" +
+                "</style>";
+            
+            // Define new properties for the policy
+            var leadingDashProperty1 = new Property("-webkit-border-radius");
+            leadingDashProperty1.AddAllowedRegExp("\\d+(\\.\\d+)?px( \\d+(\\.\\d+)?px){0,3}");
+            var leadingDashProperty2 = new Property("-moz-border-radius");
+            leadingDashProperty2.AddAllowedValue("inherit");
+            Policy revised = policy.AddCssProperty(leadingDashProperty1).AddCssProperty(leadingDashProperty2);
+            
+            // Test properties
+            antisamy.Scan(input, revised).GetCleanHtml().Should().ContainAll("-webkit-border-radius", "-moz-border-radius");
+        }
+
+        [Test]
+        public void TestSmuggledTagsInStyleContent()
+        {
+            antisamy.Scan("<style/>b<![CDATA[</style><a href=javascript:alert(1)>test", policy).GetCleanHtml()
+                .Should().NotContain("javascript");
+            antisamy.Scan("<select<style/>W<xmp<script>alert(1)</script>", policy).GetCleanHtml()
+                .Should().NotContain("script");
+            antisamy.Scan("<select<style/>k<input<</>input/onfocus=alert(1)>", policy).GetCleanHtml()
+                .Should().NotContain("input");
+        }
+
+        [Test]
+        public void TestMalformedPIScan()
+        {
+            string result = null;
+            try
+            {
+                result = antisamy.Scan("<!--><?a/", policy).GetCleanHtml();
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+            result.Should().NotBeNull();
+
+            result = null;
+            try
+            {
+                result = antisamy.Scan("<!--?><?a/", policy).GetCleanHtml();
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+            result.Should().NotBeNull();
         }
     }
 }

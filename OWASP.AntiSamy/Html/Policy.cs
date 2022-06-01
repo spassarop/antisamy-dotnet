@@ -47,13 +47,12 @@ namespace OWASP.AntiSamy.Html
 
         private readonly Dictionary<string, string> commonRegularExpressions;
         private readonly Dictionary<string, Attribute> commonAttributes;
-        private readonly Dictionary<string, Tag> tagRules;
-        private readonly Dictionary<string, Property> cssRules;
-        private readonly Dictionary<string, string> directives;
+        internal readonly Dictionary<string, Tag> tagRules;
+        internal readonly Dictionary<string, Property> cssRules;
+        internal readonly Dictionary<string, string> directives;
         private readonly Dictionary<string, Attribute> globalAttributes;
         private readonly Dictionary<string, Attribute> dynamicAttributes;
         private readonly TagMatcher allowedEmptyTagsMatcher;
-        private readonly TagMatcher requireClosingTagsMatcher;
 
         /// <summary>Maximum input size for the HTML to read.</summary>
         /// <remarks> If this value is not specified by the policy, the <c>DEFAULT_MAX_INPUT_SIZE</c> is used.</remarks>
@@ -71,15 +70,10 @@ namespace OWASP.AntiSamy.Html
         internal protected bool FormatsOutput { get; set; }
         /// <summary>Determines if HTML output gets trimmed.</summary>
         internal protected bool PreservesSpace { get; set; }
-        /// <summary>Avoids prepending prepend the <c>"&lt;?xml ...&gt;"</c> initial tag when using XHTML.</summary>
-        internal protected bool OmitsXmlDeclaration { get; set; }
         /// <summary>Avoids prepending prepend the <c>"&lt;!DOCTYPE html ...&gt;"</c> initial tag.</summary>
         internal protected bool OmitsDoctypeDeclaration { get; set; }
         /// <summary>Determines if HTML output gets encoded regarding special characters, like accents.</summary>
         internal protected bool EntityEncodesInternationalCharacters { get; set; }
-        /// <summary>Determines if parser uses XHTML.</summary>
-        /// <remarks>Explicitly used for CDATA handling when scanning CSS.</remarks>
-        internal protected bool UsesXhtml { get; set; }
         /// <summary>Determines if comments are removed from the HTML.</summary>
         internal protected bool PreservesComments { get; set; }
         /// <summary>Determines if style sheets can be embedded/imported to be parsed.</summary>
@@ -107,24 +101,23 @@ namespace OWASP.AntiSamy.Html
             globalAttributes = parseContext.globalAttributes;
             tagRules = parseContext.tagRules;
             allowedEmptyTagsMatcher = new TagMatcher(parseContext.allowedEmptyTags);
-            requireClosingTagsMatcher = new TagMatcher(parseContext.requireClosingTags);
         }
 
         /// <summary>Create policy with full paramterers.</summary>
         /// <param name="old">Old policy to copy from.</param>
         /// <param name="directives">Directives to override.</param>
         /// <param name="tagRules">Tag rules to override.</param>
-        protected Policy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules)
+        /// <param name="cssRules">CSS rules to override.</param>
+        protected Policy(Policy old, Dictionary<string, string> directives, Dictionary<string, Tag> tagRules, Dictionary<string, Property> cssRules)
         {
             commonAttributes = old.commonAttributes;
             commonRegularExpressions = old.commonRegularExpressions;
-            cssRules = old.cssRules;
+            this.cssRules = cssRules;
             this.directives = directives;
             dynamicAttributes = old.dynamicAttributes;
             globalAttributes = old.globalAttributes;
             this.tagRules = tagRules;
             allowedEmptyTagsMatcher = old.allowedEmptyTagsMatcher;
-            requireClosingTagsMatcher = old.requireClosingTagsMatcher;
         }
 
         /// <summary> This retrieves a policy based on a default location ("AntiSamyPolicyExamples/antisamy.xml") or from the embedded XML.</summary>
@@ -214,7 +207,7 @@ namespace OWASP.AntiSamy.Html
                 newDirectives.Add(name, value);
             }
 
-            return new InternalPolicy(this, newDirectives, tagRules);
+            return new InternalPolicy(this, newDirectives, tagRules, cssRules);
         }
 
         /// <summary>A simple method for returning one of the &lt;common-regexp&gt; entries by name.</summary>
@@ -269,24 +262,7 @@ namespace OWASP.AntiSamy.Html
             return dynamicAttribute;
         }
 
-        internal Policy MutateTag(Tag tag)
-        {
-            var newTagRules = new Dictionary<string, Tag>(tagRules);
-            string tagNameToLower = tag.Name.ToLowerInvariant();
-
-            if (newTagRules.ContainsKey(tagNameToLower))
-            {
-                newTagRules[tagNameToLower] = tag;
-            }
-            else
-            {
-                newTagRules.Add(tagNameToLower, tag);
-            }
-
-            return new InternalPolicy(this, directives, newTagRules);
-        }
-
-        private static ParseContext GetParseContext(XmlDocument document)
+        internal static ParseContext GetParseContext(XmlDocument document)
         {
             var parseContext = new ParseContext();
 
@@ -300,7 +276,7 @@ namespace OWASP.AntiSamy.Html
         /// <param name="filename">The name of the file which contains the policy XML.</param>
         /// <returns>The loaded <see cref="XmlDocument"/>.</returns>
         /// <exception cref="PolicyException"/>
-        private static XmlDocument GetXmlDocumentFromFile(string filename)
+        internal static XmlDocument GetXmlDocumentFromFile(string filename)
         {
             try
             {
@@ -396,7 +372,6 @@ namespace OWASP.AntiSamy.Html
                 ParseTagRules(document.GetElementsByTagName("tag-rules").Item(0), parseContext);
                 ParseCssRules(document.GetElementsByTagName("css-rules").Item(0), parseContext);
                 ParseAllowedEmptyTags(document.GetElementsByTagName("allowed-empty-tags").Item(0), parseContext);
-                ParseRequireClosingTags(document.GetElementsByTagName("require-closing-tags").Item(0), parseContext);
             }
             catch (Exception ex)
             {
@@ -676,14 +651,6 @@ namespace OWASP.AntiSamy.Html
         private static void ParseAllowedEmptyTags(XmlNode allowedEmptyTagListNode, ParseContext parseContext)
         {
             ParseTagListWithLiterals(allowedEmptyTagListNode, parseContext.allowedEmptyTags, Constants.DEFAULT_ALLOWED_EMPTY_TAGS);
-        }
-
-        /// <summary> Go through the &lt;require-closing-tags&gt; section of the policy file.</summary>
-        /// <param name="requireClosingTagListNode">Top level of &lt;require-closing-tags&gt;.</param>
-        /// <param name="parseContext">The <see cref="ParseContext"/> containing the require closing tags list to fill.</param>
-        private static void ParseRequireClosingTags(XmlNode requireClosingTagListNode, ParseContext parseContext)
-        {
-            ParseTagListWithLiterals(requireClosingTagListNode, parseContext.requireClosingTags, Constants.DEFAULT_REQUIRE_CLOSING_TAGS);
         }
 
         private static void ParseTagListWithLiterals(XmlNode nodeList, List<string> tagListToFill, List<string> defaultTagsList)
