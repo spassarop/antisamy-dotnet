@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2022, Jerry Hoff, Sebasti·n Passaro
+ * Copyright (c) 2008-2022, Jerry Hoff, Sebasti√°n Passaro
  * 
  * All rights reserved.
  * 
@@ -29,11 +29,28 @@ using System.Xml;
 namespace OWASP.AntiSamy.Html
 {
     /// <summary> 
-    /// This class contains the results of a scan.
-    /// 
-    /// The list of error messages (<see cref="GetErrorMessages"/>) will let the user know
-    /// what, if any HTML errors existed, and what, if any, security or
-    /// validation-related errors existed, and what was done about them.
+    /// This class contains the results of a scan. It primarily provides access to the clean sanitized
+    /// HTML, per the AntiSamy sanitization policy applied. It also provides access to some utility
+    /// information, like possible error messages and error message counts.
+    ///
+    /// <p>WARNING: The ONLY output from the class you can completely rely on is the CleanResults output.
+    /// As stated in the README, the getErrorMessages() method does not subtly answer the question "is
+    /// this safe input?" in the affirmative if it returns an empty list. You must always use the
+    /// sanitized 'Clean' input and there is no way to be sure the input passed in had no attacks.
+    ///
+    /// <p>The serialization and deserialization process that is critical to the effectiveness of the
+    /// sanitizer is purposefully lossy and will filter out attacks via a number of attack vectors.
+    /// Unfortunately, one of the tradeoffs of this strategy is that AntiSamy doesn't always know in
+    /// retrospect that an attack was seen. Thus, the getErrorMessages() API is there to help users
+    /// understand whether their well-intentioned input meets the requirements of the system, not help a
+    /// developer detect if an attack was present.
+    ///
+    /// The list of error messages (<see cref="GetErrorMessages"/>) will let the user know what, if any
+    /// HTML errors existed, and what, if any, security or validation-related errors were detected, and
+    /// what was done about them. NOTE: As just stated, the absence of error messages does NOT mean there
+    /// were no attacks in the input that was sanitized out. You CANNOT rely on the errorMessages to tell
+    /// you if the input was dangerous. You MUST use the output of getCleanHTML() to ensure your output
+    /// is safe.
     /// </summary>
     public class CleanResults
     {
@@ -98,7 +115,10 @@ namespace OWASP.AntiSamy.Html
         /// <param name="msg">An error message to append to the list of aggregate error messages during filtering.</param>
         public void AddErrorMessage(string msg) => errorMessages.Add(msg);
 
-        /// <summary> Return the number of errors encountered during filtering.</summary>
+        /// <summary> 
+        /// Return the number of errors encountered during filtering. Note that 0 errors does NOT
+        /// mean the input was safe. Only the output of getCleanHTML() can be considered safe.
+        /// </summary>
         public int GetNumberOfErrors() => errorMessages.Count;
     }
 }
