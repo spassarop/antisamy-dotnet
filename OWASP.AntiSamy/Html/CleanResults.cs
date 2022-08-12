@@ -33,24 +33,27 @@ namespace OWASP.AntiSamy.Html
     /// HTML, per the AntiSamy sanitization policy applied. It also provides access to some utility
     /// information, like possible error messages and error message counts.
     ///
-    /// <p>WARNING: The ONLY output from the class you can completely rely on is the CleanResults output.
-    /// As stated in the README, the getErrorMessages() method does not subtly answer the question "is
-    /// this safe input?" in the affirmative if it returns an empty list. You must always use the
-    /// sanitized 'Clean' input and there is no way to be sure the input passed in had no attacks.
+    /// <para>WARNING: The ONLY output from the class you can completely rely on is the CleanResults output.
+    /// As stated in the documentation, neither the <see cref="GetErrorMessages"/> nor the <see cref="GetNumberOfErrors"/> methods
+    /// subtly answer the question "is this safe input?" in the affirmative if it returns an empty list. 
+    /// You must always use the sanitized 'Clean' input and there is no way to be sure the input passed in had no attacks.
+    /// </para>
     ///
-    /// <p>The serialization and deserialization process that is critical to the effectiveness of the
+    /// <para>The serialization and deserialization process that is critical to the effectiveness of the
     /// sanitizer is purposefully lossy and will filter out attacks via a number of attack vectors.
     /// Unfortunately, one of the tradeoffs of this strategy is that AntiSamy doesn't always know in
-    /// retrospect that an attack was seen. Thus, the getErrorMessages() API is there to help users
+    /// retrospect that an attack was seen. Thus, the <see cref="GetErrorMessages"/> API is there to help users
     /// understand whether their well-intentioned input meets the requirements of the system, not help a
     /// developer detect if an attack was present.
+    /// </para>
     ///
-    /// The list of error messages (<see cref="GetErrorMessages"/>) will let the user know what, if any
+    /// <para>The list of error messages (<see cref="errorMessages"/>) will let the user know what, if any
     /// HTML errors existed, and what, if any, security or validation-related errors were detected, and
     /// what was done about them. NOTE: As just stated, the absence of error messages does NOT mean there
-    /// were no attacks in the input that was sanitized out. You CANNOT rely on the errorMessages to tell
-    /// you if the input was dangerous. You MUST use the output of getCleanHTML() to ensure your output
+    /// were no attacks in the input that was sanitized out. You CANNOT rely on the <see cref="errorMessages"/> to tell
+    /// you if the input was dangerous. You MUST use the output of <see cref="GetCleanHtml"/> to ensure your output
     /// is safe.
+    /// </para>
     /// </summary>
     public class CleanResults
     {
@@ -91,11 +94,17 @@ namespace OWASP.AntiSamy.Html
         /// <param name="cleanHtml"></param>
         public void SetCleanHtml(string cleanHtml) => this.cleanHtml = cleanHtml;
 
-        /// <summary> Return the filtered HTML as a string.</summary>
+        /// <summary> 
+        /// Return the filtered HTML as a string. This output is the ONLY output you can trust to be safe.
+        /// The absence of error messages does NOT indicate the input was safe.
+        /// </summary>
         /// <returns> A string object which contains the serialized, safe HTML.</returns>
         public string GetCleanHtml() => cleanHtml;
 
-        /// <summary> Return a list of error messages.</summary>
+        /// <summary> 
+        /// Return a list of error messages -- but an empty list returned does not mean there was no attack
+        /// present, due to the serialization and deserialization process automatically cleaning up some attacks.
+        /// </summary>
         /// <returns> A <see cref="List{String}"/> object which contains the error messages after a scan.</returns>
         public List<string> GetErrorMessages() => errorMessages;
 
@@ -117,7 +126,7 @@ namespace OWASP.AntiSamy.Html
 
         /// <summary> 
         /// Return the number of errors encountered during filtering. Note that 0 errors does NOT
-        /// mean the input was safe. Only the output of getCleanHTML() can be considered safe.
+        /// mean the input was safe. Only the output of <see cref="GetCleanHtml"/> can be considered safe.
         /// </summary>
         public int GetNumberOfErrors() => errorMessages.Count;
     }
