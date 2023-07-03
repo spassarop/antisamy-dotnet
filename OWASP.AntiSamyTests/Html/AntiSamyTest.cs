@@ -903,6 +903,10 @@ namespace AntiSamyTests
                 .Should().NotContain("script");
             antisamy.Scan("<select<style/>k<input<</>input/onfocus=alert(1)>", policy).GetCleanHtml()
                 .Should().NotContain("input");
+            antisamy.Scan("<style/><listing/>]]><noembed></style><img src=x onerror=mxss(1)></noembed>", policy).GetCleanHtml()
+               .Should().NotContain("mxss");
+            antisamy.Scan("<style/><math>'<noframes ></style><img src=x onerror=mxss(1)></noframes>'", policy).GetCleanHtml()
+               .Should().NotContain("mxss");
         }
 
         [Test]
