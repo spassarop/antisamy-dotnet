@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net48</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <Copyright>Copyright © 2022 - Arshan Dabirsiaghi, Sebastián Passaro</Copyright>
+    <Copyright>Copyright © 2023 - Arshan Dabirsiaghi, Sebastián Passaro</Copyright>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <Description>Tests project for OWASP AntiSamy .NET.</Description>
   </PropertyGroup>

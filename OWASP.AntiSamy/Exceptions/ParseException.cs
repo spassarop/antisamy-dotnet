@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Caner Patir, Sebasti·n Passaro
+ * Copyright (c) 2023, Caner Patir, Sebasti√°n Passaro
  * 
  * All rights reserved.
  * 

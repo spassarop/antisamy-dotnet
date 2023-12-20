@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2022, Kristian Rosenvold, Sebasti·n Passaro
+ * Copyright (c) 2013-2023, Kristian Rosenvold, Sebasti√°n Passaro
  *
  * All rights reserved.
  *
