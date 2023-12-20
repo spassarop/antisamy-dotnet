@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net5.0;netstandard2.0;netcoreapp3.1;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0;net48</TargetFrameworks>
     <StartupObject></StartupObject>
     <OldToolsVersion>3.5</OldToolsVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -22,9 +22,9 @@ Another way of saying that could be: It's an API that helps you make sure that c
     <DefineConstants>NET5_0</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.16.1" />
-    <PackageReference Include="AngleSharp.Css" Version="0.16.4" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.42" />
+    <PackageReference Include="AngleSharp" Version="0.17.1" />
+    <PackageReference Include="AngleSharp.Css" Version="0.17.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.55" />
   </ItemGroup>
   <ItemGroup>
     <!-- Added so NuGet copies this folder to the output package -->
