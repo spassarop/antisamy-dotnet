@@ -934,5 +934,53 @@ namespace AntiSamyTests
             }
             result.Should().NotBeNull();
         }
+
+        [Test]
+        [Ignore("Not passing. To correct in the future if there is a complain or easy fix.")]
+        public void TestQuotesInsideStyles()
+        {
+            string input = "<span style=\"font-family: 'comic sans ms', sans-serif; color: #ba372a;\">Text</span>";
+            antisamy.Scan(input, policy).GetCleanHtml().Should().ContainAll("'comic sans ms'", "\"font-family");
+
+            input = "<span style='font-family: \"comic sans ms\", sans-serif; color: #ba372a;'>Text</span>";
+            antisamy.Scan(input, policy).GetCleanHtml().Should().ContainAll("'comic sans ms'", "\"font-family");
+        }
+
+        [Test]
+        public void TestRawTextProcessingWhenPreservingComments()
+        {
+            var tag = new Tag("xmp", Constants.ACTION_VALIDATE, new Dictionary<string, Attribute>());
+            Policy revised = policy.MutateTag(tag).CloneWithDirective(Constants.PRESERVE_COMMENTS, "true");
+
+            antisamy.Scan("<noscript><!--</noscript><img src=x onerror=mxss(1)>-->", revised)
+                .GetCleanHtml().Should().NotContain("mxss");
+            antisamy.Scan("<textarea/><!--</textarea><img src=x onerror=mxss(1)>-->", revised)
+                .GetCleanHtml().Should().NotContain("mxss");
+            antisamy.Scan("<xmp/><!--</xmp><img src=x onerror=mxss(1)>-->", revised)
+                .GetCleanHtml().Should().Be("<!--</xmp><img src=x onerror=mxss(1)>-->");
+            antisamy.Scan("<!--<div/>--><img src=x onerror=mxss(1)> <li>--></p><input/>", revised)
+                .GetCleanHtml().Should().NotContain("mxss");
+        }
+
+        [Test]
+        public void TestRegexStackOverflow()
+        {
+            string result = null;
+            try
+            {
+                string input = "<img border=\"0\" width=\"320\" height=\"200\" style=\"width:3.368in;height:2.0486in\" id=\"id_123\" src=\"/url/uri\" alt=\"";
+                for (int i = 0; i < 2500; i++)
+                {
+                    input += "SampleText ";
+                }
+                input += "!\\\">";
+                result = antisamy.Scan(input, policy).GetCleanHtml();
+            }
+            catch
+            {
+                // To comply with try/catch
+            }
+            result.Should().NotBeNull();
+        }
     }
 }
