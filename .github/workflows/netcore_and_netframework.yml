@@ -40,20 +40,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
-      - name: Setup .NET Core SDK+Runtime
+      - name: Setup .NET 8.0 SDK+Runtime
         uses: actions/setup-dotnet@v1.7.2
         with:
-          dotnet-version: 3.1.x
-          
-      - name: Setup .NET 5.0 SDK+Runtime
-        uses: actions/setup-dotnet@v1.7.2
-        with:
-          dotnet-version: 5.0.404
-          
-      - name: Setup .NET 6.0 SDK+Runtime
-        uses: actions/setup-dotnet@v1.7.2
-        with:
-          dotnet-version: 6.0.101
+          dotnet-version: 8.0.100
         
       - name: Setup MSBuild for .NET Framework
         uses: microsoft/setup-msbuild@v1

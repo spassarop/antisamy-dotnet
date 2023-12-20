@@ -66,16 +66,11 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
     
     # This prevents errors when automatically installing SDK.
-    # CodeQL does not install .NET 5.0 nor 6.0.    
-    - name: Setup .NET 5.0 SDK+Runtime
+    # CodeQL does not install .NET 8.0.    
+    - name: Setup .NET 8.0 SDK+Runtime
       uses: actions/setup-dotnet@v1.7.2
       with:
-        dotnet-version: 5.0.404
-        
-    - name: Setup .NET 6.0 SDK+Runtime
-      uses: actions/setup-dotnet@v1.7.2
-      with:
-        dotnet-version: 6.0.101
+        dotnet-version: 8.0.100
     
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
