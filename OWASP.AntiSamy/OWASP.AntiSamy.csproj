@@ -17,20 +17,12 @@
 Another way of saying that could be: It's an API that helps you make sure that clients don't supply malicious cargo code in the HTML they supply for their profile, comments, etc., that get persisted on the server. The term "malicious code" in regard to web applications usually mean "JavaScript." Mostly, Cascading Stylesheets are only considered malicious when they invoke JavaScript. However, there are many situations where "normal" HTML and CSS can be used in a malicious manner.</Description>
     <Title>OWASP.AntiSamy</Title>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0'">
-    <DefineConstants>NET5_0</DefineConstants>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.17.1" />
     <PackageReference Include="AngleSharp.Css" Version="0.17.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.55" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Added so NuGet copies this folder to the output package -->
-    <Content Include="AntiSamyPolicyExamples\**\*">
-      <CopyToPublishDirectory>true</CopyToPublishDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Update="AntiSamyPolicyExamples\antisamy-anythinggoes.xml">
@@ -57,6 +49,7 @@ Another way of saying that could be: It's an API that helps you make sure that c
     <None Update="AntiSamyPolicyExamples\antisamy.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
