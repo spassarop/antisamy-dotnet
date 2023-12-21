@@ -12,6 +12,8 @@ This project will be trying to be in sync with the original Java version, its re
 
 Check the [wiki](https://github.com/spassarop/antisamy-dotnet/wiki) for information on how to use, build, test and more.
 
+**Important note**: Since 1.2.0 the example policy files that were previously included in the NuGet package are removed. Each developer/deployer must manually place a policy in a location of their choice. For mor information about policies, refer to the wiki mentioned above.
+
 ## Contributing to OWASP AntiSamy .NET
 
 ### Found an issue?
