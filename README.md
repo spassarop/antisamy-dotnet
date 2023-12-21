@@ -22,7 +22,7 @@ If you have found a bug, then create an issue in the OWASP AntiSamy .NET reposit
 ### Found a vulnerability?
 If you have found a vulnerability in OWASP AntiSamy .NET, first search the issues list (see above) to see if it has already been reported. If it has not, then please contact Sebastián Passaro (sebastian.passaro at owasp.org) directly. Please do not report vulnerabilities via GitHub issues as we wish to keep our users secure while a patch is implemented and deployed. If you wish to be acknowledged for finding the vulnerability, then please follow this process.
 
-More detail is available in the file: [SECURITY.md](https://github.com/spassarop/antisamy-dotnet/blob/master/SECURITY.md).
+More detail is available in the file: [SECURITY.md](https://github.com/spassarop/antisamy-dotnet/blob/main/SECURITY.md).
 
 ## License
-Released under the [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause) license as specified here: [LICENSE](https://github.com/spassarop/antisamy-dotnet/blob/master/LICENSE). 
+Released under the [BSD-3-Clause](https://opensource.org/licenses/BSD-3-Clause) license as specified here: [LICENSE](https://github.com/spassarop/antisamy-dotnet/blob/main/LICENSE). 
