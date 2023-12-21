@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Sebasti·n Passaro
+ * Copyright (c) 2023, Sebasti√°n Passaro
  * 
  * All rights reserved.
  * 

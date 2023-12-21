@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Jerry Hoff, Caner Patir, Sebasti·n Passaro
+ * Copyright (c) 2023, Jerry Hoff, Caner Patir, Sebasti√°n Passaro
  * 
  * 
  * All rights reserved.

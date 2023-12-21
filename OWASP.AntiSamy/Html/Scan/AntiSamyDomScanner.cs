@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Jerry Hoff, Sebasti·n Passaro
+ * Copyright (c) 2009-2023, Jerry Hoff, Sebasti√°n Passaro
  * 
  * All rights reserved.
  * 
@@ -136,7 +136,7 @@ namespace OWASP.AntiSamy.Html.Scan
 
             // All the cleaned HTML
             string finalCleanHTML = Policy.PreservesSpace ? htmlDocument.DocumentNode.InnerHtml : htmlDocument.DocumentNode.InnerHtml.Trim();
-
+            
             // Encode special/international characters if stated by policy
             if (Policy.EntityEncodesInternationalCharacters)
             {
@@ -369,6 +369,15 @@ namespace OWASP.AntiSamy.Html.Scan
             if (tagName.ToLowerInvariant() == "style" && Policy.GetTagByName("style") != null && !ProcessStyleTag(node, parentNode))
             {
                 return;
+            }
+
+            /*
+            * Parse every <noscript> node content as plain text by replacing its content with its transformation.
+            * Covers a case when preserving comments and how the underlying parser works, where a bug arises.
+            */
+            if (tagName.ToLowerInvariant() == "noscript" && Policy.PreservesComments)
+            {
+                node.ParentNode.ReplaceChild(parentNode.OwnerDocument.CreateTextNode(node.InnerText), node);
             }
 
             /*
