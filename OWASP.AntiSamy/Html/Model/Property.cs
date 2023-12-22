@@ -31,13 +31,21 @@ namespace OWASP.AntiSamy.Html.Model
     // Author: Jason Li
     public class Property
     {
+        /// <summary> List of regular expressions used to verify allowed values for the property.</summary>
         public List<string> AllowedRegExp { get; set; } = new List<string>();
+        /// <summary> List of literal allowed values for the property.</summary>
         public List<string> AllowedValues { get; set; } = new List<string>();
+        /// <summary> List of shorthand references for properties, e.g. "background-color".</summary>
         public List<string> ShorthandRefs { get; set; } = new List<string>();
+        /// <summary> Name of the CSS property.</summary>
         public string Name { get; set; }
+        /// <summary> Action to perform when the property value is invalid.</summary>
         public string OnInvalid { get; set; }
+        /// <summary> Description of the CSS property. Informative.</summary>
         public string Description { get; set; }
 
+        /// <summary> Constructor for a CSS property.</summary>
+        /// <param name="name">Value for the CSS property name.</param>
         public Property(string name) => Name = name;
 
         /// <summary> Add the specified value to the allowed list of valid values.</summary>
