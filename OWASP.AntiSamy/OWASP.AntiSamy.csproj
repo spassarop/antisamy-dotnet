@@ -18,10 +18,12 @@ Another way of saying that could be: It's an API that helps you make sure that c
     <Title>OWASP.AntiSamy</Title>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <FileVersion>1.2.2.0</FileVersion>
+    <AssemblyVersion>1.2.2.0</AssemblyVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.17.1" />
-    <PackageReference Include="AngleSharp.Css" Version="0.17.0" />
+    <PackageReference Include="AngleSharp" Version="0.16.1" />
+    <PackageReference Include="AngleSharp.Css" Version="0.16.4" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.55" />
   </ItemGroup>
   <ItemGroup>
@@ -49,7 +51,7 @@ Another way of saying that could be: It's an API that helps you make sure that c
     <None Update="AntiSamyPolicyExamples\antisamy.xsd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
