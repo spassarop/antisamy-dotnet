@@ -982,5 +982,13 @@ namespace AntiSamyTests
             }
             result.Should().NotBeNull();
         }
+
+        [Test]
+        public void TestBangCommentWhenPreservingComments()
+        {
+            Policy revised = policy.CloneWithDirective(Constants.PRESERVE_COMMENTS, "true");
+            antisamy.Scan("<!--<div/>--!><img src=x onerror=mxss(1)> <li>--></p>", revised).GetCleanHtml().Should().NotContain("mxss");
+            antisamy.Scan("<!--<div/>--><img src=x onerror=mxss(1)> <li>--></p><input/>", revised).GetCleanHtml().Should().NotContain("mxss");
+        }
     }
 }
